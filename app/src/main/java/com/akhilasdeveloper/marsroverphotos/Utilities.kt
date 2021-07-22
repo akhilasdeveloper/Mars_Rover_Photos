@@ -1,13 +1,13 @@
 package com.akhilasdeveloper.marsroverphotos
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import timber.log.Timber
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 
@@ -52,4 +52,17 @@ class Utilities @Inject constructor(
         return false
     }
 
+    fun formatMillis(millis: Long): String {
+        val pattern = "yyyy-MM-dd"
+        val formatter = SimpleDateFormat(pattern, Locale.getDefault())
+        return formatter.format(Date(millis))
+    }
+
+    fun formatDateToMillis(date: String):Long? {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val parsedDate = dateFormat.parse(date)
+        return parsedDate?.time
+    }
+
+    fun nextDay(day : Long,mul : Int = 1) = day + (86400000 * mul)
 }

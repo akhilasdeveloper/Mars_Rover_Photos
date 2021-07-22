@@ -2,9 +2,12 @@ package com.akhilasdeveloper.marsroverphotos.di
 
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
+import androidx.room.Room
 import com.akhilasdeveloper.marsroverphotos.Constants
+import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_DATABASE_NAME
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
+import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDatabase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -56,5 +59,19 @@ object AppModule {
     @Provides
     fun providesInputManager(@ApplicationContext context: Context):InputMethodManager
             =context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+    @Singleton
+    @Provides
+    fun provideMarsRoverDatabase(
+        @ApplicationContext app: Context
+    ) = Room.databaseBuilder(
+        app,
+        MarsRoverDatabase::class.java,
+        MARS_ROVER_DATABASE_NAME
+    ).build()
+
+    @Singleton
+    @Provides
+    fun provideMarsRoverDao(db: MarsRoverDatabase) = db.getMarsRoverDao()
 
 }

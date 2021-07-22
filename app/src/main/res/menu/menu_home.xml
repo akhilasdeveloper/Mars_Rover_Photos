@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Filter"
+        android:id="@+id/filter"
+        android:icon="@drawable/ic_round_filter_alt_24"
+        app:showAsAction="always"/>
+
+    <item android:title="Settings"
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_round_settings_24"
+        app:showAsAction="always"/>
+
+</menu>

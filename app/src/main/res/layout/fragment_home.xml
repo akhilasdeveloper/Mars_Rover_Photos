@@ -1,12 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/home_fragment_root"
+    android:background="@color/first">
 
-    <TextView
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/first"
+        app:liftOnScroll="true">
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:id="@+id/home_title_toolbar"
+            android:orientation="vertical"
+            app:cardElevation="20dp"
+            android:padding="0dp"
+            app:cardBackgroundColor="@color/appbar"
+            app:layout_scrollFlags="scroll|enterAlways|snap">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="Selected Date 2021-07-01"
+                android:textStyle="bold"
+                android:id="@+id/selected_date"
+                android:textColor="@color/system_for"/>
+        </com.google.android.material.card.MaterialCardView>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Hello"
-        android:gravity="center"/>
+        android:id="@+id/photo_recycler"
+        android:clipToPadding="false"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
+
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/home_appbar"
+        app:hideOnScroll="true"
+        app:backgroundTint="@color/appbar"
+        android:foregroundTint="@color/system_for"
+        android:layout_gravity="bottom"
+        app:fabAlignmentMode="end"
+        app:navigationIcon="@drawable/ic_round_settings_24"
+        app:navigationIconTint = "@color/system_for">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:id="@+id/home_toolbar"
+            app:titleTextColor="@color/system_for"
+            app:titleTextAppearance="@style/tool_bar_title" />
+
+    </com.google.android.material.bottomappbar.BottomAppBar>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_round_filter_alt_24"
+        app:layout_anchor="@id/home_appbar"
+        app:tint="@color/system_for"
+        android:id="@+id/filter"
+        app:backgroundTint="@color/appbar"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

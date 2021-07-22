@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:layout_margin="2dp"
+    android:gravity="center">
+
+    <ImageView
+        android:id="@+id/image_description"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom"
+        android:background="@color/system_border"
+        android:padding="5dp">
+
+
+        <TextView
+            android:id="@+id/rover_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="2dp"
+            android:text="Rover Name"
+            android:textStyle="bold"
+            android:textColor="@color/system_for"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/camera_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="2dp"
+            android:text="Camera Name"
+            android:textColor="@color/system_for"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+</FrameLayout>
