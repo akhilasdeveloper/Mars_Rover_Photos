@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import com.akhilasdeveloper.marsroverphotos.Constants.MILLIS_IN_A_DAY
 import timber.log.Timber
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
@@ -64,5 +65,4 @@ class Utilities @Inject constructor(
         return parsedDate?.time
     }
 
-    fun nextDay(day : Long,mul : Int = 1) = day + (86400000 * mul)
 }

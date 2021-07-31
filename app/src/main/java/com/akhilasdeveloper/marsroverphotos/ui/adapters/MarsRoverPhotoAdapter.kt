@@ -10,11 +10,13 @@ import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import timber.log.Timber
 
 class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = null) :
     PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPhotoAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+        Timber.d("Data Date View Holder")
         val bindingPhoto =
             PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return PhotoViewHolder(bindingPhoto, interaction)
@@ -25,6 +27,9 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
 
         currentItem?.let {
             holder.bindPhoto(currentItem, position)
+            Timber.d("Data Date Not empty")
+        }?:kotlin.run{
+            Timber.d("Data Date empty")
         }
     }
 
@@ -41,6 +46,7 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                         .into(imageDescription)
                     cameraName.text = "${it.camera_name} Camera"
                     roverName.text = "${it.rover_name} Rover"
+                    Timber.d("Data Date ${it.camera_name}")
                 }
             }
 

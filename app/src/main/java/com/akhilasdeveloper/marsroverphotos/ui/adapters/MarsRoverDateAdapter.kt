@@ -1,19 +1,20 @@
 package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import androidx.paging.PagingDataAdapter
+import androidx.paging.liveData
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.akhilasdeveloper.marsroverphotos.data.DateItem
 import com.akhilasdeveloper.marsroverphotos.databinding.DateItemBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import timber.log.Timber
 
-class MarsRoverDateAdapter() :
-    PagingDataAdapter<String, MarsRoverDateAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
+class MarsRoverDateAdapter(private val context: Context, private val lifecycleOwner: LifecycleOwner) :
+    PagingDataAdapter<DateItem, MarsRoverDateAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val bindingPhoto =
@@ -25,35 +26,56 @@ class MarsRoverDateAdapter() :
         val currentItem = getItem(position)
 
         currentItem?.let {
-            holder.bindPhoto(currentItem, position)
+            holder.bindPhoto(currentItem, position, context,lifecycleOwner)
         }
     }
 
     class PhotoViewHolder(private val binding: DateItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: String, position: Int) {
+        fun bindPhoto(photo: DateItem, position: Int, context: Context, lifecycleOwner: LifecycleOwner) {
+            val adapt = MarsRoverPhotoAdapter()
+            val layoutMana = GridLayoutManager(context,3)
             binding.apply {
-                photo.let {
-                    /*Glide.with(itemView)
-                        .load(it.img_src)
-                        .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(imageDescription)
-                    cameraName.text = "${it.camera_name} Camera"
-                    roverName.text = "${it.rover_name} Rover"*/
+                date.text = photo.date
+                dataRecycler.apply {
+                    setHasFixedSize(true)
+                    layoutManager = layoutMana
+                    adapter = adapt
                 }
+
+                photo.data.liveData.observe(lifecycleOwner,{
+                    adapt.submitData(lifecycleOwner.lifecycle,it)
+                    Timber.d("Livedata ${photo.data}")
+                })
+
+                /*lifecycleOwner.lifecycleScope.launch {
+                    val job = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                        photo.data.flow.cachedIn(lifecycleOwner.lifecycleScope)
+                            .onEach { dataState ->
+                                dataState.filter { dd->
+                                    Timber.d("Livedata ${dd.camera_full_name}")
+                                    true
+                                }
+                            }
+                            .launchIn(this)
+                    }
+
+                    if (job == null) {
+
+                    }
+                }*/
             }
         }
 
     }
 
     companion object {
-        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<String>() {
-            override fun areItemsTheSame(oldItem: String, newItem: String) =
-                oldItem == newItem
+        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<DateItem>() {
+            override fun areItemsTheSame(oldItem: DateItem, newItem: DateItem) =
+                oldItem.date == newItem.date
 
-            override fun areContentsTheSame(oldItem: String, newItem: String) =
+            override fun areContentsTheSame(oldItem: DateItem, newItem: DateItem) =
                 oldItem == newItem
 
         }

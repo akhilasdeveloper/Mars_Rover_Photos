@@ -3,18 +3,24 @@ package com.akhilasdeveloper.marsroverphotos.repositories
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_PHOTOS_PAGE_MAX_SIZE
 import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
+import com.akhilasdeveloper.marsroverphotos.DateGenerator
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
+import com.akhilasdeveloper.marsroverphotos.data.DateItem
 import com.akhilasdeveloper.marsroverphotos.db.*
+import com.akhilasdeveloper.marsroverphotos.ui.RoverDatePagingSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 
 class MarsRoverPhotosRepository @Inject constructor(
     private val marsRoverPhotosService: MarsRoverPhotosService,
-    private val marsRoverDao: MarsRoverDao
+    private val marsRoverDao: MarsRoverDao,
+    private val dateGenerator: DateGenerator
 ) {
 
     private suspend fun refreshDb(api_key: String, date: String) {
@@ -46,7 +52,16 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.insertMarsRoverPhoto(marsRoverPhotoDb)
     }
 
-    suspend fun getPhotosByDate(date: String, api_key: String, utilities: Utilities): Flow<PagingData<MarsRoverPhotoDb>> {
+    fun getDates(date: String):Flow<PagingData<DateItem>> = Pager(
+            config = PagingConfig(
+                pageSize = MARS_ROVER_PHOTOS_PAGE_SIZE,
+                maxSize = MARS_ROVER_PHOTOS_PAGE_MAX_SIZE,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { RoverDatePagingSource(date, dateGenerator, this) }
+        ).flow
+
+    suspend fun getPhotosByDate(date: String, api_key: String, utilities: Utilities): Pager<Int, MarsRoverPhotoDb> {
         if (utilities.isConnectedToTheInternet()) {
             withContext(Dispatchers.IO) {
                 refreshDb(
@@ -59,11 +74,11 @@ class MarsRoverPhotosRepository @Inject constructor(
             config = PagingConfig(
                 pageSize = MARS_ROVER_PHOTOS_PAGE_SIZE,
                 maxSize = 100,
-                enablePlaceholders = true
+                enablePlaceholders = false
             )
         ) {
             marsRoverDao.getPhotosByDate(date)
-        }.flow
+        }
     }
 
 }

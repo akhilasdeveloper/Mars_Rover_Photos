@@ -3,20 +3,16 @@ package com.akhilasdeveloper.marsroverphotos.ui
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.akhilasdeveloper.marsroverphotos.Constants
-import com.akhilasdeveloper.marsroverphotos.Utilities
+import com.akhilasdeveloper.marsroverphotos.DateGenerator
+import com.akhilasdeveloper.marsroverphotos.data.DateItem
+import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 
-class RoverDatePagingSource(private var date: String, private val utilities: Utilities) : PagingSource<Int, String>() {
+class RoverDatePagingSource(private var date: String, private val dateGenerator: DateGenerator, private val marsRoverPhotosRepository: MarsRoverPhotosRepository) : PagingSource<Int, DateItem>() {
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, String> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, DateItem> {
 
         val position = params.key ?: Constants.MARS_ROVER_PHOTOS_STARTING_PAGE
-        val dates = mutableListOf<String>()
-
-        utilities.formatDateToMillis(date)?.let {dateMill->
-            for (i in position..(position+Constants.MARS_ROVER_PHOTOS_PAGE_SIZE)){
-                dates.add(utilities.formatMillis(utilities.nextDay(dateMill,i)))
-            }
-        }
+        val dates =  dateGenerator.getDates(date, position, marsRoverPhotosRepository)
 
         return LoadResult.Page(
             data = dates,
@@ -26,7 +22,7 @@ class RoverDatePagingSource(private var date: String, private val utilities: Uti
 
     }
 
-    override fun getRefreshKey(state: PagingState<Int, String>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, DateItem>): Int? {
         return null
     }
 }

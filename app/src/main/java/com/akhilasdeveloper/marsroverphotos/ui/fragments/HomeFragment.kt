@@ -2,18 +2,18 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import com.akhilasdeveloper.marsroverphotos.Constants
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverDateAdapter
-import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,7 +23,7 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     private val binding get() = _binding!!
 
 //    private val adapter = MarsRoverPhotoAdapter(this)
-    private val adapter = MarsRoverDateAdapter()
+    private lateinit var adapter:MarsRoverDateAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -36,6 +36,7 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     }
 
     private fun init() {
+        adapter = MarsRoverDateAdapter(requireContext(), viewLifecycleOwner)
         uiCommunicationListener.setupActionBar(binding.homeToolbar)
         binding.homeToolbar.title = "Mars Rover Images"
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { v, insets ->
@@ -69,7 +70,8 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
             return@setOnApplyWindowInsetsListener insets
         }
 
-        val layoutManager = GridLayoutManager(requireContext(),3)
+//        val layoutManager = GridLayoutManager(requireContext(),3)
+        val layoutManager = LinearLayoutManager(requireContext())
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
@@ -81,10 +83,16 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
 //            adapter.submitData(viewLifecycleOwner.lifecycle,response)
         })
+
+        viewModel.dateState.observe(viewLifecycleOwner,{
+            adapter.submitData(viewLifecycleOwner.lifecycle,it)
+            Toast.makeText(requireContext(),"${it}",Toast.LENGTH_SHORT).show()
+        })
     }
 
     private fun getData() {
-        viewModel.getData(date = "2021-07-20", api_key = Constants.API_KEY)
+        viewModel.getDateData(date = "2021-07-20")
+//        viewModel.getData(date = "2021-07-20", api_key = Constants.API_KEY)
     }
 
     /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
