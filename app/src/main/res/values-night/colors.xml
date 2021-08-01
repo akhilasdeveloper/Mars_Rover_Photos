@@ -13,4 +13,5 @@
     <color name="third">#2B2B2B</color>
     <color name="system_border">#E6222222</color>
     <color name="system_for">#E1E1E1</color>
+    <color name="accent">#ff6600</color>
 </resources>

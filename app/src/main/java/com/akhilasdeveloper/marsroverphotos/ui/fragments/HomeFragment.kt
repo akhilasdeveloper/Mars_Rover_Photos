@@ -12,8 +12,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
+import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverDateAdapter
+import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,8 +25,8 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-//    private val adapter = MarsRoverPhotoAdapter(this)
-    private lateinit var adapter:MarsRoverDateAdapter
+    private val adapter = MarsRoverPhotoAdapter(this)
+//    private lateinit var adapter:MarsRoverDateAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -36,7 +39,7 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     }
 
     private fun init() {
-        adapter = MarsRoverDateAdapter(requireContext(), viewLifecycleOwner)
+//        adapter = MarsRoverDateAdapter(requireContext(), viewLifecycleOwner)
         uiCommunicationListener.setupActionBar(binding.homeToolbar)
         binding.homeToolbar.title = "Mars Rover Images"
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { v, insets ->
@@ -70,29 +73,32 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
             return@setOnApplyWindowInsetsListener insets
         }
 
-//        val layoutManager = GridLayoutManager(requireContext(),3)
-        val layoutManager = LinearLayoutManager(requireContext())
+        val layoutManager = GridLayoutManager(requireContext(),3)
+//        val layoutManager = LinearLayoutManager(requireContext())
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
-            photoRecycler.adapter = adapter
+            photoRecycler.adapter = adapter.withLoadStateHeaderAndFooter(
+                header = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
+                footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
+            )
         }
     }
 
     private fun subscribeObservers() {
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
-//            adapter.submitData(viewLifecycleOwner.lifecycle,response)
+            adapter.submitData(viewLifecycleOwner.lifecycle,response)
         })
 
-        viewModel.dateState.observe(viewLifecycleOwner,{
+        /*viewModel.dateState.observe(viewLifecycleOwner,{
             adapter.submitData(viewLifecycleOwner.lifecycle,it)
             Toast.makeText(requireContext(),"${it}",Toast.LENGTH_SHORT).show()
-        })
+        })*/
     }
 
     private fun getData() {
-        viewModel.getDateData(date = "2021-07-20")
-//        viewModel.getData(date = "2021-07-20", api_key = Constants.API_KEY)
+//        viewModel.getDateData(date = "2021-07-20")
+        viewModel.getData(MarsRoverDetalsDb(rover_landing_date = "2012-08-06", rover_launch_date = "2011-11-26", rover_name = "Curiosity", rover_status = "active"))
     }
 
     /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

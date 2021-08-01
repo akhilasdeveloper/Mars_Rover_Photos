@@ -9,6 +9,7 @@ import androidx.paging.cachedIn
 import com.akhilasdeveloper.marsroverphotos.Constants.NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.DateItem
+import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,13 +23,11 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel
 @Inject constructor(
-    private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
-    private val utilities: Utilities
+    private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
     private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoDb>> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
-    private val _dataStateDate: MutableLiveData<PagingData<DateItem>> = MutableLiveData()
 
     val dataState: LiveData<PagingData<MarsRoverPhotoDb>>
         get() = _dataState
@@ -36,18 +35,15 @@ class MainViewModel
     val positionState: LiveData<Int>
         get() = _dataStatePosition
 
-    val dateState: LiveData<PagingData<DateItem>>
-        get() = _dataStateDate
-
     fun setPosition(position: Int){
         _dataStatePosition.value = position
     }
 
-    fun getDateData(date: String){
+    fun getData(rover: MarsRoverDetalsDb){
         viewModelScope.launch {
-            marsRoverPhotosRepository.getDates(date).cachedIn(viewModelScope)
+            marsRoverPhotosRepository.getPhotosByRover(rover).cachedIn(viewModelScope)
                 .onEach { its->
-                    _dataStateDate.value = its
+                    _dataState.value = its
                 }
                 .launchIn(this)
         }

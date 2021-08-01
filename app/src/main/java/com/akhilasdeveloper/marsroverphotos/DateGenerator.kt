@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class DateGenerator @Inject constructor(private val utilities: Utilities) {
-    suspend fun getDates(
+    /*suspend fun getDates(
         date: String,
         page: Int,
         marsRoverPhotosRepository: MarsRoverPhotosRepository
@@ -39,7 +39,7 @@ class DateGenerator @Inject constructor(private val utilities: Utilities) {
             }
         }
         return dates
-    }
+    }*/
 
     private fun prevDay(day: Long, mul: Int = 1) = day - (Constants.MILLIS_IN_A_DAY * mul)
 }
