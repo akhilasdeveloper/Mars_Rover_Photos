@@ -47,7 +47,8 @@ class MarsRoverPhotosRepository @Inject constructor(
                         rover_landing_date = it.rover.landing_date,
                         rover_launch_date = it.rover.launch_date,
                         rover_name = it.rover.name,
-                        rover_status = it.rover.status
+                        rover_status = it.rover.status,
+                        id = it.id
                     )
                 )
             }

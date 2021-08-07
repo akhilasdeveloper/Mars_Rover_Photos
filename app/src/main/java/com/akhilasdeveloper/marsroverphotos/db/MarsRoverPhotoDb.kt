@@ -19,10 +19,7 @@ data class MarsRoverPhotoDb(
     @SerializedName("rover_landing_date") @Expose val rover_landing_date: String,
     @SerializedName("rover_launch_date") @Expose val rover_launch_date: String,
     @SerializedName("rover_name") @Expose val rover_name: String,
-    @SerializedName("rover_status") @Expose val rover_status: String
-){
+    @SerializedName("rover_status") @Expose val rover_status: String,
     @PrimaryKey(autoGenerate = false)
-    @SerializedName("id")
-    @Expose
-    var id: Int? = null
-}
+    @SerializedName("id") @Expose val id: Int
+)

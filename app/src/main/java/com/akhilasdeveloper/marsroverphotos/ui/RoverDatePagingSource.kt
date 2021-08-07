@@ -31,10 +31,10 @@ class RoverDatePagingSource(
 
         return try {
 
-            val response = mutableListOf<MarsRoverPhotoDb>()
+            var response = listOf<MarsRoverPhotoDb>()
 
             var latestDate = System.currentTimeMillis()
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 marsRoverDao.latestScannedDate()?.let {
                     latestDate = prevDay(it)
                 }
@@ -50,12 +50,11 @@ class RoverDatePagingSource(
                             api_key = Constants.API_KEY
                         )
                     }
-                    response.addAll(
-                        marsRoverDao.getPhotosByRoverID(
-                            roverID = rover.id!!,
-                            page = position,
-                            size = params.loadSize
-                        )
+                    response = marsRoverDao.getPhotosByRoverID(
+                        roverID = rover.id!!,
+                        page = position,
+                        size = params.loadSize
+
                     )
                 }
 

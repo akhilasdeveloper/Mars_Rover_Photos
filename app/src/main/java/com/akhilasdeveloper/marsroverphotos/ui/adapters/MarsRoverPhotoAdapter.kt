@@ -27,9 +27,6 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
 
         currentItem?.let {
             holder.bindPhoto(currentItem, position)
-            Timber.d("Data Date Not empty")
-        }?:kotlin.run{
-            Timber.d("Data Date empty")
         }
     }
 
@@ -45,8 +42,8 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
                     cameraName.text = "${it.camera_name} Camera"
-                    roverName.text = "${it.rover_name} Rover"
-                    Timber.d("Data Date ${it.camera_name}")
+                    roverName.text = "${it.id} Rover"
+//                    roverName.text = "${it.rover_name} Rover"
                 }
             }
 
