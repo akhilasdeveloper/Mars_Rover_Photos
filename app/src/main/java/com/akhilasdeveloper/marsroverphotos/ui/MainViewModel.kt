@@ -9,6 +9,7 @@ import androidx.paging.cachedIn
 import com.akhilasdeveloper.marsroverphotos.Constants.NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.DateItem
+import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
@@ -26,10 +27,10 @@ class MainViewModel
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
-    private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoDb>> = MutableLiveData()
+    private val _dataState: MutableLiveData<PagingData<RoverPhotoViewItem>?> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
 
-    val dataState: LiveData<PagingData<MarsRoverPhotoDb>>
+    val dataState: LiveData<PagingData<RoverPhotoViewItem>?>
         get() = _dataState
 
     val positionState: LiveData<Int>

@@ -5,12 +5,18 @@ import android.view.*
 import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
+import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
@@ -18,6 +24,8 @@ import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverDateAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener {
@@ -26,7 +34,6 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     private val binding get() = _binding!!
 
     private val adapter = MarsRoverPhotoAdapter(this)
-//    private lateinit var adapter:MarsRoverDateAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,7 +46,6 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     }
 
     private fun init() {
-//        adapter = MarsRoverDateAdapter(requireContext(), viewLifecycleOwner)
         uiCommunicationListener.setupActionBar(binding.homeToolbar)
         binding.homeToolbar.title = "Mars Rover Images"
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { v, insets ->
@@ -50,14 +56,14 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
             binding.homeToolbar.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeTitleToolbar) { v, insets ->
+        /*ViewCompat.setOnApplyWindowInsetsListener(binding.homeTitleToolbar) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             val layoutParams = (binding.homeTitleToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
             layoutParams?.setMargins(0, systemWindows.top,0,0)
             binding.homeTitleToolbar.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
-        }
+        }*/
         ViewCompat.setOnApplyWindowInsetsListener(binding.filter) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
@@ -70,35 +76,59 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             binding.photoRecycler.updatePadding(bottom = systemWindows.bottom)
+            binding.photoRecycler.updatePadding(top = systemWindows.top)
             return@setOnApplyWindowInsetsListener insets
         }
 
-        val layoutManager = GridLayoutManager(requireContext(),3)
-//        val layoutManager = LinearLayoutManager(requireContext())
+        val layoutManager = GridLayoutManager(requireContext(),Constants.GALLERY_SPAN,GridLayoutManager.VERTICAL,false)
+        layoutManager.spanSizeLookup = object : SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return when (adapter.getItemViewType(position)) {
+                    adapter.DATEITEM -> layoutManager.spanCount
+                    adapter.PHOTOITEM -> 1
+                    else -> 1
+                }
+            }
+        }
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
-            photoRecycler.adapter = adapter.withLoadStateHeaderAndFooter(
+            photoRecycler.adapter = adapter/*.withLoadStateHeaderAndFooter(
                 header = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
                 footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
-            )
+            )*/
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                binding.progress.isVisible = loadStates.refresh is LoadState.Loading
+                /*retry.isVisible = loadState.refresh !is LoadState.Loading
+                errorMsg.isVisible = loadState.refresh is LoadState.Error*/
+            }
         }
     }
 
     private fun subscribeObservers() {
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
-            adapter.submitData(viewLifecycleOwner.lifecycle,response)
+            response?.let {
+                binding.progress.isVisible = false
+                adapter.submitData(viewLifecycleOwner.lifecycle,response)
+            }
         })
 
-        /*viewModel.dateState.observe(viewLifecycleOwner,{
-            adapter.submitData(viewLifecycleOwner.lifecycle,it)
-            Toast.makeText(requireContext(),"${it}",Toast.LENGTH_SHORT).show()
-        })*/
     }
 
     private fun getData() {
-//        viewModel.getDateData(date = "2021-07-20")
-        viewModel.getData(MarsRoverDetalsDb(rover_landing_date = "2012-08-06", rover_launch_date = "2011-11-26", rover_name = "Curiosity", rover_status = "active"))
+        if (viewModel.dataState.value==null) {
+            binding.progress.isVisible = true
+            viewModel.getData(
+                MarsRoverDetalsDb(
+                    rover_landing_date = "2012-08-06",
+                    rover_launch_date = "2011-11-26",
+                    rover_name = "Curiosity",
+                    rover_status = "active"
+                )
+            )
+        }
     }
 
     /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -142,9 +172,8 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         _binding = null
     }
 
-    override fun onItemSelected(marsRoverPhotoDb: MarsRoverPhotoDb, position: Int) {
+    override fun onItemSelected(marsRoverPhoto: RoverPhotoViewItem, position: Int) {
         findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         viewModel.setPosition(position)
     }
-
 }

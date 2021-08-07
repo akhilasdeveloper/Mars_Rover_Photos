@@ -9,6 +9,7 @@ import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_PHOTOS_PAGE_SIZ
 import com.akhilasdeveloper.marsroverphotos.DateGenerator
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
+import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.db.*
 import com.akhilasdeveloper.marsroverphotos.ui.RoverDatePagingSource
 import kotlinx.coroutines.Dispatchers
@@ -34,11 +35,11 @@ class MarsRoverPhotosRepository @Inject constructor(
             )
 
             response?.photos?.forEach {
-                val ds = utilities.formatDateToMillis(it.earth_date)!!
-                Timber.d("Date ConvertedS : $ds")
+//                val ds = utilities.formatDateToMillis(it.earth_date)!!
+//                Timber.d("Date ConvertedS : $ds")
                 insertMarsRoverPhoto(
                     MarsRoverPhotoDb(
-                        earth_date = ds,
+                        earth_date = date,
                         img_src = it.img_src,
                         sol = it.sol,
                         camera_full_name = it.camera.full_name,
@@ -59,7 +60,7 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.insertMarsRoverPhoto(marsRoverPhotoDb)
     }
 
-    suspend fun getPhotosByRover(rover: MarsRoverDetalsDb): Flow<PagingData<MarsRoverPhotoDb>> {
+    suspend fun getPhotosByRover(rover: MarsRoverDetalsDb): Flow<PagingData<RoverPhotoViewItem>> {
 
         withContext(Dispatchers.IO) {
             marsRoverDao.deleteScannedDate()
@@ -68,7 +69,7 @@ class MarsRoverPhotosRepository @Inject constructor(
         return Pager(
             config = PagingConfig(
                 pageSize = MARS_ROVER_PHOTOS_PAGE_SIZE,
-                maxSize = MARS_ROVER_PHOTOS_PAGE_MAX_SIZE,
+//                maxSize = MARS_ROVER_PHOTOS_PAGE_MAX_SIZE,
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { RoverDatePagingSource(rover, marsRoverDao, this, utilities) }

@@ -14,5 +14,6 @@
     <color name="system_border">#DFFFFFFF</color>
     <color name="system_for">#616161</color>
     <color name="accent">#ff6600</color>
+    <color name="date">#333333</color>
 
 </resources>

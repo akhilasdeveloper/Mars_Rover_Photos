@@ -6,7 +6,7 @@
     android:id="@+id/home_fragment_root"
     android:background="@color/first">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!--<com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/first"
@@ -29,7 +29,7 @@
                 android:id="@+id/selected_date"
                 android:textColor="@color/system_for"/>
         </com.google.android.material.card.MaterialCardView>
-    </com.google.android.material.appbar.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout>-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
@@ -67,5 +67,12 @@
         app:tint="@color/system_for"
         android:id="@+id/filter"
         app:backgroundTint="@color/appbar"/>
+
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/progress"
+        android:indeterminateTint="@color/accent"
+        android:layout_gravity="center"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

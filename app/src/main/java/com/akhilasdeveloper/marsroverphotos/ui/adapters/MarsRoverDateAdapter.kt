@@ -37,7 +37,7 @@ class MarsRoverDateAdapter(private val context: Context, private val lifecycleOw
             val adapt = MarsRoverPhotoAdapter()
             val layoutMana = GridLayoutManager(context,3)
             binding.apply {
-                date.text = photo.date
+                /*date.text = photo.date
                 dataRecycler.apply {
                     setHasFixedSize(true)
                     layoutManager = layoutMana
@@ -47,7 +47,7 @@ class MarsRoverDateAdapter(private val context: Context, private val lifecycleOw
                 photo.data.liveData.observe(lifecycleOwner,{
                     adapt.submitData(lifecycleOwner.lifecycle,it)
                     Timber.d("Livedata ${photo.data}")
-                })
+                })*/
 
                 /*lifecycleOwner.lifecycleScope.launch {
                     val job = withTimeoutOrNull(NETWORK_TIMEOUT) {

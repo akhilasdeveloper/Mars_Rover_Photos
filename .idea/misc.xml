@@ -4,7 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/layout/date_item.xml" value="0.19067028985507245" />
+        <entry key="app/src/main/res/layout/fragment_home.xml" value="0.18840579710144928" />
         <entry key="app/src/main/res/layout/marsrover_photo_load_state_footer.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/view_pager_date_item.xml" value="0.1" />
       </map>
     </option>
   </component>

@@ -5,6 +5,7 @@ import androidx.paging.PagingState
 import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_PHOTOS_STARTING_PAGE
 import com.akhilasdeveloper.marsroverphotos.Utilities
+import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDao
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
@@ -23,17 +24,17 @@ class RoverDatePagingSource(
     private val marsRoverDao: MarsRoverDao,
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
     private val utilities: Utilities
-) : PagingSource<Int, MarsRoverPhotoDb>() {
+) : PagingSource<Int, RoverPhotoViewItem>() {
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MarsRoverPhotoDb> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RoverPhotoViewItem> {
 
         val position = params.key ?: MARS_ROVER_PHOTOS_STARTING_PAGE
 
         return try {
 
-            var response = listOf<MarsRoverPhotoDb>()
+            val response = mutableListOf<RoverPhotoViewItem>()
 
-            var latestDate = System.currentTimeMillis()
+            var latestDate = utilities.formatDateToMillis(utilities.formatMillis(System.currentTimeMillis()))!!
             withContext(Dispatchers.IO) {
                 marsRoverDao.latestScannedDate()?.let {
                     latestDate = prevDay(it)
@@ -50,12 +51,21 @@ class RoverDatePagingSource(
                             api_key = Constants.API_KEY
                         )
                     }
-                    response = marsRoverDao.getPhotosByRoverID(
+                    var id = marsRoverDao.getIDForDate(latestDate,rover.id!!)
+                    marsRoverDao.getPhotosByRoverID(
                         roverID = rover.id!!,
                         page = position,
                         size = params.loadSize
-
-                    )
+                    ).forEach {
+                        Timber.d("********* $id , ${latestDate}")
+                        Timber.d("********* ${it.id} , ${it.earth_date}")
+                        if (latestDate!=it.earth_date){
+                            id = marsRoverDao.getIDForDate(it.earth_date,rover.id!!)
+                        }
+                        if (it.id == id)
+                            response.add(RoverPhotoViewItem(date = utilities.formatMillis(latestDate)))
+                        response.add(RoverPhotoViewItem(photo = it))
+                    }
                 }
 
                 latestDate = prevDay(latestDate)
@@ -80,7 +90,7 @@ class RoverDatePagingSource(
 
     }
 
-    override fun getRefreshKey(state: PagingState<Int, MarsRoverPhotoDb>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, RoverPhotoViewItem>): Int? {
         return null
     }
 

@@ -38,8 +38,9 @@ class RoverViewFragment: BaseFragment(R.layout.fragment_roverview) {
 
     private fun subscribeObservers() {
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
-            adapter.submitData(viewLifecycleOwner.lifecycle,response)
-
+            response?.let {
+                adapter.submitData(viewLifecycleOwner.lifecycle,response)
+            }
         })
         viewModel.positionState.observe(viewLifecycleOwner, Observer {
             binding.viewPage.setCurrentItem(it, false)
