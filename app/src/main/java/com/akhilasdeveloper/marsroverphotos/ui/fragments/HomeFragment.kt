@@ -172,7 +172,7 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         _binding = null
     }
 
-    override fun onItemSelected(marsRoverPhoto: RoverPhotoViewItem, position: Int) {
+    override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoDb, position: Int) {
         findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         viewModel.setPosition(position)
     }

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
@@ -15,7 +16,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class MarsRoverPagerAdapter(private val interaction: RecyclerClickListener? = null) :
-    PagingDataAdapter<RoverPhotoViewItem, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
+    PagingDataAdapter<MarsRoverPhotoDb, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
 
     private val PHOTOITEM = 1
     private val DATEITEM = 2
@@ -43,9 +44,9 @@ class MarsRoverPagerAdapter(private val interaction: RecyclerClickListener? = nu
     class PhotoViewHolder(private val binding: ViewPagerItemBinding, private val interaction: RecyclerClickListener?) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: RoverPhotoViewItem, position: Int) {
+        fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
-                photo.photo?.let {
+                photo.let {
                     Glide.with(itemView)
                         .load(it.img_src)
                         .centerCrop()
@@ -65,21 +66,21 @@ class MarsRoverPagerAdapter(private val interaction: RecyclerClickListener? = nu
 
 
     class PhotoDateViewHolder(private val binding: ViewPagerDateItemBinding):RecyclerView.ViewHolder(binding.root){
-        fun bindPhoto(photo: RoverPhotoViewItem) {
+        fun bindPhoto(photo: MarsRoverPhotoDb) {
             binding.apply {
-                photo.date?.let {
-                    date.text = it
+                photo.let {
+                    date.text = it.earth_date.toString()
                 }
             }
         }
     }
 
     companion object {
-        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<RoverPhotoViewItem>() {
-            override fun areItemsTheSame(oldItem: RoverPhotoViewItem, newItem: RoverPhotoViewItem) =
-                oldItem.date == newItem.date && oldItem.photo?.id == newItem.photo?.id
+        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoDb>() {
+            override fun areItemsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
+                oldItem.id == newItem.id
 
-            override fun areContentsTheSame(oldItem: RoverPhotoViewItem, newItem: RoverPhotoViewItem) =
+            override fun areContentsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
                 oldItem == newItem
 
         }
@@ -88,9 +89,10 @@ class MarsRoverPagerAdapter(private val interaction: RecyclerClickListener? = nu
     override fun getItemViewType(position: Int): Int = getType(getItem(position))
 
 
-    private fun getType(data : RoverPhotoViewItem?):Int {
-        data?.date?.let {
-            return DATEITEM
+    private fun getType(data : MarsRoverPhotoDb?):Int {
+        data?.let {
+            if (it.is_placeholder == Constants.TRUE)
+                return DATEITEM
         }
         return PHOTOITEM
     }

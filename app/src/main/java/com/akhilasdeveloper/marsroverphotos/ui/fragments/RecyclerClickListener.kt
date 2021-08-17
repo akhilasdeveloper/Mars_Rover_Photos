@@ -6,5 +6,5 @@ import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 
 interface RecyclerClickListener {
-    fun onItemSelected(marsRoverPhoto: RoverPhotoViewItem, position: Int)
+    fun onItemSelected(marsRoverPhoto: MarsRoverPhotoDb, position: Int)
 }

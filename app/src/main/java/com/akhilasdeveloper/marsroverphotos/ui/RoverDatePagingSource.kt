@@ -24,15 +24,15 @@ class RoverDatePagingSource(
     private val marsRoverDao: MarsRoverDao,
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
     private val utilities: Utilities
-) : PagingSource<Int, RoverPhotoViewItem>() {
+) : PagingSource<Int, MarsRoverPhotoDb>() {
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RoverPhotoViewItem> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MarsRoverPhotoDb> {
 
         val position = params.key ?: MARS_ROVER_PHOTOS_STARTING_PAGE
 
         return try {
 
-            val response = mutableListOf<RoverPhotoViewItem>()
+            var response = listOf<MarsRoverPhotoDb>()
 
             var latestDate = utilities.formatDateToMillis(utilities.formatMillis(System.currentTimeMillis()))!!
             withContext(Dispatchers.IO) {
@@ -51,21 +51,12 @@ class RoverDatePagingSource(
                             api_key = Constants.API_KEY
                         )
                     }
-                    var id = marsRoverDao.getIDForDate(latestDate,rover.id!!)
-                    marsRoverDao.getPhotosByRoverID(
+
+                    response = marsRoverDao.getPhotosByRoverID(
                         roverID = rover.id!!,
                         page = position,
                         size = params.loadSize
-                    ).forEach {
-                        Timber.d("********* $id , ${latestDate}")
-                        Timber.d("********* ${it.id} , ${it.earth_date}")
-                        if (latestDate!=it.earth_date){
-                            id = marsRoverDao.getIDForDate(it.earth_date,rover.id!!)
-                        }
-                        if (it.id == id)
-                            response.add(RoverPhotoViewItem(date = utilities.formatMillis(latestDate)))
-                        response.add(RoverPhotoViewItem(photo = it))
-                    }
+                    )
                 }
 
                 latestDate = prevDay(latestDate)
@@ -90,7 +81,7 @@ class RoverDatePagingSource(
 
     }
 
-    override fun getRefreshKey(state: PagingState<Int, RoverPhotoViewItem>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, MarsRoverPhotoDb>): Int? {
         return null
     }
 

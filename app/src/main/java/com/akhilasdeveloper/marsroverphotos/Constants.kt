@@ -10,4 +10,8 @@ object Constants {
     const val MARS_ROVER_DATABASE_NAME = "MARS_ROVER_DATABASE"
     const val MILLIS_IN_A_DAY = (1000 * 60 * 60 * 24).toLong()
     const val GALLERY_SPAN = 3
+    const val EMPTY_STR = "EMPTY"
+    const val EMPTY_NUM = -999
+    const val TRUE = 1
+    const val FALSE = 0
 }

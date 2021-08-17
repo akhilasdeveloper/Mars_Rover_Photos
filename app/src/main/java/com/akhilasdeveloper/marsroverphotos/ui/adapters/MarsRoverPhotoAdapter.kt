@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.databinding.DateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
@@ -15,37 +16,52 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import timber.log.Timber
 
 class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = null) :
-    PagingDataAdapter<RoverPhotoViewItem, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
+    PagingDataAdapter<MarsRoverPhotoDb, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
 
     val PHOTOITEM = 1
     val DATEITEM = 2
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):RecyclerView.ViewHolder {
-        return when(viewType){
-            DATEITEM -> PhotoDateViewHolder(DateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            else -> PhotoViewHolder(PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false), interaction)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            DATEITEM -> PhotoDateViewHolder(
+                DateItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+            else -> PhotoViewHolder(
+                PhotoItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                ), interaction
+            )
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val currentItem = getItem(position)
         currentItem?.let {
-            if (getType(currentItem) == PHOTOITEM){
+            if (getType(currentItem) == PHOTOITEM) {
                 val hol = holder as PhotoViewHolder
                 hol.bindPhoto(currentItem, position)
-            }else{
+            } else {
                 val hol = holder as PhotoDateViewHolder
                 hol.bindPhoto(currentItem)
             }
         }
     }
 
-    class PhotoViewHolder(private val binding: PhotoItemBinding, private val interaction: RecyclerClickListener?) :
+    class PhotoViewHolder(
+        private val binding: PhotoItemBinding,
+        private val interaction: RecyclerClickListener?
+    ) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: RoverPhotoViewItem, position: Int) {
+        fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
-                photo.photo?.let {
+                photo.let {
                     Glide.with(itemView)
                         .load(it.img_src)
                         .centerCrop()
@@ -64,22 +80,23 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
     }
 
 
-    class PhotoDateViewHolder(private val binding: DateItemBinding):RecyclerView.ViewHolder(binding.root){
-        fun bindPhoto(photo: RoverPhotoViewItem) {
+    class PhotoDateViewHolder(private val binding: DateItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bindPhoto(photo: MarsRoverPhotoDb) {
             binding.apply {
-                photo.date?.let {
-                    date.text = it
+                photo.let {
+                    date.text = it.earth_date.toString()
                 }
             }
         }
     }
 
     companion object {
-        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<RoverPhotoViewItem>() {
-            override fun areItemsTheSame(oldItem: RoverPhotoViewItem, newItem: RoverPhotoViewItem) =
-                oldItem.date == newItem.date && oldItem.photo?.id == newItem.photo?.id
+        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoDb>() {
+            override fun areItemsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
+                oldItem.id == newItem.id
 
-            override fun areContentsTheSame(oldItem: RoverPhotoViewItem, newItem: RoverPhotoViewItem) =
+            override fun areContentsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
                 oldItem == newItem
 
         }
@@ -92,9 +109,12 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
     }
 
 
-    private fun getType(data : RoverPhotoViewItem?):Int {
-        data?.date?.let {
-            return DATEITEM
+    private fun getType(data: MarsRoverPhotoDb?): Int {
+
+        data?.let {
+            Timber.d("########## ${it.is_placeholder}")
+            if (it.is_placeholder == Constants.TRUE)
+                return DATEITEM
         }
         return PHOTOITEM
     }

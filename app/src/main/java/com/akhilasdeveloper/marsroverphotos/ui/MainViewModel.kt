@@ -27,10 +27,10 @@ class MainViewModel
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
-    private val _dataState: MutableLiveData<PagingData<RoverPhotoViewItem>?> = MutableLiveData()
+    private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoDb>?> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
 
-    val dataState: LiveData<PagingData<RoverPhotoViewItem>?>
+    val dataState: LiveData<PagingData<MarsRoverPhotoDb>?>
         get() = _dataState
 
     val positionState: LiveData<Int>

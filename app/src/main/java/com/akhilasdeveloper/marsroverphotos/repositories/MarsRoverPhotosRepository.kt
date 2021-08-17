@@ -3,10 +3,11 @@ package com.akhilasdeveloper.marsroverphotos.repositories
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.akhilasdeveloper.marsroverphotos.Constants
-import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_PHOTOS_PAGE_MAX_SIZE
+import com.akhilasdeveloper.marsroverphotos.Constants.EMPTY_NUM
+import com.akhilasdeveloper.marsroverphotos.Constants.EMPTY_STR
+import com.akhilasdeveloper.marsroverphotos.Constants.FALSE
 import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
-import com.akhilasdeveloper.marsroverphotos.DateGenerator
+import com.akhilasdeveloper.marsroverphotos.Constants.TRUE
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
@@ -16,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.util.*
 import javax.inject.Inject
 
 class MarsRoverPhotosRepository @Inject constructor(
@@ -34,24 +34,43 @@ class MarsRoverPhotosRepository @Inject constructor(
                 earth_date = dat
             )
 
-            response?.photos?.forEach {
+            response?.photos?.let {lis->
+                lis.forEach {
 //                val ds = utilities.formatDateToMillis(it.earth_date)!!
 //                Timber.d("Date ConvertedS : $ds")
-                insertMarsRoverPhoto(
-                    MarsRoverPhotoDb(
-                        earth_date = date,
-                        img_src = it.img_src,
-                        sol = it.sol,
-                        camera_full_name = it.camera.full_name,
-                        camera_name = it.camera.name,
-                        rover_id = it.rover.id,
-                        rover_landing_date = it.rover.landing_date,
-                        rover_launch_date = it.rover.launch_date,
-                        rover_name = it.rover.name,
-                        rover_status = it.rover.status,
-                        id = it.id
+                    insertMarsRoverPhoto(
+                        MarsRoverPhotoDb(
+                            earth_date = date,
+                            img_src = it.img_src,
+                            sol = it.sol,
+                            camera_full_name = it.camera.full_name,
+                            camera_name = it.camera.name,
+                            rover_id = it.rover.id,
+                            rover_landing_date = it.rover.landing_date,
+                            rover_launch_date = it.rover.launch_date,
+                            rover_name = it.rover.name,
+                            rover_status = it.rover.status,
+                            is_placeholder = FALSE
+                        )
                     )
-                )
+                }
+                if (lis.isNotEmpty()) {
+                    insertMarsRoverPhoto(
+                        MarsRoverPhotoDb(
+                            earth_date = date,
+                            img_src = EMPTY_STR,
+                            sol = EMPTY_NUM,
+                            camera_full_name = EMPTY_STR,
+                            camera_name = EMPTY_STR,
+                            rover_id = lis[0].rover.id,
+                            rover_landing_date = EMPTY_STR,
+                            rover_launch_date = EMPTY_STR,
+                            rover_name = EMPTY_STR,
+                            rover_status = EMPTY_STR,
+                            is_placeholder = TRUE
+                        )
+                    )
+                }
             }
         }
     }
@@ -60,7 +79,7 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.insertMarsRoverPhoto(marsRoverPhotoDb)
     }
 
-    suspend fun getPhotosByRover(rover: MarsRoverDetalsDb): Flow<PagingData<RoverPhotoViewItem>> {
+    suspend fun getPhotosByRover(rover: MarsRoverDetalsDb): Flow<PagingData<MarsRoverPhotoDb>> {
 
         withContext(Dispatchers.IO) {
             marsRoverDao.deleteScannedDate()
