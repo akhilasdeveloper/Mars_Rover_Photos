@@ -41,9 +41,9 @@ class MainViewModel
         _dataStatePosition.value = position
     }
 
-    fun getData(roverID: Int, date: Long, apiKey : String){
+    fun getData(roverName: String, date: Long){
         viewModelScope.launch {
-            marsRoverPhotosRepository.getPhotosByRoverAndDate(date = date, roverID = roverID, api_key = apiKey).cachedIn(viewModelScope)
+            marsRoverPhotosRepository.getPhotosByRoverAndDate(date = date, roverName = roverName).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
                 }

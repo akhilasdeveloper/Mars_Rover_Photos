@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_navigation"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/roversFragment">
 
     <fragment
         android:id="@+id/homeFragment"
@@ -20,4 +21,17 @@
         android:id="@+id/roverViewFragment"
         android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.RoverViewFragment"
         android:label="RoverViewFragment" />
+    <fragment
+        android:id="@+id/roversFragment"
+        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.RoversFragment"
+        android:label="fragment_rovers"
+        tools:layout="@layout/fragment_rovers" >
+        <action
+            android:id="@+id/action_roversFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"/>
+    </fragment>
 </navigation>

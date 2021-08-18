@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.fragments.RoversFragment">
+    tools:context=".ui.fragments.RoversFragment"
+    android:background="@color/first">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,72 +14,154 @@
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="16dp"
+            android:layout_height="600dp"
+            android:layout_margin="32dp"
             android:clipToPadding="true"
             app:cardCornerRadius="20dp"
-            app:cardElevation="10dp">
+            app:cardElevation="5dp">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/curiosity"
                 android:scaleType="centerCrop"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="bottom"
+                android:background="@color/system_border"
+                android:padding="5dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Perseverence"
+                    android:textStyle="bold"
+                    android:textColor="@color/system_for"
+                    android:layout_margin="10dp"/>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="16dp"
+            android:layout_height="600dp"
+            android:layout_margin="32dp"
             android:clipToPadding="true"
             app:cardCornerRadius="20dp"
-            app:cardElevation="10dp">
+            app:cardElevation="5dp">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/insight"
                 android:scaleType="centerCrop"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="bottom"
+                android:background="@color/system_border"
+                android:padding="5dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Perseverence"
+                    android:textStyle="bold"
+                    android:textColor="@color/system_for"
+                    android:layout_margin="10dp"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+                    android:textColor="@color/system_for"
+                    android:layout_margin="10dp"/>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="16dp"
+            android:layout_height="600dp"
+            android:layout_margin="32dp"
             android:clipToPadding="true"
             app:cardCornerRadius="20dp"
-            app:cardElevation="10dp">
+            app:cardElevation="5dp">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/perseverance"
                 android:scaleType="centerCrop"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="bottom"
+                android:background="@color/system_border"
+                android:padding="5dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Perseverence"
+                    android:textStyle="bold"
+                    android:textColor="@color/system_for"
+                    android:layout_margin="10dp"/>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="16dp"
+            android:layout_height="600dp"
+            android:layout_margin="32dp"
             android:clipToPadding="true"
             app:cardCornerRadius="20dp"
-            app:cardElevation="10dp">
+            app:cardElevation="5dp">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/opportunity"
                 android:scaleType="centerCrop"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="bottom"
+                android:background="@color/system_border"
+                android:padding="5dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Perseverence"
+                    android:textStyle="bold"
+                    android:textColor="@color/system_for"
+                    android:layout_margin="10dp"/>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="16dp"
+            android:layout_height="600dp"
+            android:layout_margin="32dp"
             android:clipToPadding="true"
             app:cardCornerRadius="20dp"
-            app:cardElevation="10dp">
+            app:cardElevation="5dp">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/spirit"
                 android:scaleType="centerCrop"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="bottom"
+                android:background="@color/system_border"
+                android:padding="5dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Perseverence"
+                    android:textStyle="bold"
+                    android:textColor="@color/system_for"
+                    android:layout_margin="10dp"/>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 

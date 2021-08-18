@@ -110,7 +110,7 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     private fun getData() {
         if (viewModel.dataState.value==null) {
             binding.progress.isVisible = true
-            viewModel.getData(date = utilities.formatDateToMillis("2021-08-15")!!, roverID = 5, apiKey = Constants.API_KEY)
+            viewModel.getData(date = utilities.formatDateToMillis("2021-08-15")!!, roverName = "Curiosity")
         }
     }
 

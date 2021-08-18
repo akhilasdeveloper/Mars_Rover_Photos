@@ -3,6 +3,7 @@ package com.akhilasdeveloper.marsroverphotos.repositories
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.Constants.EMPTY_NUM
 import com.akhilasdeveloper.marsroverphotos.Constants.EMPTY_STR
 import com.akhilasdeveloper.marsroverphotos.Constants.FALSE
@@ -26,13 +27,13 @@ class MarsRoverPhotosRepository @Inject constructor(
     private val utilities: Utilities
 ) {
 
-    suspend fun refreshDb(api_key: String, date: Long) {
+    suspend fun refreshDb(date: Long, roverName: String) {
         val dat = utilities.formatMillis(date)
         Timber.d("Date Converted : $dat")
-        if (marsRoverDao.isPhotosByDateExist(date) <= 0) {
-            val response = marsRoverPhotosService.getMarsRoverPhotos(
-                api_key = api_key,
-                earth_date = dat
+        if (marsRoverDao.isPhotosByDateExist(date,roverName) <= 0) {
+            val response = marsRoverPhotosService.getRoverPhotos(
+                earth_date = dat,
+                url = Constants.URL + roverName + "/photos"
             )
 
             response?.photos?.let {lis->
@@ -60,12 +61,12 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.insertMarsRoverPhoto(marsRoverPhotoDb)
     }
 
-    suspend fun getPhotosByRoverAndDate(date: Long, api_key: String, roverID: Int): Flow<PagingData<MarsRoverPhotoDb>> {
+    suspend fun getPhotosByRoverAndDate(date: Long, roverName: String): Flow<PagingData<MarsRoverPhotoDb>> {
         if (utilities.isConnectedToTheInternet()) {
             withContext(Dispatchers.IO) {
                 refreshDb(
                     date = date,
-                    api_key = api_key
+                    roverName = roverName
                 )
             }
         }
@@ -76,7 +77,7 @@ class MarsRoverPhotosRepository @Inject constructor(
                 enablePlaceholders = true
             )
         ) {
-            marsRoverDao.getPhotosByRoverIDAndDate(date = date, roverID = roverID)
+            marsRoverDao.getPhotosByRoverIDAndDate(date = date, roverName = roverName)
         }.flow
     }
 
