@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
+import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
@@ -26,12 +27,16 @@ import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var utilities: Utilities
 
     private val adapter = MarsRoverPhotoAdapter(this)
 
@@ -46,8 +51,8 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     }
 
     private fun init() {
-        uiCommunicationListener.setupActionBar(binding.homeToolbar)
-        binding.homeToolbar.title = "Mars Rover Images"
+//        uiCommunicationListener.setupActionBar(binding.homeToolbar)
+//        binding.toolbarTitle.text = "Mars Rover Images"
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
@@ -64,14 +69,14 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
             binding.homeTitleToolbar.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }*/
-        ViewCompat.setOnApplyWindowInsetsListener(binding.filter) { v, insets ->
+        /*ViewCompat.setOnApplyWindowInsetsListener(binding.filter) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             val layoutParams = (binding.filter.layoutParams as? ViewGroup.MarginLayoutParams)
             layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + 20)
             binding.filter.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
-        }
+        }*/
         ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
@@ -81,29 +86,14 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         }
 
         val layoutManager = GridLayoutManager(requireContext(),Constants.GALLERY_SPAN,GridLayoutManager.VERTICAL,false)
-        layoutManager.spanSizeLookup = object : SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                return when (adapter.getItemViewType(position)) {
-                    adapter.DATEITEM -> layoutManager.spanCount
-                    adapter.PHOTOITEM -> 1
-                    else -> 1
-                }
-            }
-        }
+
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
-            photoRecycler.adapter = adapter/*.withLoadStateHeaderAndFooter(
+            photoRecycler.adapter = adapter.withLoadStateHeaderAndFooter(
                 header = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
                 footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
-            )*/
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            adapter.loadStateFlow.collectLatest { loadStates ->
-                binding.progress.isVisible = loadStates.refresh is LoadState.Loading
-                /*retry.isVisible = loadState.refresh !is LoadState.Loading
-                errorMsg.isVisible = loadState.refresh is LoadState.Error*/
-            }
+            )
         }
     }
 
@@ -120,14 +110,7 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     private fun getData() {
         if (viewModel.dataState.value==null) {
             binding.progress.isVisible = true
-            viewModel.getData(
-                MarsRoverDetalsDb(
-                    rover_landing_date = "2012-08-06",
-                    rover_launch_date = "2011-11-26",
-                    rover_name = "Curiosity",
-                    rover_status = "active"
-                )
-            )
+            viewModel.getData(date = utilities.formatDateToMillis("2021-08-15")!!, roverID = 5, apiKey = Constants.API_KEY)
         }
     }
 
@@ -150,12 +133,12 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     }*/
 
     private fun setListeners() {
-        binding.homeAppbar.setNavigationOnClickListener {
+        /*binding.homeAppbar.setNavigationOnClickListener {
 
-        }
-        binding.filter.setOnClickListener {
+        }*/
+        /*binding.filter.setOnClickListener {
 
-        }
+        }*/
     }
 
     override fun onCreateView(

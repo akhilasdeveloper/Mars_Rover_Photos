@@ -20,6 +20,9 @@ interface MarsRoverDao {
     @Query("SELECT * FROM mars_rover_photo_table WHERE rover_id = :roverID ORDER BY earth_date DESC,id DESC LIMIT (:page - 1) * :size,:size")
     fun getPhotosByRoverID(roverID: Int, page: Int, size: Int = 25): List<MarsRoverPhotoDb>
 
+    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_id = :roverID AND earth_date = :date ORDER BY id DESC")
+    fun getPhotosByRoverIDAndDate(roverID: Int, date: Long): PagingSource<Int, MarsRoverPhotoDb>
+
     @Query("SELECT max(id) FROM mars_rover_photo_table WHERE earth_date = :date and rover_id = :roverID")
     fun getIDForDate(date: Long, roverID: Int): Int
 

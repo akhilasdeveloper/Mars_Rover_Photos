@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.Constants.NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.DateItem
@@ -40,9 +41,9 @@ class MainViewModel
         _dataStatePosition.value = position
     }
 
-    fun getData(rover: MarsRoverDetalsDb){
+    fun getData(roverID: Int, date: Long, apiKey : String){
         viewModelScope.launch {
-            marsRoverPhotosRepository.getPhotosByRover(rover).cachedIn(viewModelScope)
+            marsRoverPhotosRepository.getPhotosByRoverAndDate(date = date, roverID = roverID, api_key = apiKey).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
                 }

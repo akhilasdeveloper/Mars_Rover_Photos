@@ -16,47 +16,23 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import timber.log.Timber
 
 class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = null) :
-    PagingDataAdapter<MarsRoverPhotoDb, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
+    PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPhotoAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
-    val PHOTOITEM = 1
-    val DATEITEM = 2
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (viewType) {
-            DATEITEM -> PhotoDateViewHolder(
-                DateItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-                )
-            )
-            else -> PhotoViewHolder(
-                PhotoItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-                ), interaction
-            )
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+        val bindingPhoto =
+            PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return PhotoViewHolder(bindingPhoto, interaction)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val currentItem = getItem(position)
+
         currentItem?.let {
-            if (getType(currentItem) == PHOTOITEM) {
-                val hol = holder as PhotoViewHolder
-                hol.bindPhoto(currentItem, position)
-            } else {
-                val hol = holder as PhotoDateViewHolder
-                hol.bindPhoto(currentItem)
-            }
+            holder.bindPhoto(currentItem, position)
         }
     }
 
-    class PhotoViewHolder(
-        private val binding: PhotoItemBinding,
-        private val interaction: RecyclerClickListener?
-    ) :
+    class PhotoViewHolder(private val binding: PhotoItemBinding, private val interaction: RecyclerClickListener?) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
@@ -67,8 +43,8 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                         .centerCrop()
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
-                    cameraName.text = "${it.id} Camera"
-                    roverName.text = "${it.earth_date} Rover"
+                    cameraName.text = "${it.camera_name} Camera"
+                    roverName.text = "${it.rover_name} Rover"
                 }
             }
 
@@ -77,18 +53,6 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
             }
         }
 
-    }
-
-
-    class PhotoDateViewHolder(private val binding: DateItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bindPhoto(photo: MarsRoverPhotoDb) {
-            binding.apply {
-                photo.let {
-                    date.text = it.earth_date.toString()
-                }
-            }
-        }
     }
 
     companion object {
@@ -100,22 +64,5 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                 oldItem == newItem
 
         }
-    }
-
-//    override fun getItemViewType(position: Int) = getType(getItem(position))
-
-    override fun getItemViewType(position: Int): Int {
-        return if (itemCount > position) getType(getItem(position)) else DATEITEM
-    }
-
-
-    private fun getType(data: MarsRoverPhotoDb?): Int {
-
-        data?.let {
-            Timber.d("########## ${it.is_placeholder}")
-            if (it.is_placeholder == Constants.TRUE)
-                return DATEITEM
-        }
-        return PHOTOITEM
     }
 }
