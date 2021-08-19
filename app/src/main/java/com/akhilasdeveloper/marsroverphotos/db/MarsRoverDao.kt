@@ -8,34 +8,36 @@ import java.util.*
 @Dao
 interface MarsRoverDao {
 
+    /**
+     * marsRoverPhotoDb
+     */
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarsRoverPhoto(marsRoverPhotoDb: MarsRoverPhotoDb)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertScannedDate(scannedDatesDb: ScannedDatesDb)
-
-    @Query("DELETE FROM scanned_dates_table")
-    suspend fun deleteScannedDate()
-
-    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_id = :roverID ORDER BY earth_date DESC,id DESC LIMIT (:page - 1) * :size,:size")
-    fun getPhotosByRoverID(roverID: Int, page: Int, size: Int = 25): List<MarsRoverPhotoDb>
 
     @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date = :date ORDER BY id DESC")
     fun getPhotosByRoverIDAndDate(roverName: String, date: Long): PagingSource<Int, MarsRoverPhotoDb>
 
-    @Query("SELECT max(id) FROM mars_rover_photo_table WHERE earth_date = :date and rover_id = :roverID")
-    fun getIDForDate(date: Long, roverID: Int): Int
-
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
     fun isPhotosByDateExist(date: Long, roverName:String): Int
 
-    @Query("SELECT max(earth_date) FROM mars_rover_photo_table")
-    fun latestDate(): Long?
+    /**
+     * MarsRoverSrcDb
+     */
 
-    @Query("SELECT max(date) FROM scanned_dates_table")
-    fun latestScannedDate(): Long?
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMarsRoverSrc(marsRoverSrcDb: MarsRoverSrcDb)
 
-    @Query("SELECT count(*) FROM scanned_dates_table WHERE date = :date")
-    fun isLatestScannedDate(date: Long): Int
+    @Query("SELECT * FROM mars_rover_source_table")
+    fun getMarsRoverSrc(): List<MarsRoverSrcDb>
 
+    /**
+     * MarsRoverManifestDb
+     */
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMarsRoverManifestDb(marsRoverManifestDb: MarsRoverManifestDb)
+
+    @Query("SELECT * FROM mars_rover_manifest_table WHERE name = :roverName")
+    fun getMarsRoverManifest(roverName: String): MarsRoverManifestDb?
 }

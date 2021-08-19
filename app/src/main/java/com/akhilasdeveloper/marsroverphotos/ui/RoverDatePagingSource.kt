@@ -19,6 +19,7 @@ import java.lang.Exception
 import java.sql.SQLException
 import java.util.*
 
+/*
 class RoverDatePagingSource(
     private var rover: MarsRoverDetalsDb,
     private val marsRoverDao: MarsRoverDao,
@@ -47,9 +48,7 @@ class RoverDatePagingSource(
                     marsRoverDao.insertScannedDate(ScannedDatesDb(latestDate))
                     if (utilities.isConnectedToTheInternet()) {
                         marsRoverPhotosRepository.refreshDb(
-                            date = latestDate,
-                            api_key = Constants.API_KEY
-                        )
+                            date = latestDate)
                     }
 
                     response = marsRoverDao.getPhotosByRoverID(
@@ -87,4 +86,4 @@ class RoverDatePagingSource(
 
     private fun nextDay(day: Long, mul: Int = 1) = day + (Constants.MILLIS_IN_A_DAY * mul)
     private fun prevDay(day: Long, mul: Int = 1) = day - (Constants.MILLIS_IN_A_DAY * mul)
-}
+}*/

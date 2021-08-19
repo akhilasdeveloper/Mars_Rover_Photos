@@ -10,11 +10,15 @@ import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.Constants.NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.DateItem
+import com.akhilasdeveloper.marsroverphotos.data.RoverData
 import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.db.MarsRoverSrcDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
+import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -30,9 +34,13 @@ class MainViewModel
 
     private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoDb>?> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
+    private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
 
     val dataState: LiveData<PagingData<MarsRoverPhotoDb>?>
         get() = _dataState
+
+    val dataStateRover: LiveData<MarsRoverSrcResponse>
+        get() = _dataStateRover
 
     val positionState: LiveData<Int>
         get() = _dataStatePosition
@@ -48,6 +56,14 @@ class MainViewModel
                     _dataState.value = its
                 }
                 .launchIn(this)
+        }
+    }
+
+    fun getRoverData(){
+        viewModelScope.launch {
+            marsRoverPhotosRepository.getRoverData().collect {
+                _dataStateRover.value = it
+            }
         }
     }
 

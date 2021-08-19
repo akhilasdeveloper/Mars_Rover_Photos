@@ -12,6 +12,7 @@
     <color name="appbar">#222222</color>
     <color name="third">#2B2B2B</color>
     <color name="system_border">#E6222222</color>
+    <color name="system_border_inv">#C9D8D8D8</color>
     <color name="system_for">#E1E1E1</color>
     <color name="accent">#ff6600</color>
     <color name="date">#bbbbbb</color>
