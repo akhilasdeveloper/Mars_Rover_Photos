@@ -32,18 +32,23 @@ class MarsRoverPhotosRepository @Inject constructor(
     private suspend fun getRoverManifest(data : List<MarsRoverSrcDb>, isCache: Boolean): List<RoverMaster> {
         val response = mutableListOf<RoverMaster>()
         data.forEach { src->
-            getRoverManifestData(src.roverName, isCache)?.let { manifest->
-                response.add(
-                    RoverMaster(launch_date = manifest.launch_date,
-                        name = src.roverName,
-                        total_photos = manifest.total_photos,
-                        status = manifest.status,
-                        max_sol = manifest.max_sol,
-                        max_date = manifest.max_date,
-                        landing_date = manifest.landing_date,
-                        description = src.roverDescription,
-                        image = src.roverImage)
-                )
+            withContext(Dispatchers.IO) {
+
+                getRoverManifestData(src.roverName, isCache)?.let { manifest ->
+                    response.add(
+                        RoverMaster(
+                            launch_date = manifest.launch_date,
+                            name = src.roverName,
+                            total_photos = manifest.total_photos,
+                            status = manifest.status,
+                            max_sol = manifest.max_sol,
+                            max_date = manifest.max_date,
+                            landing_date = manifest.landing_date,
+                            description = src.roverDescription,
+                            image = src.roverImage
+                        )
+                    )
+                }
             }
         }
         return response
