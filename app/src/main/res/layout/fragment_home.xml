@@ -63,6 +63,7 @@
                         android:gravity="center_vertical"
                         android:padding="10dp"
                         android:textSize="16sp"
+                        android:id="@+id/date_button_text"
                         android:textColor="@color/system_for"
                         android:drawableTint="@color/system_for"
                         android:drawablePadding="5dp"/>
@@ -73,6 +74,22 @@
         </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.bottomappbar.BottomAppBar>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:cardBackgroundColor="@color/appbar"
+        app:cardCornerRadius="20dp"
+        android:id="@+id/empty_message"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Empty"
+            android:padding="20dp"
+            android:textColor="@color/system_for"/>
+    </androidx.cardview.widget.CardView>
 
     <ProgressBar
         android:layout_width="match_parent"

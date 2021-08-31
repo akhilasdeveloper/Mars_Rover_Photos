@@ -21,6 +21,15 @@ interface MarsRoverDao {
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
     fun isPhotosByDateExist(date: Long, roverName:String): Int
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllMarsRoverPhotos(users: List<MarsRoverPhotoDb>)
+
+    @Query("DELETE FROM mars_rover_photo_table")
+    suspend fun clearAll()
+
+    @Query("DELETE FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
+    suspend fun clearByRoverIDAndDate(date: Long, roverName:String)
+
     /**
      * MarsRoverSrcDb
      */

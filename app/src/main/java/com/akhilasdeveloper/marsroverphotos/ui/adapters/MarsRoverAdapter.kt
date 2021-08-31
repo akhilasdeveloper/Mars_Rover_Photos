@@ -8,27 +8,29 @@ import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverSrcDb
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerRoverClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
-class MarsRoverAdapter(private val context: Context) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewHolder>(){
+class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val bindingPhoto =
             RoverItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto)
+        return PhotoViewHolder(bindingPhoto, interaction)
     }
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val currentItem = differ.currentList[position]
-        holder.bindPhoto(currentItem, position, context)
+        holder.bindPhoto(currentItem, position)
 
     }
 
-    class PhotoViewHolder(private val binding: RoverItemBinding) :
+    class PhotoViewHolder(private val binding: RoverItemBinding, private val interaction: RecyclerRoverClickListener?) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: RoverMaster, position: Int, context: Context) {
+        fun bindPhoto(photo: RoverMaster, position: Int) {
             binding.apply {
                 Glide.with(itemView)
                     .load(Constants.URL_DATA + photo.image)
@@ -41,6 +43,13 @@ class MarsRoverAdapter(private val context: Context) : RecyclerView.Adapter<Mars
                 roverLaunchDate.text = photo.launch_date
                 roverStatus.text = "Rover Status : ${photo.status}"
                 roverPhotosCount.text = "${photo.total_photos} Photos"
+            }
+
+            binding.root.setOnClickListener {
+                interaction?.onItemSelected(photo, position)
+            }
+            binding.readMore.setOnClickListener {
+                interaction?.onReadMoreSelected(photo, position)
             }
         }
 

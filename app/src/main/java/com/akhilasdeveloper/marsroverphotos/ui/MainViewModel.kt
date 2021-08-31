@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.akhilasdeveloper.marsroverphotos.Constants
@@ -11,6 +12,7 @@ import com.akhilasdeveloper.marsroverphotos.Constants.NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.DateItem
 import com.akhilasdeveloper.marsroverphotos.data.RoverData
+import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
@@ -18,11 +20,10 @@ import com.akhilasdeveloper.marsroverphotos.db.MarsRoverSrcDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import java.text.FieldPosition
 import javax.inject.Inject
 
@@ -49,9 +50,13 @@ class MainViewModel
         _dataStatePosition.value = position
     }
 
+    @ExperimentalPagingApi
     fun getData(roverName: String, date: Long){
+        /*job.complete()
+        job = Job()
+        scope = viewModelScope + job*/
         viewModelScope.launch {
-            marsRoverPhotosRepository.getPhotosByRoverAndDate(date = date, roverName = roverName).cachedIn(viewModelScope)
+            marsRoverPhotosRepository.getPhotos(date = date, roverName = roverName).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
                 }

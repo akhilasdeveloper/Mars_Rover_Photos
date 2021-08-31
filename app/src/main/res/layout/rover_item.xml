@@ -16,165 +16,168 @@
         android:src="@drawable/spirit" />
 
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_gravity="bottom"
+        android:background="@color/system_border"
+        android:orientation="vertical"
+        android:padding="5dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:background="@color/system_border"
-            android:orientation="vertical"
-            android:padding="5dp"
-            android:layout_gravity="bottom">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="5dp"
-                android:layout_marginBottom="20dp">
-                <TextView
-                    android:id="@+id/rover_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Perseverence"
-                    android:layout_weight="1"
-                    android:textColor="@color/system_for"
-                    android:textSize="28sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    app:cardCornerRadius="20dp"
-                    android:layout_margin="5dp"
-                    app:cardBackgroundColor="@color/system_border">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="200 Photos"
-                        android:id="@+id/rover_photos_count"
-                        android:textColor="@color/system_for"
-                        android:paddingEnd="20dp"
-                        android:paddingStart="20dp"
-                        android:paddingTop="10dp"
-                        android:paddingBottom="10dp"
-                        android:textStyle="bold"
-                        android:textSize="12sp"/>
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:text="Launch Date"
-                        android:textColor="@color/system_for"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/rover_launch_date"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:text="Launch Date"
-                        android:textColor="@color/system_for" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:gravity="end"
-                        android:text="Landing Date"
-                        android:textColor="@color/system_for"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/rover_landing_date"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:gravity="end"
-                        android:text="Landing Date"
-                        android:textColor="@color/system_for" />
-
-                </LinearLayout>
-
-
-            </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/rover_status"
+                android:id="@+id/rover_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:gravity="start"
-                android:text="Status"
+                android:layout_weight="1"
+                android:text="Perseverence"
                 android:textColor="@color/system_for"
+                android:textSize="28sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/rover_description"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="5dp"
+                app:cardBackgroundColor="@color/system_border"
+                app:cardCornerRadius="20dp">
+
+                <TextView
+                    android:id="@+id/rover_photos_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="10dp"
+                    android:text="200 Photos"
+                    android:textColor="@color/system_for"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:text="Perseverence"
-                android:textColor="@color/system_for" />
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:text="Launch Date"
+                    android:textColor="@color/system_for"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/rover_launch_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:text="Launch Date"
+                    android:textColor="@color/system_for" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:gravity="end"
+                    android:text="Landing Date"
+                    android:textColor="@color/system_for"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/rover_landing_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:gravity="end"
+                    android:text="Landing Date"
+                    android:textColor="@color/system_for" />
+
+            </LinearLayout>
+
+
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/rover_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="start"
+            android:text="Status"
+            android:textColor="@color/system_for"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/rover_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:text="Perseverence"
+            android:textColor="@color/system_for" />
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:background="@drawable/gradient_to_top"
-        android:layout_gravity="bottom"/>
+        android:layout_gravity="bottom"
+        android:background="@drawable/gradient_to_top" />
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="15dp"
-        app:cardCornerRadius="20dp"
-        app:cardBackgroundColor="@color/system_border_inv">
+        android:id="@+id/read_more"
+        app:cardBackgroundColor="@color/system_border_inv"
+        app:cardCornerRadius="20dp">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Read more"
-            android:textColor="@color/system_border"
-            android:paddingEnd="20dp"
             android:paddingStart="20dp"
             android:paddingTop="10dp"
+            android:paddingEnd="20dp"
             android:paddingBottom="10dp"
-            android:textStyle="bold"
-            android:textSize="12sp"/>
+            android:text="Read more"
+            android:textColor="@color/system_border"
+            android:textSize="12sp"
+            android:textStyle="bold" />
     </com.google.android.material.card.MaterialCardView>
 
 

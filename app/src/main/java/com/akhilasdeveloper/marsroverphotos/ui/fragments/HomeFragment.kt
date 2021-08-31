@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,6 +28,7 @@ import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -47,7 +49,7 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         init()
         setListeners()
         subscribeObservers()
-        getData()
+//        getData()
     }
 
     private fun init() {
@@ -98,21 +100,32 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
     }
 
     private fun subscribeObservers() {
+
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
             response?.let {
+                Timber.d("dataState1 : ${response}")
                 binding.progress.isVisible = false
                 adapter.submitData(viewLifecycleOwner.lifecycle,response)
             }
         })
-
+        /*viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, Observer { response ->
+            response?.let {
+                Timber.d("dataState2 : ${response.name}")
+                viewModel.setEmptyDataSet()
+                binding.progress.isVisible = true
+                viewModel.getData(date = utilities.formatDateToMillis(response.max_date)!!, roverName = response.name)
+                binding.toolbarTitle.text = response.name
+                binding.dateButtonText.text = response.max_date
+            }
+        })*/
     }
 
-    private fun getData() {
+    /*private fun getData() {
         if (viewModel.dataState.value==null) {
             binding.progress.isVisible = true
             viewModel.getData(date = utilities.formatDateToMillis("2021-08-15")!!, roverName = "Curiosity")
         }
-    }
+    }*/
 
     /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_home, menu)
@@ -139,6 +152,13 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         /*binding.filter.setOnClickListener {
 
         }*/
+        adapter.addLoadStateListener {
+            if (adapter.itemCount <= 0){
+                binding.emptyMessage.visibility = View.VISIBLE
+            }else{
+                binding.emptyMessage.visibility = View.GONE
+            }
+        }
     }
 
     override fun onCreateView(

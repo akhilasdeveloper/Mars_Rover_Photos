@@ -1,5 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.repositories
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -12,6 +13,7 @@ import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.*
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
+import com.akhilasdeveloper.marsroverphotos.ui.RoverRemoteMediator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -22,6 +24,7 @@ import javax.inject.Inject
 class MarsRoverPhotosRepository @Inject constructor(
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val marsRoverDao: MarsRoverDao,
+    private val marsRoverDataBase: MarsRoverDatabase,
     private val utilities: Utilities
 ) {
 
@@ -29,9 +32,12 @@ class MarsRoverPhotosRepository @Inject constructor(
      * Rover Manifest START
      */
 
-    private suspend fun getRoverManifest(data : List<MarsRoverSrcDb>, isCache: Boolean): List<RoverMaster> {
+    private suspend fun getRoverManifest(
+        data: List<MarsRoverSrcDb>,
+        isCache: Boolean
+    ): List<RoverMaster> {
         val response = mutableListOf<RoverMaster>()
-        data.forEach { src->
+        data.forEach { src ->
             withContext(Dispatchers.IO) {
 
                 getRoverManifestData(src.roverName, isCache)?.let { manifest ->
@@ -54,7 +60,10 @@ class MarsRoverPhotosRepository @Inject constructor(
         return response
     }
 
-    private suspend fun getRoverManifestData(roverName: String, isCache: Boolean): MarsRoverManifestDb? {
+    private suspend fun getRoverManifestData(
+        roverName: String,
+        isCache: Boolean
+    ): MarsRoverManifestDb? {
 
         if (utilities.isConnectedToTheInternet() && !isCache) {
             withContext(Dispatchers.IO) {
@@ -148,6 +157,24 @@ class MarsRoverPhotosRepository @Inject constructor(
     /**
      * Rover Photo START
      */
+
+    @ExperimentalPagingApi
+    fun getPhotos(
+        date: Long,
+        roverName: String
+    ) = Pager(
+        config = PagingConfig(pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE),
+        remoteMediator = RoverRemoteMediator(
+            date,
+            roverName,
+            marsRoverPhotosService,
+            marsRoverDao,
+            marsRoverDataBase,
+            utilities
+        )
+    ) {
+        marsRoverDao.getPhotosByRoverIDAndDate(roverName = roverName, date = date)
+    }.flow
 
     suspend fun getPhotosByRoverAndDate(
         date: Long,
