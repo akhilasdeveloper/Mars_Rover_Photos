@@ -23,6 +23,19 @@ class RoverRemoteMediator(
     private val marsRoverDataBase: MarsRoverDatabase,
     private val utilities: Utilities
 ):RemoteMediator<Int, MarsRoverPhotoDb>() {
+
+    override suspend fun initialize(): InitializeAction {
+        return if (marsRoverDao.dataCount(roverName, date) > 0) {
+            // Cached data is up-to-date, so there is no need to re-fetch from network.
+            InitializeAction.SKIP_INITIAL_REFRESH
+        } else {
+            // Need to refresh cached data from network; returning LAUNCH_INITIAL_REFRESH here
+            // will also block RemoteMediator's APPEND and PREPEND from running until REFRESH
+            // succeeds.
+            InitializeAction.LAUNCH_INITIAL_REFRESH
+        }
+    }
+
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, MarsRoverPhotoDb>

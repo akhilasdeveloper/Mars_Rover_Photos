@@ -24,6 +24,9 @@ interface MarsRoverDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllMarsRoverPhotos(users: List<MarsRoverPhotoDb>)
 
+    @Query("SELECT count(*) FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date = :date")
+    suspend fun dataCount(roverName: String, date: Long): Int
+
     @Query("DELETE FROM mars_rover_photo_table")
     suspend fun clearAll()
 
@@ -39,6 +42,9 @@ interface MarsRoverDao {
 
     @Query("SELECT * FROM mars_rover_source_table")
     fun getMarsRoverSrc(): List<MarsRoverSrcDb>
+
+    @Query("SELECT addedDate FROM mars_rover_source_table LIMIT 1")
+    suspend fun getInsertDate(): Long?
 
     /**
      * MarsRoverManifestDb

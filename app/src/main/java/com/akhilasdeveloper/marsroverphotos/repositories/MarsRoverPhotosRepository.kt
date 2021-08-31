@@ -106,7 +106,7 @@ class MarsRoverPhotosRepository @Inject constructor(
      * Rover Src START
      */
 
-    suspend fun getRoverData(): Flow<MarsRoverSrcResponse> {
+    suspend fun getRoverData(isRefresh: Boolean): Flow<MarsRoverSrcResponse> {
 
         return flow {
             emit(MarsRoverSrcResponse(isLoading = true))
@@ -114,17 +114,21 @@ class MarsRoverPhotosRepository @Inject constructor(
             var dataSrc = marsRoverDao.getMarsRoverSrc()
             emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, true)))
 
-            if (utilities.isConnectedToTheInternet()) {
-                emit(MarsRoverSrcResponse(isLoading = true))
-                withContext(Dispatchers.IO) {
-                    refreshRoverSrcDb()
-                }
-            } else {
-                emit(MarsRoverSrcResponse(error = ERROR_NO_INTERNET))
-            }
+            val case = if(marsRoverDao.getInsertDate()==null) true else (System.currentTimeMillis() - marsRoverDao.getInsertDate()!!) > Constants.MILLIS_IN_A_DAY
 
-            dataSrc = marsRoverDao.getMarsRoverSrc()
-            emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, false)))
+            if (case || isRefresh) {
+                if (utilities.isConnectedToTheInternet()) {
+                    emit(MarsRoverSrcResponse(isLoading = true))
+                    withContext(Dispatchers.IO) {
+                        refreshRoverSrcDb()
+                    }
+                } else {
+                    emit(MarsRoverSrcResponse(error = ERROR_NO_INTERNET))
+                }
+
+                dataSrc = marsRoverDao.getMarsRoverSrc()
+                emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, false)))
+            }
 
         }.flowOn(Dispatchers.IO)
     }
@@ -143,7 +147,8 @@ class MarsRoverPhotosRepository @Inject constructor(
                     MarsRoverSrcDb(
                         roverDescription = it.description,
                         roverImage = it.image,
-                        roverName = it.name
+                        roverName = it.name,
+                        addedDate = System.currentTimeMillis()
                     )
                 )
             }

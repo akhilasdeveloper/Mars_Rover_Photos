@@ -2,32 +2,22 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
 import android.os.Bundle
 import android.view.*
-import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
-import androidx.paging.PagingData
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.Utilities
-import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
-import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverDateAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -49,12 +39,10 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         init()
         setListeners()
         subscribeObservers()
-//        getData()
+        getData()
     }
 
     private fun init() {
-//        uiCommunicationListener.setupActionBar(binding.homeToolbar)
-//        binding.toolbarTitle.text = "Mars Rover Images"
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
@@ -63,22 +51,6 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
             binding.homeToolbar.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }
-        /*ViewCompat.setOnApplyWindowInsetsListener(binding.homeTitleToolbar) { v, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams = (binding.homeTitleToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, systemWindows.top,0,0)
-            binding.homeTitleToolbar.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }*/
-        /*ViewCompat.setOnApplyWindowInsetsListener(binding.filter) { v, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams = (binding.filter.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + 20)
-            binding.filter.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }*/
         ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
@@ -104,28 +76,13 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
             response?.let {
                 Timber.d("dataState1 : ${response}")
-                binding.progress.isVisible = false
                 adapter.submitData(viewLifecycleOwner.lifecycle,response)
             }
         })
-        /*viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, Observer { response ->
-            response?.let {
-                Timber.d("dataState2 : ${response.name}")
-                viewModel.setEmptyDataSet()
-                binding.progress.isVisible = true
-                viewModel.getData(date = utilities.formatDateToMillis(response.max_date)!!, roverName = response.name)
-                binding.toolbarTitle.text = response.name
-                binding.dateButtonText.text = response.max_date
-            }
-        })*/
     }
 
-    /*private fun getData() {
-        if (viewModel.dataState.value==null) {
-            binding.progress.isVisible = true
-            viewModel.getData(date = utilities.formatDateToMillis("2021-08-15")!!, roverName = "Curiosity")
-        }
-    }*/
+    private fun getData() {
+    }
 
     /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_home, menu)
@@ -153,6 +110,9 @@ class HomeFragment: BaseFragment(R.layout.fragment_home), RecyclerClickListener 
 
         }*/
         adapter.addLoadStateListener {
+            binding.progress.isVisible = it.refresh is LoadState.Loading
+            binding.progress.isVisible = it.append is LoadState.Loading
+            Timber.d("Loading state : ${it.refresh is LoadState.Loading} : ${it.append.endOfPaginationReached}")
             if (adapter.itemCount <= 0){
                 binding.emptyMessage.visibility = View.VISIBLE
             }else{

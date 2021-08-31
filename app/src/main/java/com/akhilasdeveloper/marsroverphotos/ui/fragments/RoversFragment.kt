@@ -92,7 +92,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private fun subscribeObservers() {
         viewModel.dataStateRover.observe(viewLifecycleOwner, Observer { response ->
-            Timber.d("***Triggered ${response}")
             response.data?.let {
                 adapter.submitList(it)
             }
@@ -109,14 +108,16 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     private fun getData() {
         if (viewModel.dataStateRover.value==null) {
             binding.progress.isVisible = true
-            viewModel.getRoverData()
+            viewModel.getRoverData(isRefresh = false)
         }
     }
 
     override fun onItemSelected(master: RoverMaster, position: Int) {
+        navigateToPhotos(master)
+    }
+
+    private fun navigateToPhotos(master: RoverMaster){
         viewModel.getData(date = utilities.formatDateToMillis(master.max_date)!!, roverName = master.name)
-        Timber.d("Clicked : ${master.name}")
-        Toast.makeText(requireContext(),master.name,Toast.LENGTH_SHORT).show()
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
     }
 
@@ -142,6 +143,9 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             roverLaunchDate.text = master.launch_date
             roverStatus.text = "Rover Status : ${master.status}"
             roverPhotosCount.text = "${master.total_photos} Photos"
+        }
+        binding.roverPhotosCount.setOnClickListener {
+            navigateToPhotos(master)
         }
     }
 

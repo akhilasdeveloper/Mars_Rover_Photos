@@ -1,5 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
@@ -7,11 +8,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
-class MarsRoverPagerAdapter(private val interaction: RecyclerClickListener? = null) :
+class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null) :
     PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarsRoverPagerAdapter.PhotoViewHolder {
@@ -20,22 +22,18 @@ class MarsRoverPagerAdapter(private val interaction: RecyclerClickListener? = nu
         return MarsRoverPagerAdapter.PhotoViewHolder(bindingPhoto, interaction)
     }
 
-    class PhotoViewHolder(private val binding: ViewPagerItemBinding, private val interaction: RecyclerClickListener?) :
+    class PhotoViewHolder(private val binding: ViewPagerItemBinding, private val interaction: PagerClickListener?) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
                 photo.let {
-                    Glide.with(itemView)
-                        .load(it.img_src)
-                        .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(viewPageImage)
+                    viewPageImage.showImage(Uri.parse(it.img_src))
                 }
             }
 
-            binding.root.setOnClickListener {
-                interaction?.onItemSelected(photo, position)
+            binding.viewPageImage.setOnClickListener {
+                interaction?.onClick()
             }
         }
 

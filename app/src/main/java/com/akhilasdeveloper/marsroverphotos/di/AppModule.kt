@@ -57,8 +57,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesInputManager(@ApplicationContext context: Context):InputMethodManager
-            =context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    fun providesInputManager(@ApplicationContext context: Context): InputMethodManager =
+        context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
     @Singleton
     @Provides
@@ -68,7 +68,7 @@ object AppModule {
         app,
         MarsRoverDatabase::class.java,
         MARS_ROVER_DATABASE_NAME
-    ).build()
+    ).fallbackToDestructiveMigration().build()
 
     @Singleton
     @Provides

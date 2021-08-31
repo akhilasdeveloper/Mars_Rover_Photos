@@ -7,16 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.akhilasdeveloper.marsroverphotos.Constants
-import com.akhilasdeveloper.marsroverphotos.Constants.NETWORK_TIMEOUT
-import com.akhilasdeveloper.marsroverphotos.Utilities
-import com.akhilasdeveloper.marsroverphotos.data.DateItem
-import com.akhilasdeveloper.marsroverphotos.data.RoverData
-import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
-import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDetalsDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverSrcDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +15,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.text.FieldPosition
 import javax.inject.Inject
 
 @HiltViewModel
@@ -64,9 +54,9 @@ class MainViewModel
         }
     }
 
-    fun getRoverData(){
+    fun getRoverData(isRefresh: Boolean){
         viewModelScope.launch {
-            marsRoverPhotosRepository.getRoverData().collect {
+            marsRoverPhotosRepository.getRoverData(isRefresh).collect {
                 _dataStateRover.value = it
             }
         }
