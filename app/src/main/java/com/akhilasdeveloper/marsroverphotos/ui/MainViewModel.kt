@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
@@ -26,6 +27,10 @@ class MainViewModel
     private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoDb>?> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
+    private val _dataStateRoverMaster: MutableLiveData<RoverMaster> = MutableLiveData()
+
+    val dataStateRoverMaster: LiveData<RoverMaster>
+        get() = _dataStateRoverMaster
 
     val dataState: LiveData<PagingData<MarsRoverPhotoDb>?>
         get() = _dataState
@@ -36,15 +41,16 @@ class MainViewModel
     val positionState: LiveData<Int>
         get() = _dataStatePosition
 
+    fun setRoverMaster(roverMaster: RoverMaster){
+        _dataStateRoverMaster.value = roverMaster
+    }
+
     fun setPosition(position: Int){
         _dataStatePosition.value = position
     }
 
     @ExperimentalPagingApi
     fun getData(roverName: String, date: Long){
-        /*job.complete()
-        job = Job()
-        scope = viewModelScope + job*/
         viewModelScope.launch {
             marsRoverPhotosRepository.getPhotos(date = date, roverName = roverName).cachedIn(viewModelScope)
                 .onEach { its->
@@ -62,24 +68,4 @@ class MainViewModel
         }
     }
 
-    /*fun getData(
-        date: String,
-        api_key: String
-    ) {
-
-            viewModelScope.launch {
-                val job = withTimeoutOrNull(NETWORK_TIMEOUT) {
-                    marsRoverPhotosRepository.getPhotosByDate(date, api_key, utilities).cachedIn(viewModelScope)
-                        .onEach { dataState ->
-                            _dataState.value = dataState
-                        }
-                        .launchIn(this)
-                }
-
-                if (job == null) {
-
-                }
-            }
-
-    }*/
 }

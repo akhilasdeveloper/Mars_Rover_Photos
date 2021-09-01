@@ -181,66 +181,6 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.getPhotosByRoverIDAndDate(roverName = roverName, date = date)
     }.flow
 
-    suspend fun getPhotosByRoverAndDate(
-        date: Long,
-        roverName: String
-    ): Flow<PagingData<MarsRoverPhotoDb>> {
-        if (utilities.isConnectedToTheInternet()) {
-            withContext(Dispatchers.IO) {
-                refreshDb(
-                    date = date,
-                    roverName = roverName
-                )
-            }
-        }
-        return Pager(
-            config = PagingConfig(
-                pageSize = MARS_ROVER_PHOTOS_PAGE_SIZE,
-                maxSize = MARS_ROVER_PHOTOS_PAGE_MAX_SIZE,
-                enablePlaceholders = true
-            )
-        ) {
-            marsRoverDao.getPhotosByRoverIDAndDate(date = date, roverName = roverName)
-        }.flow
-    }
-
-    private suspend fun refreshDb(date: Long, roverName: String) {
-
-        val dat = utilities.formatMillis(date)
-        val url = Constants.URL_PHOTO + roverName + "/photos"
-
-        if (marsRoverDao.isPhotosByDateExist(date, roverName) <= 0) {
-
-            val response = marsRoverPhotosService.getRoverPhotos(
-                earth_date = dat,
-                url = url
-            )
-
-            response?.photos?.let { lis ->
-                lis.forEach {
-                    insertMarsRoverPhoto(
-                        MarsRoverPhotoDb(
-                            earth_date = date,
-                            img_src = it.img_src,
-                            sol = it.sol,
-                            camera_full_name = it.camera.full_name,
-                            camera_name = it.camera.name,
-                            rover_id = it.rover.id,
-                            rover_landing_date = it.rover.landing_date,
-                            rover_launch_date = it.rover.launch_date,
-                            rover_name = it.rover.name,
-                            rover_status = it.rover.status
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    private suspend fun insertMarsRoverPhoto(marsRoverPhotoDb: MarsRoverPhotoDb) {
-        marsRoverDao.insertMarsRoverPhoto(marsRoverPhotoDb)
-    }
-
     /**
      * Rover Photo END
      */

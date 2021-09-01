@@ -4,10 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
+import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -118,6 +115,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private fun navigateToPhotos(master: RoverMaster){
         viewModel.getData(date = utilities.formatDateToMillis(master.max_date)!!, roverName = master.name)
+        viewModel.setRoverMaster(master)
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
     }
 

@@ -1,8 +1,15 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
+import android.app.Activity
+import android.content.Context
+import android.content.res.Configuration
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.graphics.Color
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -22,6 +29,7 @@ class RoverViewFragment: BaseFragment(R.layout.fragment_roverview),PagerClickLis
 
     private val adapter = MarsRoverPagerAdapter(this)
     private lateinit var controler: WindowInsetsControllerCompat
+    private var job :Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,11 +70,30 @@ class RoverViewFragment: BaseFragment(R.layout.fragment_roverview),PagerClickLis
     private fun init() {
         binding.viewPage.adapter = adapter
         controler = WindowInsetsControllerCompat(requireActivity().window, binding.container)
+        setTheme()
         peekUI()
     }
 
+    private fun setTheme() {
+        requireActivity().window.apply {
+            statusBarColor = Color.TRANSPARENT
+            navigationBarColor = Color.TRANSPARENT
+        }
+        controler.isAppearanceLightStatusBars = false
+        controler.isAppearanceLightNavigationBars = false
+    }
+
+    private fun removeTheme() {
+        requireActivity().window.apply {
+            statusBarColor = ResourcesCompat.getColor(resources,R.color.system_border,null)
+            navigationBarColor = ResourcesCompat.getColor(resources,R.color.system_border,null)
+        }
+        controler.isAppearanceLightStatusBars = !requireContext().isDarkThemeOn()
+        controler.isAppearanceLightNavigationBars = !requireContext().isDarkThemeOn()
+    }
+
     private fun peekUI(){
-        CoroutineScope(Dispatchers.Main).launch {
+        job = CoroutineScope(Dispatchers.Main).launch {
             show()
             delay(2000)
             if (!isDetached)
@@ -83,13 +110,24 @@ class RoverViewFragment: BaseFragment(R.layout.fragment_roverview),PagerClickLis
         controler.show(WindowInsetsCompat.Type.systemBars())
     }
 
+    private fun showUI() {
+        controler.show(WindowInsetsCompat.Type.systemBars())
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        show()
+        job?.cancel()
+        removeTheme()
+        showUI()
     }
 
     override fun onClick() {
         peekUI()
+    }
+
+    private fun Context.isDarkThemeOn(): Boolean {
+        return resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK == UI_MODE_NIGHT_YES
     }
 
 }

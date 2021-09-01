@@ -14,7 +14,8 @@
     <color name="system_border">#DFFFFFFF</color>
     <color name="system_border_inv">#CB616161</color>
     <color name="system_for">#616161</color>
-    <color name="accent">#ff6600</color>
+    <color name="accent">#A3805A</color>
+    <color name="light_for">#E1E1E1</color>
     <color name="date">#333333</color>
 
 </resources>
