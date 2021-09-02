@@ -25,6 +25,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
+import android.view.LayoutInflater
+
+import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+
+import com.akhilasdeveloper.marsroverphotos.ui.MainActivity
+import kotlinx.android.synthetic.main.layout_sol_select.view.*
+
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
@@ -62,6 +70,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             binding.homeToolbar.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { v, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
@@ -86,20 +95,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             )
         }
 
-        adapter.addLoadStateListener {
-            if (it.prepend is LoadState.NotLoading && it.prepend.endOfPaginationReached) {
-                binding.progress.visibility = View.GONE
-            }else{
-                binding.progress.visibility = View.VISIBLE
-            }
-            if (it.append is LoadState.NotLoading && it.append.endOfPaginationReached) {
-                binding.emptyMessage.isVisible = adapter.itemCount < 1
-            }
-        }
-
-        WindowInsetsControllerCompat(requireActivity().window, binding.homeFragmentRoot).show(
-            WindowInsetsCompat.Type.systemBars()
-        )
+        WindowInsetsControllerCompat(requireActivity().window, binding.homeFragmentRoot).show(WindowInsetsCompat.Type.systemBars())
     }
 
     private fun subscribeObservers() {
@@ -116,6 +112,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             master = it
             setData()
         })
+
+        viewModel.dataStateDate.observe(viewLifecycleOwner, Observer {
+            binding.dateButtonText.text = utilities.formatMillis(it)
+            currentDate = it
+            if (::master.isInitialized) {
+                binding.solButtonText.text = "Sol ${utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!)}"
+            }
+        })
     }
 
     private fun setData() {
@@ -124,28 +128,43 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 dateButtonText.text = master.max_date
                 toolbarTitle.text = master.name
                 currentDate = utilities.formatDateToMillis(master.max_date)
+                solButtonText.text = "Sol ${utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!)}"
             }
         }
+    }
+
+    private fun showDialog(){
+        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        val viewGroup: ViewGroup = binding.root
+        val dialogView: View = LayoutInflater.from(requireContext()).inflate(R.layout.layout_sol_select, viewGroup, false)
+        builder.setView(dialogView)
+        val alertDialog: AlertDialog = builder.create()
+        alertDialog.show()
     }
 
     private fun getData() {
         currentDate?.let {
             viewModel.getData(master.name, it)
         }
-
     }
 
     private fun setListeners() {
         binding.dateButtonText.setOnClickListener {
             showDatePicker()
         }
-        /*adapter.addLoadStateListener {
-            if (adapter.itemCount <= 0) {
-                binding.emptyMessage.visibility = View.VISIBLE
+        binding.solButtonText.setOnClickListener {
+            showDialog()
+        }
+        adapter.addLoadStateListener {
+            if (it.prepend is LoadState.NotLoading && it.prepend.endOfPaginationReached) {
+                binding.progress.visibility = View.GONE
             } else {
-                binding.emptyMessage.visibility = View.GONE
+                binding.progress.visibility = View.VISIBLE
             }
-        }*/
+            if (it.append is LoadState.NotLoading && it.append.endOfPaginationReached) {
+                binding.emptyMessage.isVisible = adapter.itemCount < 1
+            }
+        }
     }
 
     private fun showDatePicker() {

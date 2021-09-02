@@ -59,6 +59,28 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:drawableStart="@drawable/ic_round_date_range_24"
+                        android:text="Sol"
+                        android:gravity="center_vertical"
+                        android:padding="10dp"
+                        android:textSize="16sp"
+                        android:id="@+id/sol_button_text"
+                        android:textColor="@color/system_for"
+                        android:drawableTint="@color/system_for"
+                        android:drawablePadding="5dp"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:backgroundTint="@color/appbar"
+                    app:cardCornerRadius="10dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@drawable/ic_round_date_range_24"
                         android:text="Date"
                         android:gravity="center_vertical"
                         android:padding="10dp"

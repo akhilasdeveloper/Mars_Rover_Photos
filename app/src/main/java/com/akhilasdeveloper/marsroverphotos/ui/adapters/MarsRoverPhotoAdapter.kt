@@ -43,8 +43,7 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                         .centerCrop()
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
-                    cameraName.text = "${it.camera_name} Camera"
-                    roverName.text = "${it.rover_name} Rover"
+                    cameraName.text = it.camera_name
                 }
             }
 

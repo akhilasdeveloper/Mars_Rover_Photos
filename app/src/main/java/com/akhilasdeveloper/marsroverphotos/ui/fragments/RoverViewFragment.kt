@@ -22,18 +22,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
 @AndroidEntryPoint
-class RoverViewFragment: BaseFragment(R.layout.fragment_roverview),PagerClickListener {
+class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickListener {
 
     private var _binding: FragmentRoverviewBinding? = null
     private val binding get() = _binding!!
 
     private val adapter = MarsRoverPagerAdapter(this)
     private lateinit var controler: WindowInsetsControllerCompat
-    private var job :Job? = null
+    private var isShow = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(android.R.transition.move)
+        sharedElementEnterTransition =
+            TransitionInflater.from(context).inflateTransition(android.R.transition.move)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -59,7 +60,7 @@ class RoverViewFragment: BaseFragment(R.layout.fragment_roverview),PagerClickLis
     private fun subscribeObservers() {
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
             response?.let {
-                adapter.submitData(viewLifecycleOwner.lifecycle,response)
+                adapter.submitData(viewLifecycleOwner.lifecycle, response)
             }
         })
         viewModel.positionState.observe(viewLifecycleOwner, Observer {
@@ -71,7 +72,7 @@ class RoverViewFragment: BaseFragment(R.layout.fragment_roverview),PagerClickLis
         binding.viewPage.adapter = adapter
         controler = WindowInsetsControllerCompat(requireActivity().window, binding.container)
         setTheme()
-        peekUI()
+        show()
     }
 
     private fun setTheme() {
@@ -85,40 +86,34 @@ class RoverViewFragment: BaseFragment(R.layout.fragment_roverview),PagerClickLis
 
     private fun removeTheme() {
         requireActivity().window.apply {
-            statusBarColor = ResourcesCompat.getColor(resources,R.color.system_border,null)
-            navigationBarColor = ResourcesCompat.getColor(resources,R.color.system_border,null)
+            statusBarColor = ResourcesCompat.getColor(resources, R.color.system_border, null)
+            navigationBarColor = ResourcesCompat.getColor(resources, R.color.system_border, null)
         }
         controler.isAppearanceLightStatusBars = !requireContext().isDarkThemeOn()
         controler.isAppearanceLightNavigationBars = !requireContext().isDarkThemeOn()
     }
 
-    private fun peekUI(){
-        job = CoroutineScope(Dispatchers.Main).launch {
+    private fun peekUI() {
+        if (isShow)
+            hide()
+        else
             show()
-            delay(2000)
-            if (!isDetached)
-                hide()
-        }
     }
 
     private fun hide() {
         controler.hide(WindowInsetsCompat.Type.systemBars())
-        controler.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controler.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
     private fun show() {
         controler.show(WindowInsetsCompat.Type.systemBars())
     }
 
-    private fun showUI() {
-        controler.show(WindowInsetsCompat.Type.systemBars())
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        job?.cancel()
         removeTheme()
-        showUI()
+        show()
     }
 
     override fun onClick() {

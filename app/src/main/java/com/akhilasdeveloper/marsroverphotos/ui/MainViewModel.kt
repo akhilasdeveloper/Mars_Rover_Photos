@@ -28,6 +28,10 @@ class MainViewModel
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<RoverMaster> = MutableLiveData()
+    private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
+
+    val dataStateDate: LiveData<Long>
+        get() = _dataStateDate
 
     val dataStateRoverMaster: LiveData<RoverMaster>
         get() = _dataStateRoverMaster
@@ -55,6 +59,7 @@ class MainViewModel
             marsRoverPhotosRepository.getPhotos(date = date, roverName = roverName).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
+                    _dataStateDate.value = date
                 }
                 .launchIn(this)
         }

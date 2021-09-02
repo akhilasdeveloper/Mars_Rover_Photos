@@ -65,4 +65,8 @@ class Utilities @Inject constructor(
         return parsedDate?.time
     }
 
+    fun calculateDays(landingDate: Long, currentDate: Long):Long {
+        return  (currentDate - landingDate) / MILLIS_IN_A_DAY
+    }
+
 }
