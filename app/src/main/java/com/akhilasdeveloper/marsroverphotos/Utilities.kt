@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import com.akhilasdeveloper.marsroverphotos.Constants.MILLIS_IN_A_DAY
+import com.akhilasdeveloper.marsroverphotos.Constants.MILLIS_IN_A_SOL
 import timber.log.Timber
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
@@ -66,7 +67,11 @@ class Utilities @Inject constructor(
     }
 
     fun calculateDays(landingDate: Long, currentDate: Long):Long {
-        return  (currentDate - landingDate) / MILLIS_IN_A_DAY
+        return  (currentDate - landingDate) / MILLIS_IN_A_SOL
+    }
+
+    fun calculateDaysEarthDate(sol: Long, minDate: Long):Long {
+        return  minDate + (sol * MILLIS_IN_A_SOL)
     }
 
 }

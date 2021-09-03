@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.*
 import com.akhilasdeveloper.marsroverphotos.Constants
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverSrcDb
@@ -35,6 +36,7 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
                 Glide.with(itemView)
                     .load(Constants.URL_DATA + photo.image)
                     .centerCrop()
+                    .placeholder(R.drawable.ic_baseline_cloud_download_24)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(roverImage)
                 roverName.text = photo.name

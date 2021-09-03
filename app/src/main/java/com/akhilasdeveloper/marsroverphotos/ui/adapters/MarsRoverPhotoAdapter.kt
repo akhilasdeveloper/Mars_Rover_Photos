@@ -6,6 +6,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.Constants
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
 import com.akhilasdeveloper.marsroverphotos.databinding.DateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
@@ -41,6 +42,7 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                     Glide.with(itemView)
                         .load(it.img_src)
                         .centerCrop()
+                        .placeholder(R.drawable.ic_baseline_cloud_download_24)
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
                     cameraName.text = it.camera_name

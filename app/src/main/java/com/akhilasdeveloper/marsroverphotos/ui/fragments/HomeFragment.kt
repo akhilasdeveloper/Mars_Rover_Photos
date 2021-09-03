@@ -31,6 +31,8 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 
 import com.akhilasdeveloper.marsroverphotos.ui.MainActivity
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
 
 
@@ -134,12 +136,26 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun showDialog(){
-        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
-        val viewGroup: ViewGroup = binding.root
-        val dialogView: View = LayoutInflater.from(requireContext()).inflate(R.layout.layout_sol_select, viewGroup, false)
-        builder.setView(dialogView)
-        val alertDialog: AlertDialog = builder.create()
-        alertDialog.show()
+        if (::master.isInitialized) {
+            val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+            val viewGroup: ViewGroup = binding.root
+            val dialogView: View = LayoutInflater.from(requireContext())
+                .inflate(R.layout.layout_sol_select, viewGroup, false)
+            val slider = dialogView.findViewById<Slider>(R.id.sol_slider)
+            slider.valueTo = master.max_sol.toFloat()
+            slider.value = utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toFloat()
+            builder.setView(dialogView)
+            val alertDialog: AlertDialog = builder.create()
+            alertDialog.show()
+            dialogView.findViewById<MaterialButton>(R.id.ok_sol_selector).setOnClickListener {
+                currentDate = utilities.calculateDaysEarthDate(slider.value.toLong(),utilities.formatDateToMillis(master.landing_date)!!)
+                getData()
+                alertDialog.cancel()
+            }
+            dialogView.findViewById<MaterialButton>(R.id.cancel_sol_selector).setOnClickListener {
+                alertDialog.cancel()
+            }
+        }
     }
 
     private fun getData() {

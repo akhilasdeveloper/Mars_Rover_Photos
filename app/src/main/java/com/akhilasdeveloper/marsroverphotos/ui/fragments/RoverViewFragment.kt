@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Observer
 import androidx.transition.TransitionInflater
+import androidx.viewpager2.widget.ViewPager2
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
@@ -51,6 +52,11 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         binding.viewPage.setOnClickListener {
             peekUI()
         }
+        val data = binding.viewPage.adapter?.getItemId(binding.viewPage.currentItem)
+
+        binding.viewPage.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback(){
+
+        })
     }
 
     private fun getData() {
