@@ -36,21 +36,17 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
                 Glide.with(itemView)
                     .load(Constants.URL_DATA + photo.image)
                     .centerCrop()
-                    .placeholder(R.drawable.ic_baseline_cloud_download_24)
+                    .placeholder(R.drawable.imageview_placeholder)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(roverImage)
                 roverName.text = photo.name
-                roverDescription.text = photo.description
-                roverLandingDate.text = photo.landing_date
-                roverLaunchDate.text = photo.launch_date
-                roverStatus.text = "Rover Status : ${photo.status}"
-                roverPhotosCount.text = "${photo.total_photos} Photos"
+                roverPhotosCount.text = "View Photos (${photo.total_photos})"
             }
 
-            binding.root.setOnClickListener {
+            binding.roverPhotosCount.setOnClickListener {
                 interaction?.onItemSelected(photo, position)
             }
-            binding.readMore.setOnClickListener {
+            binding.root.setOnClickListener {
                 interaction?.onReadMoreSelected(photo, position)
             }
         }

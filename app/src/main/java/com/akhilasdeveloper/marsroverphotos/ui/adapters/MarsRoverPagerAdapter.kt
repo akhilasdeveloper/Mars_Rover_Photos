@@ -9,9 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null) :
     PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
@@ -31,7 +28,7 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
                     viewPageImage.showImage(Uri.parse(it.img_src))
                 }
             }
-
+            interaction?.loaded(binding, photo, position)
             binding.viewPageImage.setOnClickListener {
                 interaction?.onClick()
             }

@@ -10,6 +10,7 @@
         <item name="colorSecondaryVariant">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
+        <item name="android:windowBackground">@drawable/splash</item>
         <item name="android:statusBarColor">@color/system_border</item>
         <item name="android:navigationBarColor">@color/system_border</item>
         <item name="android:fontFamily">@font/nunito_sans</item>

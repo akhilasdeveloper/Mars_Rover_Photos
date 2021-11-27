@@ -28,6 +28,8 @@ import javax.inject.Inject
 import android.view.LayoutInflater
 
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 
 import com.akhilasdeveloper.marsroverphotos.ui.MainActivity
@@ -104,7 +106,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
             response?.let {
-                Timber.d("dataState1 : ${response}")
+                Timber.d("dataState1 : $response")
                 adapter.submitData(viewLifecycleOwner.lifecycle, response)
                 binding.progress.visibility = View.GONE
             }
@@ -142,8 +144,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             val dialogView: View = LayoutInflater.from(requireContext())
                 .inflate(R.layout.layout_sol_select, viewGroup, false)
             val slider = dialogView.findViewById<Slider>(R.id.sol_slider)
+            val sol = dialogView.findViewById<TextView>(R.id.solSelectorCount)
             slider.valueTo = master.max_sol.toFloat()
             slider.value = utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toFloat()
+            sol.text = slider.value.toInt().toString()
+            slider.addOnChangeListener { _, value, _ ->
+                sol.text = "${value.toInt()}"
+            }
             builder.setView(dialogView)
             val alertDialog: AlertDialog = builder.create()
             alertDialog.show()

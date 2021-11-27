@@ -10,12 +10,6 @@ import retrofit2.http.Url
 
 interface MarsRoverPhotosService {
 
-    @GET("photos")
-    suspend fun getMarsRoverPhotos(
-        @Query("earth_date") earth_date : String,
-        @Query("api_key") api_key : String
-    ): MarsRoverPhotosApiResponse?
-
     @GET
     suspend fun getRoverPhotos(
         @Url url: String,

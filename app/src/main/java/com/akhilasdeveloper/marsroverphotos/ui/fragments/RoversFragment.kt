@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
@@ -41,22 +42,29 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         _binding = FragmentRoversBinding.bind(view)
 
         init()
-        setListeners()
         subscribeObservers()
         getData()
     }
 
-    private fun setListeners() {
-        /*bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback(){
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (bottomSheetBehavior.state == BottomSheetBehavior.SAVE_PEEK_HEIGHT)
-                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            }
+    override fun onCreate(savedInstanceState: Bundle?) {
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            }
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true /* enabled by default */) {
+                override fun handleOnBackPressed() {
 
-        })*/
+                    if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+                        hideSheet()
+                    else
+                        if (isEnabled) {
+                            isEnabled = false
+                            requireActivity().onBackPressed()
+                        }
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
+
+        super.onCreate(savedInstanceState)
+
     }
 
     private fun init() {
@@ -126,6 +134,10 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private fun showSheet() {
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    private fun hideSheet() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     private fun setSheetData(master: RoverMaster) {

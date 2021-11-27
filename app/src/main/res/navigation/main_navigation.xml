@@ -24,14 +24,14 @@
     <fragment
         android:id="@+id/roversFragment"
         android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.RoversFragment"
-        android:label="fragment_rovers"
+        android:label="RoversFragment"
         tools:layout="@layout/fragment_rovers" >
         <action
             android:id="@+id/action_roversFragment_to_homeFragment"
             app:destination="@id/homeFragment"
-            app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"
-            app:enterAnim="@anim/fade_in"
-            app:exitAnim="@anim/fade_out"/>
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
     </fragment>
 </navigation>

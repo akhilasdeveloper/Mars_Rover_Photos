@@ -33,8 +33,7 @@
                 android:id="@+id/rover_image"
                 android:layout_width="match_parent"
                 android:layout_height="600dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/spirit" />
+                android:scaleType="centerCrop"/>
 
 
             <LinearLayout
@@ -57,10 +56,9 @@
 
                     <TextView
                         android:id="@+id/rover_name"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Perseverence"
                         android:textColor="@color/system_for"
                         android:textSize="28sp"
                         android:textStyle="bold" />
@@ -81,9 +79,8 @@
                             android:paddingTop="10dp"
                             android:paddingEnd="20dp"
                             android:paddingBottom="10dp"
-                            android:text="200 Photos"
                             android:textColor="@color/system_for"
-                            android:textSize="12sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
                     </com.google.android.material.card.MaterialCardView>
 
@@ -109,7 +106,8 @@
                             android:layout_marginEnd="10dp"
                             android:text="Launch Date"
                             android:textColor="@color/system_for"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
 
                         <TextView
                             android:id="@+id/rover_launch_date"
@@ -117,7 +115,8 @@
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
                             android:text="Launch Date"
-                            android:textColor="@color/system_for" />
+                            android:textColor="@color/system_for"
+                            android:textSize="16sp"/>
 
                     </LinearLayout>
 
@@ -136,7 +135,8 @@
                             android:gravity="end"
                             android:text="Landing Date"
                             android:textColor="@color/system_for"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
 
                         <TextView
                             android:id="@+id/rover_landing_date"
@@ -145,7 +145,8 @@
                             android:layout_margin="10dp"
                             android:gravity="end"
                             android:text="Landing Date"
-                            android:textColor="@color/system_for" />
+                            android:textColor="@color/system_for"
+                            android:textSize="16sp"/>
 
                     </LinearLayout>
 
@@ -160,7 +161,8 @@
                     android:gravity="start"
                     android:text="Status"
                     android:textColor="@color/system_for"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="16sp"/>
 
                 <TextView
                     android:id="@+id/rover_description"
@@ -169,8 +171,8 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="10dp"
-                    android:text="Perseverence"
-                    android:textColor="@color/system_for" />
+                    android:textColor="@color/system_for"
+                    android:textSize="16sp"/>
             </LinearLayout>
         </LinearLayout>
 

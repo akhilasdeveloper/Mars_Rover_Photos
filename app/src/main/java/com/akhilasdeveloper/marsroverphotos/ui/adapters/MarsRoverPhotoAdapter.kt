@@ -5,10 +5,7 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.data.RoverPhotoViewItem
-import com.akhilasdeveloper.marsroverphotos.databinding.DateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
@@ -41,8 +38,8 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                 photo.let {
                     Glide.with(itemView)
                         .load(it.img_src)
+                        .placeholder(R.drawable.imageview_placeholder)
                         .centerCrop()
-                        .placeholder(R.drawable.ic_baseline_cloud_download_24)
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
                     cameraName.text = it.camera_name

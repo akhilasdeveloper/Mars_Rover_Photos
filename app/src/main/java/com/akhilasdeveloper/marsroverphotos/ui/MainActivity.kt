@@ -1,6 +1,7 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.WindowCompat
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
 import com.github.piasy.biv.BigImageViewer
@@ -19,6 +20,7 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
     }
 
     override fun setupActionBar(id: MaterialToolbar) {

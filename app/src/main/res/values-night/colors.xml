@@ -17,4 +17,6 @@
     <color name="accent">#A3805A</color>
     <color name="light_for">#E1E1E1</color>
     <color name="date">#bbbbbb</color>
+    <color name="splashbg">#222222</color>
+
 </resources>
