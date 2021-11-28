@@ -29,9 +29,13 @@ class MainViewModel
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<RoverMaster> = MutableLiveData()
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
+    private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
 
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
+
+    val dataStateLoading: LiveData<Boolean>
+        get() = _dataStateLoading
 
     val dataStateRoverMaster: LiveData<RoverMaster>
         get() = _dataStateRoverMaster
@@ -53,21 +57,29 @@ class MainViewModel
         _dataStatePosition.value = position
     }
 
+    fun setLoading(isLoading: Boolean){
+        _dataStateLoading.value = isLoading
+    }
+
     @ExperimentalPagingApi
     fun getData(roverName: String, date: Long){
+        setLoading(true)
         viewModelScope.launch {
             marsRoverPhotosRepository.getPhotos(date = date, roverName = roverName).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
                     _dataStateDate.value = date
+                    setLoading(false)
                 }
                 .launchIn(this)
         }
     }
 
     fun getRoverData(isRefresh: Boolean){
+        setLoading(true)
         viewModelScope.launch {
             marsRoverPhotosRepository.getRoverData(isRefresh).collect {
+                setLoading(false)
                 _dataStateRover.value = it
             }
         }

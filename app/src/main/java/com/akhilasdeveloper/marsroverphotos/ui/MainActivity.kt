@@ -1,11 +1,8 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
 import android.os.Bundle
-import androidx.activity.OnBackPressedCallback
 import androidx.core.view.WindowCompat
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
-import com.github.piasy.biv.BigImageViewer
-import com.github.piasy.biv.loader.glide.GlideImageLoader
 import com.google.android.material.appbar.MaterialToolbar
 import dagger.hilt.android.AndroidEntryPoint
 

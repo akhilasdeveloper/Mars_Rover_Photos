@@ -3,15 +3,10 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments
 import android.os.Bundle
 import android.view.*
 import androidx.core.view.*
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
-import androidx.paging.LoadStateAdapter
-import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.Utilities
@@ -22,20 +17,20 @@ import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import com.google.android.material.datepicker.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
 import android.view.LayoutInflater
 
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 
-import com.akhilasdeveloper.marsroverphotos.ui.MainActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 @ExperimentalPagingApi
@@ -64,9 +59,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun init() {
 
-        binding.progress.visibility = View.VISIBLE
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             val layoutParams = (binding.homeToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
@@ -75,7 +68,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             return@setOnApplyWindowInsetsListener insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             binding.photoRecycler.updatePadding(bottom = systemWindows.bottom)
@@ -104,25 +97,28 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun subscribeObservers() {
 
-        viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
+        viewModel.dataState.observe(viewLifecycleOwner, { response ->
             response?.let {
                 Timber.d("dataState1 : $response")
                 adapter.submitData(viewLifecycleOwner.lifecycle, response)
-                binding.progress.visibility = View.GONE
             }
         })
 
-        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, Observer {
+        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner,  {
             master = it
             setData()
         })
 
-        viewModel.dataStateDate.observe(viewLifecycleOwner, Observer {
+        viewModel.dataStateDate.observe(viewLifecycleOwner,  {
             binding.dateButtonText.text = utilities.formatMillis(it)
             currentDate = it
             if (::master.isInitialized) {
-                binding.solButtonText.text = "Sol ${utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!)}"
+                binding.solButtonText.text = getString(R.string.sol, utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toString())
             }
+        })
+
+        viewModel.dataStateLoading.observe(viewLifecycleOwner, {
+            binding.progress.isVisible = it
         })
     }
 
@@ -132,7 +128,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 dateButtonText.text = master.max_date
                 toolbarTitle.text = master.name
                 currentDate = utilities.formatDateToMillis(master.max_date)
-                solButtonText.text = "Sol ${utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!)}"
+                solButtonText.text = getString(R.string.sol,utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toString())
             }
         }
     }
@@ -178,15 +174,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.solButtonText.setOnClickListener {
             showDialog()
         }
-        adapter.addLoadStateListener {
-            if (it.prepend is LoadState.NotLoading && it.prepend.endOfPaginationReached) {
-                binding.progress.visibility = View.GONE
-            } else {
-                binding.progress.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                viewModel.setLoading(loadStates.refresh is LoadState.Loading)
+                binding.emptyMessage.isVisible = loadStates.refresh is LoadState.Error
             }
-            if (it.append is LoadState.NotLoading && it.append.endOfPaginationReached) {
-                binding.emptyMessage.isVisible = adapter.itemCount < 1
-            }
+        }
+        binding.emptyMessage.setOnClickListener {
+            getData()
         }
     }
 
@@ -200,7 +195,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
             val datePicker =
                 MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Select date")
+                    .setTitleText(getString(R.string.select_date))
                     .setSelection(currentDate)
                     .setTheme(R.style.ThemeOverlay_App_DatePicker)
                     .setCalendarConstraints(constraintsBuilder.build())

@@ -8,18 +8,17 @@ import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverSrcDb
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerRoverClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
-class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewHolder>(){
+class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null,
+private val context: Context) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val bindingPhoto =
             RoverItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto, interaction)
+        return PhotoViewHolder(bindingPhoto, interaction , context)
     }
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
@@ -28,7 +27,7 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
 
     }
 
-    class PhotoViewHolder(private val binding: RoverItemBinding, private val interaction: RecyclerRoverClickListener?) :
+    class PhotoViewHolder(private val binding: RoverItemBinding, private val interaction: RecyclerRoverClickListener?, private val context: Context) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: RoverMaster, position: Int) {
@@ -40,7 +39,7 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(roverImage)
                 roverName.text = photo.name
-                roverPhotosCount.text = "View Photos (${photo.total_photos})"
+                roverPhotosCount.text = context.getString(R.string.view_photos, photo.total_photos.toString())
             }
 
             binding.roverPhotosCount.setOnClickListener {

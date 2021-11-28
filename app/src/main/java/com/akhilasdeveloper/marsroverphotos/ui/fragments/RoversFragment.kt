@@ -7,24 +7,19 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
-import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoversBinding
-import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 import javax.inject.Inject
 
 @ExperimentalPagingApi
@@ -33,7 +28,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private var _binding: FragmentRoversBinding? = null
     private val binding get() = _binding!!
-    private val adapter: MarsRoverAdapter =  MarsRoverAdapter(this)
+    private var adapter: MarsRoverAdapter? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
     @Inject lateinit var utilities: Utilities
 
@@ -49,7 +44,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     override fun onCreate(savedInstanceState: Bundle?) {
 
         val callback: OnBackPressedCallback =
-            object : OnBackPressedCallback(true /* enabled by default */) {
+            object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
 
                     if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
@@ -68,16 +63,17 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     private fun init() {
+        adapter = MarsRoverAdapter(this, requireContext())
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.isGestureInsetBottomIgnored = true
-        ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             binding.recycler.updatePadding(bottom = systemWindows.bottom, top = systemWindows.top)
             return@setOnApplyWindowInsetsListener insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.sheetFrame) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.sheetFrame) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             val layoutParams = (binding.sheetFrame.layoutParams as? ViewGroup.MarginLayoutParams)
@@ -93,28 +89,58 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             recycler.layoutManager = layoutManager
             recycler.adapter = adapter
         }
+
+        binding.emptyMessage.setOnClickListener {
+            hideEmptyMessage()
+            viewModel.getRoverData(isRefresh = false)
+        }
     }
 
     private fun subscribeObservers() {
-        viewModel.dataStateRover.observe(viewLifecycleOwner, Observer { response ->
+        viewModel.dataStateRover.observe(viewLifecycleOwner, { response ->
             response.data?.let {
-                adapter.submitList(it)
+                if (it.isEmpty())
+                    setEmptyMessage("Tap to refresh")
+                else
+                    hideEmptyMessage()
+                adapter?.submitList(it)
             }
             response.isLoading.let {
-                binding.progress.isVisible = !(it == null || !it)
+                 if(!(it == null || !it)) {
+                     hideEmptyMessage()
+                     binding.progress.isVisible = true
+                 }
             }
             response.error?.let {
                 Toast.makeText(requireContext(),it,Toast.LENGTH_LONG).show()
+                setEmptyMessage("$it\nTap to refresh")
             }
         })
 
     }
 
+    private fun hideEmptyMessage(){
+        binding.emptyMessage.isVisible = false
+        binding.emptyMessage.text = ""
+    }
+
+    private fun setEmptyMessage(message: String){
+        binding.emptyMessage.isVisible = true
+        binding.emptyMessage.text = message
+    }
+
     private fun getData() {
         if (viewModel.dataStateRover.value==null) {
-            binding.progress.isVisible = true
             viewModel.getRoverData(isRefresh = false)
         }
+
+        viewModel.dataStateRoverMaster.value?.let {
+            setSheetData(it)
+        }
+
+        viewModel.dataStateLoading.observe(viewLifecycleOwner, {
+            binding.progress.isVisible = it
+        })
     }
 
     override fun onItemSelected(master: RoverMaster, position: Int) {
@@ -151,8 +177,8 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             roverDescription.text = master.description
             roverLandingDate.text = master.landing_date
             roverLaunchDate.text = master.launch_date
-            roverStatus.text = "Rover Status : ${master.status}"
-            roverPhotosCount.text = "${master.total_photos} Photos"
+            roverStatus.text = getString(R.string.rover_status,master.status)
+            roverPhotosCount.text = getString(R.string.view_photos, master.total_photos.toString())
         }
         binding.roverPhotosCount.setOnClickListener {
             navigateToPhotos(master)

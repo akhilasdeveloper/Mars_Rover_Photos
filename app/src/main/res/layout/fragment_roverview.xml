@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
-    android:background="@color/black">
+    android:background="@color/black"
+    android:animateLayoutChanges="true">
 
     <androidx.viewpager2.widget.ViewPager2
         android:layout_width="match_parent"
@@ -16,34 +17,54 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_gravity="bottom"
-        android:id="@+id/menus">
-        <ImageButton
+        android:id="@+id/menus"
+        android:background="@color/transparent50">
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_twotone_wallpaper_24"
-            app:tint="@color/white"
             android:layout_weight="1"
+            android:gravity="center"
             android:padding="20dp"
+            android:text="@string/wallpaper"
+            android:textColor="@color/white"
             android:id="@+id/setWallpaper"
-            android:background="@android:color/transparent"/>
-        <ImageButton
+            android:contentDescription="@string/set_wallpaper_button"
+            app:drawableTopCompat="@drawable/ic_twotone_wallpaper_24"
+            app:drawableTint="@color/white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_twotone_arrow_circle_down_24"
-            app:tint="@color/white"
             android:layout_weight="1"
             android:padding="20dp"
             android:id="@+id/download"
-            android:background="@android:color/transparent"/>
-        <ImageButton
+            android:contentDescription="@string/download_image_button"
+            app:drawableTopCompat="@drawable/ic_twotone_arrow_circle_down_24"
+            app:drawableTint="@color/white"
+            android:text="@string/download"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_twotone_share_24"
-            app:tint="@color/white"
             android:layout_weight="1"
             android:padding="20dp"
             android:id="@+id/share"
-            android:background="@android:color/transparent"/>
+            android:contentDescription="@string/share_image_button"
+            app:drawableTopCompat="@drawable/ic_twotone_share_24"
+            app:drawableTint="@color/white"
+            android:text="@string/share"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
 </FrameLayout>

@@ -7,6 +7,7 @@
     <color name="teal_700">#222222</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="transparent50">#55000000</color>
 
     <color name="first">#222222</color>
     <color name="appbar">#222222</color>

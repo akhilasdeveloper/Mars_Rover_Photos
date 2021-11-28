@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textColor="@color/system_for"
-            android:text="Select Sol"
+            android:text="@string/select_sol"
             android:textStyle="bold"
             android:padding="10dp"
             android:layout_weight="1"
@@ -26,7 +26,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/solSelectorCount"
-            android:text="0"
             android:padding="10dp"/>
 
 
@@ -56,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/cancel_sol_selector"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:layout_marginEnd="10dp"
             android:background="@color/appbar"
             android:textColor="@color/system_for"
@@ -65,7 +64,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/ok_sol_selector"
-            android:text="OK"
+            android:text="@string/ok"
             android:background="@color/appbar"
             android:textColor="@color/system_for"
             android:layout_marginEnd="10dp"

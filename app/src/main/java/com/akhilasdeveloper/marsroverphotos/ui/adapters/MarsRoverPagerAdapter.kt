@@ -13,10 +13,10 @@ import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
 class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null) :
     PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarsRoverPagerAdapter.PhotoViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val bindingPhoto =
             ViewPagerItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MarsRoverPagerAdapter.PhotoViewHolder(bindingPhoto, interaction)
+        return PhotoViewHolder(bindingPhoto, interaction)
     }
 
     class PhotoViewHolder(private val binding: ViewPagerItemBinding, private val interaction: PagerClickListener?) :
@@ -47,7 +47,7 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
         }
     }
 
-    override fun onBindViewHolder(holder: MarsRoverPagerAdapter.PhotoViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val currentItem = getItem(position)
 
         currentItem?.let {

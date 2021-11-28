@@ -4,10 +4,8 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import com.akhilasdeveloper.marsroverphotos.Constants.MILLIS_IN_A_DAY
 import com.akhilasdeveloper.marsroverphotos.Constants.MILLIS_IN_A_SOL
 import timber.log.Timber
-import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -16,8 +14,6 @@ import javax.inject.Inject
 class Utilities @Inject constructor(
     var context: Context
 ) {
-
-    private var connectivityManager:ConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     fun isConnectedToTheInternet(): Boolean{
         try{

@@ -33,7 +33,8 @@
                 android:id="@+id/rover_image"
                 android:layout_width="match_parent"
                 android:layout_height="600dp"
-                android:scaleType="centerCrop"/>
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/rover_image" />
 
 
             <LinearLayout
@@ -63,26 +64,16 @@
                         android:textSize="28sp"
                         android:textStyle="bold" />
 
-                    <com.google.android.material.card.MaterialCardView
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="bottom|end"
-                        android:layout_margin="5dp"
-                        app:cardBackgroundColor="@color/system_border"
-                        app:cardCornerRadius="20dp">
-
-                        <TextView
-                            android:id="@+id/rover_photos_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingStart="20dp"
-                            android:paddingTop="10dp"
-                            android:paddingEnd="20dp"
-                            android:paddingBottom="10dp"
-                            android:textColor="@color/system_for"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-                    </com.google.android.material.card.MaterialCardView>
+                        android:padding="20dp"
+                        android:textAllCaps="false"
+                        android:fontFamily="@font/nunito_sans"
+                        android:background="@drawable/button_bg"
+                        android:letterSpacing="0"
+                        android:textColor="@color/system_for"
+                        android:id="@+id/rover_photos_count" />
 
                 </LinearLayout>
 
@@ -90,7 +81,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:baselineAligned="false">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -104,7 +96,7 @@
                             android:layout_marginStart="10dp"
                             android:layout_marginTop="10dp"
                             android:layout_marginEnd="10dp"
-                            android:text="Launch Date"
+                            android:text="@string/launch_date"
                             android:textColor="@color/system_for"
                             android:textStyle="bold"
                             android:textSize="16sp"/>
@@ -114,7 +106,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
-                            android:text="Launch Date"
+                            android:text="@string/launch_date"
                             android:textColor="@color/system_for"
                             android:textSize="16sp"/>
 
@@ -133,7 +125,7 @@
                             android:layout_marginTop="10dp"
                             android:layout_marginEnd="10dp"
                             android:gravity="end"
-                            android:text="Landing Date"
+                            android:text="@string/landing_date"
                             android:textColor="@color/system_for"
                             android:textStyle="bold"
                             android:textSize="16sp"/>
@@ -144,7 +136,7 @@
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
                             android:gravity="end"
-                            android:text="Landing Date"
+                            android:text="@string/landing_date"
                             android:textColor="@color/system_for"
                             android:textSize="16sp"/>
 
@@ -159,7 +151,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:gravity="start"
-                    android:text="Status"
                     android:textColor="@color/system_for"
                     android:textStyle="bold"
                     android:textSize="16sp"/>
@@ -177,6 +168,16 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/empty_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/accent"
+        android:textColor="@color/system_for"
+        app:cardCornerRadius="20dp"/>
 
     <ProgressBar
         android:layout_width="match_parent"
