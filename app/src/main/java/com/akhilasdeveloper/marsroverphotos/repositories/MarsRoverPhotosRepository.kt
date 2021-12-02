@@ -134,6 +134,18 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.insertMarsRoverSrc(marsRoverSrcDb)
     }
 
+    suspend fun updatePhotos(marsRoverPhotoDb: MarsRoverPhotoDb) {
+        withContext(Dispatchers.IO) {
+            marsRoverDao.update(marsRoverPhotoDb)
+        }
+    }
+
+    suspend fun updateLike(like: Boolean, id: Int){
+        withContext(Dispatchers.IO) {
+            marsRoverDao.updateLike(like, id)
+        }
+    }
+
     private suspend fun refreshRoverSrcDb() {
 
         val response = marsRoverPhotosService.getRoverData()

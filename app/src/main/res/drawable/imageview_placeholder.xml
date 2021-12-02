@@ -4,6 +4,6 @@
     <item android:drawable="@color/first"/>
     <item android:drawable="@drawable/ic_baseline_cloud_download_24"
         android:gravity="center"
-        android:left="24dp" android:right="24dp" android:top="24dp" android:bottom="24dp"/>
+        android:left="64dp" android:right="64dp" android:top="64dp" android:bottom="64dp"/>
 
 </layer-list>

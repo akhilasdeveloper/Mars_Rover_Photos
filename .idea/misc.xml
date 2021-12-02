@@ -7,6 +7,8 @@
         <entry key="app/src/main/res/drawable/button_bg.xml" value="0.2861111111111111" />
         <entry key="app/src/main/res/drawable/gradient_to_top.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_baseline_cloud_download_24.xml" value="0.36875" />
+        <entry key="app/src/main/res/drawable/ic_heart_fill.xml" value="0.22239583333333332" />
+        <entry key="app/src/main/res/drawable/ic_heart_unfill.xml" value="0.22239583333333332" />
         <entry key="app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_marsrover.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_outline_camera_alt_24.xml" value="0.36875" />

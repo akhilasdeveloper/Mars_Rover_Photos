@@ -9,14 +9,26 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+import kotlin.math.abs
 
+fun Int.simplify() = when {
+    abs(this / 1000000) > 1 -> {
+        (this / 1000000).toString() + "M"
+    }
+    abs(this / 1000) > 1 -> {
+        (this / 1000).toString() + "K"
+    }
+    else -> {
+        this.toString()
+    }
+}
 
 class Utilities @Inject constructor(
     var context: Context
 ) {
 
-    fun isConnectedToTheInternet(): Boolean{
-        try{
+    fun isConnectedToTheInternet(): Boolean {
+        try {
             var result = false
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -44,7 +56,7 @@ class Utilities @Inject constructor(
                 }
             }
             return result
-        }catch (e: Exception){
+        } catch (e: Exception) {
             Timber.d("isConnectedToTheInternet: ${e.message}")
         }
         return false
@@ -56,18 +68,18 @@ class Utilities @Inject constructor(
         return formatter.format(Date(millis))
     }
 
-    fun formatDateToMillis(date: String):Long? {
+    fun formatDateToMillis(date: String): Long? {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val parsedDate = dateFormat.parse(date)
         return parsedDate?.time
     }
 
-    fun calculateDays(landingDate: Long, currentDate: Long):Long {
-        return  (currentDate - landingDate) / MILLIS_IN_A_SOL
+    fun calculateDays(landingDate: Long, currentDate: Long): Long {
+        return (currentDate - landingDate) / MILLIS_IN_A_SOL
     }
 
-    fun calculateDaysEarthDate(sol: Long, minDate: Long):Long {
-        return  minDate + (sol * MILLIS_IN_A_SOL)
+    fun calculateDaysEarthDate(sol: Long, minDate: Long): Long {
+        return minDate + (sol * MILLIS_IN_A_SOL)
     }
 
 }

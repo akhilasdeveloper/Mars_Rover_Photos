@@ -2,6 +2,7 @@ package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -34,10 +35,10 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
 
         fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
+                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
                     Glide.with(itemView)
                         .load(it.img_src)
-                        .placeholder(R.drawable.imageview_placeholder)
                         .centerCrop()
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)

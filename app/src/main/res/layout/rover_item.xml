@@ -16,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:scaleType="centerCrop"
+        android:background="@drawable/imageview_placeholder"
         android:contentDescription="@string/rover_image" />
 
     <LinearLayout
@@ -43,11 +44,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:background="@drawable/button_bg"
+            android:id="@+id/rover_saved_photos_count"
+            app:drawableStartCompat="@drawable/ic_heart_unfill"
+            app:drawableTint="@color/system_for"
+            android:layout_marginEnd="10dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
             android:textAllCaps="false"
             android:fontFamily="@font/nunito_sans"
+            android:drawablePadding="5dp"
+            android:gravity="center"
             android:textColor="@color/system_for"
-            android:id="@+id/rover_photos_count" />
+            android:id="@+id/rover_photos_count"
+            app:drawableStartCompat="@drawable/ic_outline_image_24"
+            app:drawableTint="@color/system_for"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true" />
 
     </LinearLayout>
 

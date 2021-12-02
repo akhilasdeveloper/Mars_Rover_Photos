@@ -53,6 +53,10 @@ class MainViewModel
         _dataStateRoverMaster.value = roverMaster
     }
 
+    fun setEmptyPhotos(){
+        _dataState.value = PagingData.empty()
+    }
+
     fun setPosition(position: Int){
         _dataStatePosition.value = position
     }
@@ -82,6 +86,17 @@ class MainViewModel
                 setLoading(false)
                 _dataStateRover.value = it
             }
+        }
+    }
+
+    fun updatePhotos(marsRoverPhotoDb: MarsRoverPhotoDb){
+        viewModelScope.launch {
+            marsRoverPhotosRepository.updatePhotos(marsRoverPhotoDb)
+        }
+    }
+    fun updateLike(like: Boolean, id: Int){
+        viewModelScope.launch {
+            marsRoverPhotosRepository.updateLike(like, id)
         }
     }
 

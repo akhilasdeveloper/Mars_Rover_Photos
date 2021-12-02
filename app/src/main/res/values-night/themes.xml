@@ -16,7 +16,7 @@
         <item name="android:fontFamily">@font/nunito_sans</item>
     </style>
     <style name="tool_bar_title" parent="@style/Base.TextAppearance.AppCompat.Title">
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">22sp</item>
         <item name="android:textStyle">bold</item>
     </style>
     <style name="ThemeOverlay.App.DatePicker" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar">

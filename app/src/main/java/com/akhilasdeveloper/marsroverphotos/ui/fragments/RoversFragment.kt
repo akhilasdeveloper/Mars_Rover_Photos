@@ -28,7 +28,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private var _binding: FragmentRoversBinding? = null
     private val binding get() = _binding!!
-    private var adapter: MarsRoverAdapter? = null
+    private var adapter: MarsRoverAdapter =  MarsRoverAdapter(this)
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
     @Inject lateinit var utilities: Utilities
 
@@ -63,13 +63,19 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     private fun init() {
-        adapter = MarsRoverAdapter(this, requireContext())
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.isGestureInsetBottomIgnored = true
         ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            binding.recycler.updatePadding(bottom = systemWindows.bottom, top = systemWindows.top)
+            binding.recycler.updatePadding(bottom = systemWindows.bottom)
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeToolbarTop) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            binding.homeToolbarTop.updatePadding(top = systemWindows.top)
             return@setOnApplyWindowInsetsListener insets
         }
 
@@ -94,6 +100,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             hideEmptyMessage()
             viewModel.getRoverData(isRefresh = false)
         }
+        viewModel.setEmptyPhotos()
     }
 
     private fun subscribeObservers() {
@@ -103,7 +110,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                     setEmptyMessage("Tap to refresh")
                 else
                     hideEmptyMessage()
-                adapter?.submitList(it)
+                adapter.submitList(it)
             }
             response.isLoading.let {
                  if(!(it == null || !it)) {
@@ -183,6 +190,11 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         binding.roverPhotosCount.setOnClickListener {
             navigateToPhotos(master)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

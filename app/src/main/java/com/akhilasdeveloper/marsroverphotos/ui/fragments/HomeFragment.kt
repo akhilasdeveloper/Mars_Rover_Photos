@@ -68,11 +68,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             return@setOnApplyWindowInsetsListener insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeToolbarTop) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            binding.photoRecycler.updatePadding(bottom = systemWindows.bottom)
-            binding.photoRecycler.updatePadding(top = systemWindows.top)
+            binding.homeToolbarTop.updatePadding(top = systemWindows.top)
             return@setOnApplyWindowInsetsListener insets
         }
 
@@ -125,8 +124,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun setData() {
         binding.apply {
             if (::master.isInitialized) {
-                dateButtonText.text = master.max_date
                 toolbarTitle.text = master.name
+                homeToolbarTop.title = master.name
                 currentDate = utilities.formatDateToMillis(master.max_date)
                 solButtonText.text = getString(R.string.sol,utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toString())
             }
@@ -209,15 +208,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 getData()
             }
         }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        setHasOptionsMenu(true)
-        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onDestroyView() {

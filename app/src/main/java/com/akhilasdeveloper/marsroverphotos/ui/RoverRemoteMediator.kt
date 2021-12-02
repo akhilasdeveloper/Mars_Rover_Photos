@@ -11,6 +11,8 @@ import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDao
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDatabase
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -22,7 +24,7 @@ class RoverRemoteMediator(
     private val marsRoverDao: MarsRoverDao,
     private val marsRoverDataBase: MarsRoverDatabase,
     private val utilities: Utilities
-):RemoteMediator<Int, MarsRoverPhotoDb>() {
+) : RemoteMediator<Int, MarsRoverPhotoDb>() {
 
     override suspend fun initialize(): InitializeAction {
         return if (marsRoverDao.dataCount(roverName, date) > 0) {
@@ -88,7 +90,7 @@ class RoverRemoteMediator(
                 // Insert new users into database, which invalidates the
                 // current PagingData, allowing Paging to present the updates
                 // in the DB.
-                response?.photos?.let { list->
+                response?.photos?.let { list ->
                     marsRoverDao.insertAllMarsRoverPhotos(list.map {
                         MarsRoverPhotoDb(
                             earth_date = date,
@@ -106,10 +108,11 @@ class RoverRemoteMediator(
                 }
 
             }
-
             MediatorResult.Success(
                 endOfPaginationReached = response == null || response.photos.isEmpty()
             )
+
+
         } catch (e: IOException) {
             MediatorResult.Error(e)
         } catch (e: HttpException) {

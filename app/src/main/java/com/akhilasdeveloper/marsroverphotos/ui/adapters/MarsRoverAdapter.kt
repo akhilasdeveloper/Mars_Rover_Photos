@@ -3,22 +3,23 @@ package com.akhilasdeveloper.marsroverphotos.ui.adapters
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.*
 import com.akhilasdeveloper.marsroverphotos.Constants
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
+import com.akhilasdeveloper.marsroverphotos.simplify
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerRoverClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
-class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null,
-private val context: Context) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewHolder>(){
+class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val bindingPhoto =
             RoverItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto, interaction , context)
+        return PhotoViewHolder(bindingPhoto, interaction )
     }
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
@@ -27,19 +28,20 @@ private val context: Context) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewH
 
     }
 
-    class PhotoViewHolder(private val binding: RoverItemBinding, private val interaction: RecyclerRoverClickListener?, private val context: Context) :
+    class PhotoViewHolder(private val binding: RoverItemBinding, private val interaction: RecyclerRoverClickListener?) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: RoverMaster, position: Int) {
             binding.apply {
+
+                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
                 Glide.with(itemView)
                     .load(Constants.URL_DATA + photo.image)
                     .centerCrop()
-                    .placeholder(R.drawable.imageview_placeholder)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(roverImage)
                 roverName.text = photo.name
-                roverPhotosCount.text = context.getString(R.string.view_photos, photo.total_photos.toString())
+                roverPhotosCount.text = photo.total_photos.simplify()
             }
 
             binding.roverPhotosCount.setOnClickListener {

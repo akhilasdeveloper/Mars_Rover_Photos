@@ -16,6 +16,8 @@ import androidx.annotation.Nullable
 import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.*
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.transition.TransitionInflater
 import androidx.viewpager2.widget.ViewPager2
 import com.akhilasdeveloper.marsroverphotos.R
@@ -27,6 +29,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -41,19 +44,24 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private val adapter = MarsRoverPagerAdapter(this)
     private lateinit var controler: WindowInsetsControllerCompat
     private var isShow = true
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedElementEnterTransition =
-            TransitionInflater.from(context).inflateTransition(android.R.transition.move)
-    }
+    private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
+    private var currentData: MarsRoverPhotoDb? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentRoverviewBinding.bind(view)
 
         init()
+        setListeners()
         subscribeObservers()
+    }
+
+    private fun setListeners() {
+        lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { _ ->
+                updateLikeIcon()
+            }
+        }
     }
 
     private fun subscribeObservers() {
@@ -81,7 +89,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         binding.viewPage.adapter = adapter
         controler = WindowInsetsControllerCompat(requireActivity().window, binding.container)
 
-        binding.viewPage.registerOnPageChangeCallback(object :ViewPager2.OnPageChangeCallback(){
+        onPageChangeCallback = object : ViewPager2.OnPageChangeCallback(){
 
             override fun onPageScrollStateChanged(state: Int) {
                 if (state == ViewPager2.SCROLL_STATE_IDLE)
@@ -92,16 +100,26 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                val datas = adapter.snapshot()[position]
-                val dirPath =
-                    requireContext().getExternalFilesDir(null)?.absolutePath + "/" + getString(R.string.app_name) + "/"
+                currentData = adapter.snapshot()[position]
+
+                updateLikeIcon()
+
+                binding.like.setOnClickListener {
+                    currentData?.let {
+                        it.id?.let { id->
+                            viewModel.updateLike(!it.liked, id)
+                        }
+                    }
+                }
+
+                val dirPath = requireContext().getExternalFilesDir(null)?.absolutePath + "/" + getString(R.string.app_name) + "/"
 
                 val dir = File(dirPath)
 
                 val fileName: String = System.currentTimeMillis().toString()
-
+/*
                 Glide.with(requireActivity())
-                    .load(datas?.img_src)
+                    .load(currentData?.img_src)
                     .into(object : CustomTarget<Drawable?>() {
                         override fun onResourceReady(
                             resource: Drawable,
@@ -110,7 +128,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                             val bitmap = (resource as BitmapDrawable).bitmap
 
                             binding.download.setOnClickListener {
-
                                 if (verifyPermissions()) {
                                     saveImage(bitmap, dir, fileName)
                                 }
@@ -126,13 +143,24 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                    })
+                    })*/
 //                Toast.makeText(requireContext(),"Value ",Toast.LENGTH_SHORT).show()
             }
-        })
+        }
+        onPageChangeCallback?.let {
+            binding.viewPage.registerOnPageChangeCallback(it)
+        }
 
         setTheme()
         show()
+    }
+
+    private fun updateLikeIcon() {
+        if (currentData?.liked == true){
+            binding.like.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.ic_heart_fill, 0, 0)
+        }else{
+            binding.like.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.ic_heart_unfill, 0, 0)
+        }
     }
 
     private fun disableMenu() {
@@ -142,6 +170,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         binding.download.alpha = .5f
         binding.share.isEnabled = false
         binding.share.alpha = .5f
+        binding.like.isEnabled = false
+        binding.like.alpha = .5f
     }
 
     private fun enableMenu() {
@@ -151,6 +181,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         binding.download.alpha = 1f
         binding.share.isEnabled = true
         binding.share.alpha = 1f
+        binding.like.isEnabled = true
+        binding.like.alpha = 1f
     }
 
     private fun saveImage(bitmap: Bitmap?, storageDir: File, imageFileName: String) {
@@ -233,6 +265,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         super.onDestroyView()
         removeTheme()
         show()
+        _binding = null
+        onPageChangeCallback = null
     }
 
     override fun onClick() {

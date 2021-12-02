@@ -3,9 +3,11 @@ package com.akhilasdeveloper.marsroverphotos.ui.adapters
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
@@ -24,6 +26,7 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
 
         fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
+                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
                     viewPageImage.showImage(Uri.parse(it.img_src))
                 }
