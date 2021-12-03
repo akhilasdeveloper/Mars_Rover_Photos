@@ -12,6 +12,19 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.abs
+import android.graphics.BitmapFactory
+
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.net.MalformedURLException
+import java.net.URL
+
 
 fun Int.simplify() = when {
     abs(this / 1000000) > 1 -> {
@@ -25,8 +38,8 @@ fun Int.simplify() = when {
     }
 }
 
-fun Fragment.showShortToast(message: String){
-    Toast.makeText(this.requireContext(),message,Toast.LENGTH_SHORT).show()
+fun Fragment.showShortToast(message: String) {
+    Toast.makeText(this.requireContext(), message, Toast.LENGTH_SHORT).show()
 }
 
 class Utilities @Inject constructor(
@@ -86,6 +99,19 @@ class Utilities @Inject constructor(
 
     fun calculateDaysEarthDate(sol: Long, minDate: Long): Long {
         return minDate + (sol * MILLIS_IN_A_SOL)
+    }
+
+    fun downloadImage(imageUrl: String?, callback:(Bitmap?) -> (Unit)) {
+        Glide.with(context).asBitmap().load(imageUrl)
+            .into(object : CustomTarget<Bitmap?>() {
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    transition: Transition<in Bitmap?>?
+                ) {
+                    callback(resource)
+                }
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
     }
 
 }

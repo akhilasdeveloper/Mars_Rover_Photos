@@ -26,7 +26,9 @@
                 style="@style/tool_bar_title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="16dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
                 android:textColor="@color/system_for"
                 app:titleTextColor="@color/system_for" />
         </com.google.android.material.appbar.MaterialToolbar>
@@ -79,8 +81,9 @@
                     android:paddingStart="10dp"
                     android:paddingTop="10dp"
                     android:paddingEnd="10dp"
-                    android:layout_weight="1"
                     android:paddingBottom="10dp"
+                    android:textStyle="bold"
+                    android:layout_weight="1"
                     android:textColor="@color/system_for"
                     app:drawableStartCompat="@drawable/ic_mars_icon"
                     app:drawableTint="@color/system_for" />
@@ -96,6 +99,7 @@
                     android:drawablePadding="10dp"
                     android:gravity="center"
                     android:paddingStart="10dp"
+                    android:textStyle="bold"
                     android:layout_weight="1"
                     android:paddingTop="10dp"
                     android:paddingEnd="10dp"

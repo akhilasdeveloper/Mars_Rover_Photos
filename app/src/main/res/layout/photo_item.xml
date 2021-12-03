@@ -21,7 +21,6 @@
         android:gravity="center_vertical"
         android:drawablePadding="5dp"
         android:textColor="@color/system_for"
-        android:textSize="12sp"
         android:padding="5dp"
         app:drawableStartCompat="@drawable/ic_round_camera_alt_24" />
 

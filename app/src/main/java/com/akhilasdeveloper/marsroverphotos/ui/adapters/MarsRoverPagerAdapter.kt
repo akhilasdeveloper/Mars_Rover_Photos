@@ -31,7 +31,6 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
                     viewPageImage.showImage(Uri.parse(it.img_src))
                 }
             }
-            interaction?.loaded(binding, photo, position)
             binding.viewPageImage.setOnClickListener {
                 interaction?.onClick()
             }

@@ -35,6 +35,15 @@ import kotlinx.coroutines.flow.collectLatest
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import android.app.DownloadManager
+import android.net.Uri
+import androidx.core.content.ContextCompat
+
+import androidx.core.content.ContextCompat.getSystemService
+import com.akhilasdeveloper.marsroverphotos.Utilities
+import javax.inject.Inject
+import androidx.annotation.NonNull
+import com.bumptech.glide.request.transition.Transition
 
 
 @AndroidEntryPoint
@@ -49,6 +58,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     private var currentData: MarsRoverPhotoDb? = null
     private var currentPosition: Int? = null
+    @Inject
+    lateinit var utilities: Utilities
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -117,7 +128,11 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setDownload() {
-
+        currentData?.img_src?.let { url->
+            utilities.downloadImage(url){
+                showShortToast(it.toString())
+            }
+        }
     }
 
     private fun setLike() {
@@ -133,7 +148,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             response?.let {
                 adapter.submitData(viewLifecycleOwner.lifecycle, response)
                 setCurrentData()
-                updateUI()
             }
         })
         viewModel.positionState.observe(viewLifecycleOwner,  {
@@ -157,6 +171,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
 
         binding.viewPage.adapter = adapter
+
         controler = WindowInsetsControllerCompat(requireActivity().window, binding.container)
 
         setTheme()
@@ -173,24 +188,16 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun disableMenu() {
         binding.setWallpaper.isEnabled = false
-        binding.setWallpaper.alpha = DISABLED_MENU_ALPHA
         binding.download.isEnabled = false
-        binding.download.alpha = DISABLED_MENU_ALPHA
         binding.share.isEnabled = false
-        binding.share.alpha = DISABLED_MENU_ALPHA
         binding.like.isEnabled = false
-        binding.like.alpha = DISABLED_MENU_ALPHA
     }
 
     private fun enableMenu() {
         binding.setWallpaper.isEnabled = true
-        binding.setWallpaper.alpha = 1f
         binding.download.isEnabled = true
-        binding.download.alpha = 1f
         binding.share.isEnabled = true
-        binding.share.alpha = 1f
         binding.like.isEnabled = true
-        binding.like.alpha = 1f
     }
 
     private fun setTheme() {
@@ -242,11 +249,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     override fun onClick() {
         peekUI()
-    }
-
-    override fun loaded(binding: ViewPagerItemBinding, photo: MarsRoverPhotoDb, position: Int) {
-        this.binding.setWallpaper.setOnClickListener {
-        }
     }
 
     private fun Context.isDarkThemeOn(): Boolean {
