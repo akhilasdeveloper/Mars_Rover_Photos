@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.akhilasdeveloper.marsroverphotos.Constants.MILLIS_IN_A_SOL
 import timber.log.Timber
 import java.text.SimpleDateFormat
@@ -21,6 +23,10 @@ fun Int.simplify() = when {
     else -> {
         this.toString()
     }
+}
+
+fun Fragment.showShortToast(message: String){
+    Toast.makeText(this.requireContext(),message,Toast.LENGTH_SHORT).show()
 }
 
 class Utilities @Inject constructor(

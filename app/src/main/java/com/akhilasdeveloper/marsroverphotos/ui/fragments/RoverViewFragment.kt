@@ -20,10 +20,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.transition.TransitionInflater
 import androidx.viewpager2.widget.ViewPager2
+import com.akhilasdeveloper.marsroverphotos.Constants.DISABLED_MENU_ALPHA
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.showShortToast
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -46,6 +48,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private var isShow = true
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     private var currentData: MarsRoverPhotoDb? = null
+    private var currentPosition: Int? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -57,38 +60,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setListeners() {
-        lifecycleScope.launch {
-            adapter.loadStateFlow.collectLatest { _ ->
-                updateLikeIcon()
-            }
-        }
-    }
-
-    private fun subscribeObservers() {
-        viewModel.dataState.observe(viewLifecycleOwner,  { response ->
-            response?.let {
-                adapter.submitData(viewLifecycleOwner.lifecycle, response)
-            }
-        })
-        viewModel.positionState.observe(viewLifecycleOwner,  {
-            binding.viewPage.setCurrentItem(it, false)
-        })
-    }
-
-    private fun init() {
-        var isSet = true
-        ViewCompat.setOnApplyWindowInsetsListener(binding.menus) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            if (isSet) {
-                binding.menus.updatePadding(bottom = systemWindows.bottom)
-                isSet = false
-            }
-            return@setOnApplyWindowInsetsListener insets
-        }
-        binding.viewPage.adapter = adapter
-        controler = WindowInsetsControllerCompat(requireActivity().window, binding.container)
-
         onPageChangeCallback = object : ViewPager2.OnPageChangeCallback(){
 
             override fun onPageScrollStateChanged(state: Int) {
@@ -100,62 +71,99 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                currentData = adapter.snapshot()[position]
-
-                updateLikeIcon()
-
-                binding.like.setOnClickListener {
-                    currentData?.let {
-                        it.id?.let { id->
-                            viewModel.updateLike(!it.liked, id)
-                        }
-                    }
-                }
-
-                val dirPath = requireContext().getExternalFilesDir(null)?.absolutePath + "/" + getString(R.string.app_name) + "/"
-
-                val dir = File(dirPath)
-
-                val fileName: String = System.currentTimeMillis().toString()
-/*
-                Glide.with(requireActivity())
-                    .load(currentData?.img_src)
-                    .into(object : CustomTarget<Drawable?>() {
-                        override fun onResourceReady(
-                            resource: Drawable,
-                            transition: com.bumptech.glide.request.transition.Transition<in Drawable?>?
-                        ) {
-                            val bitmap = (resource as BitmapDrawable).bitmap
-
-                            binding.download.setOnClickListener {
-                                if (verifyPermissions()) {
-                                    saveImage(bitmap, dir, fileName)
-                                }
-                            }
-                        }
-
-                        override fun onLoadCleared(@Nullable placeholder: Drawable?) {}
-                        override fun onLoadFailed(@Nullable errorDrawable: Drawable?) {
-                            super.onLoadFailed(errorDrawable)
-                            Toast.makeText(
-                                requireContext(),
-                                "Failed to Download Image! Please try again later.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    })*/
-//                Toast.makeText(requireContext(),"Value ",Toast.LENGTH_SHORT).show()
+                currentPosition = position
+                setCurrentData()
+                updateUI()
             }
         }
+
         onPageChangeCallback?.let {
             binding.viewPage.registerOnPageChangeCallback(it)
         }
+
+        binding.apply {
+            like.setOnClickListener {
+                setLike()
+            }
+            download.setOnClickListener {
+                setDownload()
+            }
+            share.setOnClickListener {
+                setShare()
+            }
+            setWallpaper.setOnClickListener {
+                setWallpaper()
+            }
+        }
+
+        adapter.addLoadStateListener {
+            setCurrentData()
+            updateUI()
+        }
+    }
+
+    private fun setCurrentData() {
+        currentPosition?.let {
+            currentData = adapter.snapshot()[it]
+        }
+    }
+
+    private fun setWallpaper() {
+
+    }
+
+    private fun setShare() {
+
+    }
+
+    private fun setDownload() {
+
+    }
+
+    private fun setLike() {
+        currentData?.let {
+            it.id?.let { id->
+                viewModel.updateLike(!it.liked, id)
+            }
+        }
+    }
+
+    private fun subscribeObservers() {
+        viewModel.dataState.observe(viewLifecycleOwner,  { response ->
+            response?.let {
+                adapter.submitData(viewLifecycleOwner.lifecycle, response)
+                setCurrentData()
+                updateUI()
+            }
+        })
+        viewModel.positionState.observe(viewLifecycleOwner,  {
+            currentPosition = it
+            binding.viewPage.setCurrentItem(it, false)
+        })
+    }
+
+    private fun init() {
+
+        var isSet = true
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.menus) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            if (isSet) {
+                binding.menus.updatePadding(bottom = systemWindows.bottom)
+                isSet = false
+            }
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        binding.viewPage.adapter = adapter
+        controler = WindowInsetsControllerCompat(requireActivity().window, binding.container)
 
         setTheme()
         show()
     }
 
-    private fun updateLikeIcon() {
+    private fun updateUI() {
         if (currentData?.liked == true){
             binding.like.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.ic_heart_fill, 0, 0)
         }else{
@@ -165,13 +173,13 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun disableMenu() {
         binding.setWallpaper.isEnabled = false
-        binding.setWallpaper.alpha = .5f
+        binding.setWallpaper.alpha = DISABLED_MENU_ALPHA
         binding.download.isEnabled = false
-        binding.download.alpha = .5f
+        binding.download.alpha = DISABLED_MENU_ALPHA
         binding.share.isEnabled = false
-        binding.share.alpha = .5f
+        binding.share.alpha = DISABLED_MENU_ALPHA
         binding.like.isEnabled = false
-        binding.like.alpha = .5f
+        binding.like.alpha = DISABLED_MENU_ALPHA
     }
 
     private fun enableMenu() {
@@ -183,43 +191,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         binding.share.alpha = 1f
         binding.like.isEnabled = true
         binding.like.alpha = 1f
-    }
-
-    private fun saveImage(bitmap: Bitmap?, storageDir: File, imageFileName: String) {
-        var successDirCreated = false
-        if (!storageDir.exists()) {
-            successDirCreated = storageDir.mkdir()
-        }
-        if (successDirCreated) {
-            val imageFile = File(storageDir, imageFileName)
-            val savedImagePath = imageFile.absolutePath
-            try {
-                val fOut: OutputStream = FileOutputStream(imageFile)
-                bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fOut)
-                fOut.close()
-                Toast.makeText(requireContext(), "Image Saved! $savedImagePath", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error while saving image!", Toast.LENGTH_SHORT)
-                    .show()
-                e.printStackTrace()
-            }
-        } else {
-            Toast.makeText(requireContext(), "Failed to make folder!", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    fun verifyPermissions(): Boolean {
-
-        // This will return the current Status
-        val permissionExternalMemory =
-            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (permissionExternalMemory != PackageManager.PERMISSION_GRANTED) {
-            val storagePermission = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            // If permission not granted then ask for permission real time.
-            ActivityCompat.requestPermissions(requireActivity(), storagePermission, 1)
-            return false
-        }
-        return true
     }
 
     private fun setTheme() {
