@@ -12,13 +12,20 @@
         android:layout_height="match_parent"
         android:id="@+id/view_page"/>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_gravity="top"
+        android:background="@drawable/image_viewer_top_background_gradient"
+        android:id="@+id/top_gradient"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_gravity="bottom"
         android:id="@+id/menus"
-        android:background="@color/transparent50">
+        android:background="@drawable/image_viewer_bottom_background_gradient">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

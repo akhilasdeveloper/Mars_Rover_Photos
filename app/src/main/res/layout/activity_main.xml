@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.MainActivity">
-
+    tools:context=".ui.MainActivity"
+    android:animateLayoutChanges="true">
 
     <fragment
         android:id="@+id/navHostFragment"
@@ -15,5 +15,17 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/main_navigation" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/system_status_bar_background"
+        android:id="@+id/status_bar_bg"
+        android:layout_gravity="top"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/system_navigation_bar_background"
+        android:id="@+id/navigation_bar_bg"
+        android:layout_gravity="bottom"/>
 
 </FrameLayout>

@@ -65,6 +65,18 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     private fun init() {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.isGestureInsetBottomIgnored = true
+        bottomSheetBehavior.addBottomSheetCallback(object :BottomSheetBehavior.BottomSheetCallback(){
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED)
+                    binding.homeAppbarTop.visibility = View.VISIBLE
+                else
+                    binding.homeAppbarTop.visibility = View.INVISIBLE
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+
+        })
         ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())

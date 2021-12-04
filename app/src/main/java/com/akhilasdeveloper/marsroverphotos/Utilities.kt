@@ -1,6 +1,8 @@
 package com.akhilasdeveloper.marsroverphotos
 
+import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -40,6 +42,15 @@ fun Int.simplify() = when {
 
 fun Fragment.showShortToast(message: String) {
     Toast.makeText(this.requireContext(), message, Toast.LENGTH_SHORT).show()
+}
+
+fun Activity.showShortToast(message: String) {
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+}
+
+fun Context.isDarkThemeOn(): Boolean {
+    return resources.configuration.uiMode and
+            Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 }
 
 class Utilities @Inject constructor(

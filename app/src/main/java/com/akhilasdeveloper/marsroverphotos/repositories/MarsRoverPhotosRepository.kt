@@ -134,17 +134,32 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.insertMarsRoverSrc(marsRoverSrcDb)
     }
 
-    suspend fun updatePhotos(marsRoverPhotoDb: MarsRoverPhotoDb) {
+    suspend fun updateLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb){
         withContext(Dispatchers.IO) {
-            marsRoverDao.update(marsRoverPhotoDb)
+            marsRoverPhotoLikedDb.let {
+                if (checkLike(it.id))
+                    removeLike(marsRoverPhotoLikedDb)
+                else
+                    addLike(marsRoverPhotoLikedDb)
+            }
         }
     }
 
-    suspend fun updateLike(like: Boolean, id: Int){
+    private suspend fun addLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb){
         withContext(Dispatchers.IO) {
-            marsRoverDao.updateLike(like, id)
+            marsRoverDao.addLike(marsRoverPhotoLikedDb = marsRoverPhotoLikedDb)
         }
     }
+
+    private suspend fun removeLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb){
+        withContext(Dispatchers.IO) {
+            marsRoverDao.removeLike(marsRoverPhotoLikedDb = marsRoverPhotoLikedDb)
+        }
+    }
+
+    suspend fun isLiked(id:Int) = flow<Boolean> { emit(checkLike(id)) }
+
+    private suspend fun checkLike(id:Int) = withContext(Dispatchers.IO) { marsRoverDao.isLiked(id)>0}
 
     private suspend fun refreshRoverSrcDb() {
 

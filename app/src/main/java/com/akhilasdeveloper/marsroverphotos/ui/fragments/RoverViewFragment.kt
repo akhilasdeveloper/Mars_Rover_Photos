@@ -1,49 +1,29 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
-import androidx.annotation.Nullable
-import androidx.core.app.ActivityCompat
+import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.*
-import androidx.lifecycle.lifecycleScope
-import androidx.paging.LoadState
-import androidx.transition.TransitionInflater
 import androidx.viewpager2.widget.ViewPager2
-import com.akhilasdeveloper.marsroverphotos.Constants.DISABLED_MENU_ALPHA
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.showShortToast
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collectLatest
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
-import android.app.DownloadManager
-import android.net.Uri
-import androidx.core.content.ContextCompat
 
-import androidx.core.content.ContextCompat.getSystemService
 import com.akhilasdeveloper.marsroverphotos.Utilities
 import javax.inject.Inject
-import androidx.annotation.NonNull
-import com.bumptech.glide.request.transition.Transition
+import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
+import com.akhilasdeveloper.marsroverphotos.isDarkThemeOn
 
 
 @AndroidEntryPoint
@@ -53,7 +33,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private val binding get() = _binding!!
 
     private val adapter = MarsRoverPagerAdapter(this)
-    private lateinit var controler: WindowInsetsControllerCompat
     private var isShow = true
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     private var currentData: MarsRoverPhotoDb? = null
@@ -84,7 +63,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                 super.onPageSelected(position)
                 currentPosition = position
                 setCurrentData()
-                updateUI()
             }
         }
 
@@ -107,15 +85,12 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             }
         }
 
-        adapter.addLoadStateListener {
-            setCurrentData()
-            updateUI()
-        }
     }
 
     private fun setCurrentData() {
         currentPosition?.let {
             currentData = adapter.snapshot()[it]
+            getIsLiked()
         }
     }
 
@@ -135,10 +110,21 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
     }
 
+    private fun getIsLiked(){
+        currentData?.let {
+            it.id?.let { id ->
+                viewModel.isLiked(id)
+            }
+        }
+    }
+
     private fun setLike() {
         currentData?.let {
             it.id?.let { id->
-                viewModel.updateLike(!it.liked, id)
+                viewModel.updateLike(marsRoverPhotoLikedDb = MarsRoverPhotoLikedDb(
+                    id = id,
+                    rover_id = it.rover_id
+                ))
             }
         }
     }
@@ -153,6 +139,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         viewModel.positionState.observe(viewLifecycleOwner,  {
             currentPosition = it
             binding.viewPage.setCurrentItem(it, false)
+        })
+        viewModel.dataStateIsLiked.observe(viewLifecycleOwner,{
+            updateLikeIcon(it)
         })
     }
 
@@ -171,15 +160,17 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
 
         binding.viewPage.adapter = adapter
-
-        controler = WindowInsetsControllerCompat(requireActivity().window, binding.container)
-
-        setTheme()
-        show()
     }
 
-    private fun updateUI() {
-        if (currentData?.liked == true){
+
+    override fun onResume() {
+        super.onResume()
+        uiCommunicationListener.setTransparentSystemBar()
+        setTheme()
+    }
+
+    private fun updateLikeIcon(liked:Boolean) {
+        if (liked){
             binding.like.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.ic_heart_fill, 0, 0)
         }else{
             binding.like.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.ic_heart_unfill, 0, 0)
@@ -200,24 +191,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         binding.like.isEnabled = true
     }
 
-    private fun setTheme() {
-        requireActivity().window.apply {
-            statusBarColor = Color.TRANSPARENT
-            navigationBarColor = Color.TRANSPARENT
-        }
-        controler.isAppearanceLightStatusBars = false
-        controler.isAppearanceLightNavigationBars = false
-    }
-
-    private fun removeTheme() {
-        requireActivity().window.apply {
-            statusBarColor = ResourcesCompat.getColor(resources, R.color.system_border, null)
-            navigationBarColor = ResourcesCompat.getColor(resources, R.color.system_border, null)
-        }
-        controler.isAppearanceLightStatusBars = !requireContext().isDarkThemeOn()
-        controler.isAppearanceLightNavigationBars = !requireContext().isDarkThemeOn()
-    }
-
     private fun peekUI() {
         if (isShow)
             hide()
@@ -225,35 +198,44 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             show()
     }
 
+    private fun setTheme() {
+        WindowInsetsControllerCompat(requireActivity().window, binding.root).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
+    }
+
+    private fun removeTheme() {
+        uiCommunicationListener.setStatusBarTheme()
+    }
+
     private fun hide() {
-        isShow = false
-        controler.hide(WindowInsetsCompat.Type.systemBars())
-        controler.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        binding.menus.visibility = View.INVISIBLE
+        if (isShow) {
+            isShow = false
+            uiCommunicationListener.hideSystemBar()
+            binding.menus.visibility = View.INVISIBLE
+            binding.topGradient.visibility = View.INVISIBLE
+        }
     }
 
     private fun show() {
-        isShow = true
-        controler.show(WindowInsetsCompat.Type.systemBars())
-        binding.menus.visibility = View.VISIBLE
+        if (!isShow) {
+            isShow = true
+            uiCommunicationListener.showSystemBar()
+            binding.menus.visibility = View.VISIBLE
+            binding.topGradient.visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        removeTheme()
         show()
-        _binding = null
-        onPageChangeCallback = null
+        uiCommunicationListener.removeTransparentSystemBar()
+        removeTheme()
     }
 
     override fun onClick() {
         peekUI()
-    }
-
-    private fun Context.isDarkThemeOn(): Boolean {
-        return resources.configuration.uiMode and
-                Configuration.UI_MODE_NIGHT_MASK == UI_MODE_NIGHT_YES
     }
 
 }

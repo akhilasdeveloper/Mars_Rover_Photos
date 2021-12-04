@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             app:titleTextColor="@color/appbar"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|enterAlways|snap">
+            app:layout_scrollFlags="scroll">
             <TextView
                 android:id="@+id/toolbar_title"
                 style="@style/tool_bar_title"

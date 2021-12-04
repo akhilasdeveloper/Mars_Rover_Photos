@@ -11,9 +11,11 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:windowBackground">@drawable/splash</item>
-        <item name="android:statusBarColor">@color/system_border</item>
-        <item name="android:navigationBarColor">@color/system_border</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:fontFamily">@font/nunito_sans</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
     </style>
     <style name="tool_bar_title" parent="@style/Base.TextAppearance.AppCompat.Title">
         <item name="android:textSize">28sp</item>

@@ -11,6 +11,8 @@ import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null) :
     PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
@@ -28,7 +30,12 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
-                    viewPageImage.showImage(Uri.parse(it.img_src))
+//                    viewPageImage.showImage(Uri.parse(it.img_src))
+                    Glide.with(itemView)
+                        .load(it.img_src)
+                        .centerCrop()
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(viewPageImage)
                 }
             }
             binding.viewPageImage.setOnClickListener {

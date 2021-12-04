@@ -90,8 +90,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
             )
         }
-
-        WindowInsetsControllerCompat(requireActivity().window, binding.homeFragmentRoot).show(WindowInsetsCompat.Type.systemBars())
     }
 
     private fun subscribeObservers() {

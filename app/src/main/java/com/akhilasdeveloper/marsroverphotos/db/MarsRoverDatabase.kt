@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [MarsRoverPhotoDb::class, MarsRoverSrcDb::class, MarsRoverManifestDb::class],
+    entities = [MarsRoverPhotoDb::class, MarsRoverSrcDb::class, MarsRoverManifestDb::class, MarsRoverPhotoLikedDb::class],
     version = 2
 )
 abstract class MarsRoverDatabase : RoomDatabase() {

@@ -9,6 +9,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,9 +31,13 @@ class MainViewModel
     private val _dataStateRoverMaster: MutableLiveData<RoverMaster> = MutableLiveData()
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
+    private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
 
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
+
+    val dataStateIsLiked: LiveData<Boolean>
+        get() = _dataStateIsLiked
 
     val dataStateLoading: LiveData<Boolean>
         get() = _dataStateLoading
@@ -89,14 +94,18 @@ class MainViewModel
         }
     }
 
-    fun updatePhotos(marsRoverPhotoDb: MarsRoverPhotoDb){
+    fun isLiked(id: Int){
         viewModelScope.launch {
-            marsRoverPhotosRepository.updatePhotos(marsRoverPhotoDb)
+            marsRoverPhotosRepository.isLiked(id).collect {
+                _dataStateIsLiked.value = it
+            }
         }
     }
-    fun updateLike(like: Boolean, id: Int){
+
+    fun updateLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb){
         viewModelScope.launch {
-            marsRoverPhotosRepository.updateLike(like, id)
+            marsRoverPhotosRepository.updateLike(marsRoverPhotoLikedDb)
+            isLiked(marsRoverPhotoLikedDb.id)
         }
     }
 

@@ -21,11 +21,14 @@ interface MarsRoverDao {
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
     fun isPhotosByDateExist(date: Long, roverName:String): Int
 
-    @Query("UPDATE mars_rover_photo_table SET liked = :like WHERE id = :id")
-    fun updateLike(like: Boolean, id: Int): Int
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun addLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb)
 
-    @Update
-    fun update(marsRoverPhotoDb: MarsRoverPhotoDb)
+    @Delete
+    fun removeLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb)
+
+    @Query("SELECT count(*) FROM mars_rover_photo_liked_table WHERE id = :id")
+    fun isLiked(id: Int): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllMarsRoverPhotos(users: List<MarsRoverPhotoDb>)
