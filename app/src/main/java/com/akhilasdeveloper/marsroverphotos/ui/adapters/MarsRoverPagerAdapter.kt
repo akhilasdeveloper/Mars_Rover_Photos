@@ -28,13 +28,10 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
 
         fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
-                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
-//                    viewPageImage.showImage(Uri.parse(it.img_src))
                     Glide.with(itemView)
                         .load(it.img_src)
-                        .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .centerInside()
                         .into(viewPageImage)
                 }
             }

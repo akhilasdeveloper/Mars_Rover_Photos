@@ -13,7 +13,6 @@
     <ImageView
         android:id="@+id/view_page_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:failureImageInitScaleType="center" />
+        android:layout_height="match_parent" />
 
 </FrameLayout>

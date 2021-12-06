@@ -1,21 +1,20 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
 import android.os.Bundle
-import android.view.ViewGroup
 import androidx.core.view.*
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
-import com.akhilasdeveloper.marsroverphotos.isDarkThemeOn
-import com.akhilasdeveloper.marsroverphotos.showShortToast
+import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private var statusBarCallBack: WindowInsetsAnimationCompat.Callback? = null
-    private var navigationBarCallBack: WindowInsetsAnimationCompat.Callback? = null
+    private var destinationChangedListener: NavController.OnDestinationChangedListener? = null
+    private var navController: NavController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,8 +22,7 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.setBackgroundDrawableResource(R.color.first)
-
+        window.setBackgroundDrawableResource(R.color.black)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarBg) { view, insets ->
             val systemWindows =
@@ -40,76 +38,25 @@ class MainActivity : BaseActivity() {
             return@setOnApplyWindowInsetsListener insets
         }
 
-        statusBarCallBack = object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
-
-            var heightPre = 0f
-            var heightPost = 0f
-
-            override fun onPrepare(animation: WindowInsetsAnimationCompat) {
-                heightPre = binding.statusBarBg.bottom.toFloat()
+        destinationChangedListener = NavController.OnDestinationChangedListener { _, destination, _ ->
+                when (destination.id) {
+                    R.id.roverViewFragment -> {
+                        setTransparentSystemBar()
+                        setStatusBarDarkTheme()
+                    }
+                    else -> {
+                        removeTransparentSystemBar()
+                        setStatusBarContrast()
+                    }
+                }
             }
 
-            override fun onStart(
-                animation: WindowInsetsAnimationCompat,
-                bounds: WindowInsetsAnimationCompat.BoundsCompat
-            ): WindowInsetsAnimationCompat.BoundsCompat {
-                heightPost = binding.statusBarBg.bottom.toFloat()
-                return super.onStart(animation, bounds)
-            }
+        navController = findNavController(R.id.navHostFragment)
 
-            override fun onProgress(
-                insets: WindowInsetsCompat,
-                runningAnimations: MutableList<WindowInsetsAnimationCompat>
-            ): WindowInsetsCompat {
-                val sysBarAnimation =
-                    runningAnimations.find { it.typeMask and WindowInsetsCompat.Type.statusBars() != 0 }
-                        ?: return insets
-                binding.statusBarBg.translationY =
-                    (heightPre - heightPost) * (1 - sysBarAnimation.interpolatedFraction)
-                return insets
-            }
+        destinationChangedListener?.let {
+            navController?.addOnDestinationChangedListener(it)
         }
 
-        ViewCompat.setWindowInsetsAnimationCallback(binding.statusBarBg, statusBarCallBack)
-        navigationBarCallBack = object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
-
-            var heightPre = 0f
-            var heightPost = 0f
-
-            override fun onPrepare(animation: WindowInsetsAnimationCompat) {
-                heightPre = binding.navigationBarBg.top.toFloat()
-            }
-
-            override fun onStart(
-                animation: WindowInsetsAnimationCompat,
-                bounds: WindowInsetsAnimationCompat.BoundsCompat
-            ): WindowInsetsAnimationCompat.BoundsCompat {
-                heightPost = binding.navigationBarBg.top.toFloat()
-                return super.onStart(animation, bounds)
-            }
-
-            override fun onProgress(
-                insets: WindowInsetsCompat,
-                runningAnimations: MutableList<WindowInsetsAnimationCompat>
-            ): WindowInsetsCompat {
-                val sysBarAnimation =
-                    runningAnimations.find { it.typeMask and WindowInsetsCompat.Type.statusBars() != 0 }
-                        ?: return insets
-                binding.navigationBarBg.translationY =
-                    (heightPre - heightPost) * (1 - sysBarAnimation.interpolatedFraction)
-                return insets
-            }
-        }
-
-        ViewCompat.setWindowInsetsAnimationCallback(binding.navigationBarBg, navigationBarCallBack)
-
-        setStatusBarContrast()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        statusBarCallBack = null
-        navigationBarCallBack = null
     }
 
     override fun hideSystemBar() {
@@ -126,25 +73,43 @@ class MainActivity : BaseActivity() {
         ).show(WindowInsetsCompat.Type.systemBars())
     }
 
-    override fun setTransparentSystemBar() {
-        binding.navigationBarBg.isVisible = false
-        binding.statusBarBg.isVisible = false
-
+    private fun setTransparentSystemBar() {
+        if (binding.navigationBarBg.alpha == 1f) {
+            binding.navigationBarBg.animate().alpha(0f).duration =
+                resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
+            binding.statusBarBg.animate().alpha(0f).duration =
+                resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
+        }
     }
 
-    override fun removeTransparentSystemBar() {
-        binding.navigationBarBg.isVisible = true
-        binding.statusBarBg.isVisible = true
+    private fun removeTransparentSystemBar() {
+        if (binding.navigationBarBg.alpha == 0f) {
+            binding.navigationBarBg.animate().alpha(1f).duration =
+                resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
+            binding.statusBarBg.animate().alpha(1f).duration =
+                resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
+        }
     }
 
-    override fun setStatusBarTheme() {
-        setStatusBarContrast()
+    private fun setStatusBarDarkTheme() {
+        WindowInsetsControllerCompat(window, binding.root).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
     }
 
     private fun setStatusBarContrast() {
         WindowInsetsControllerCompat(window, binding.root).apply {
             isAppearanceLightStatusBars = !applicationContext.isDarkThemeOn()
             isAppearanceLightNavigationBars = false
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        destinationChangedListener?.let {
+            navController?.removeOnDestinationChangedListener(it)
+            destinationChangedListener = null
         }
     }
 

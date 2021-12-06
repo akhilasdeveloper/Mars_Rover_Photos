@@ -1,15 +1,14 @@
 package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.*
-import com.akhilasdeveloper.marsroverphotos.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
-import com.akhilasdeveloper.marsroverphotos.simplify
+import com.akhilasdeveloper.marsroverphotos.utilities.simplify
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerRoverClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions

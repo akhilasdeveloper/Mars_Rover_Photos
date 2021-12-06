@@ -1,7 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.api
 
-import androidx.lifecycle.LiveData
-import com.akhilasdeveloper.marsroverphotos.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.data.RoverData
 import com.akhilasdeveloper.marsroverphotos.data.RoverManifest
 import retrofit2.http.GET

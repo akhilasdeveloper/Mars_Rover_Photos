@@ -5,14 +5,12 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
-import com.akhilasdeveloper.marsroverphotos.Constants
-import com.akhilasdeveloper.marsroverphotos.Utilities
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDao
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDatabase
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 

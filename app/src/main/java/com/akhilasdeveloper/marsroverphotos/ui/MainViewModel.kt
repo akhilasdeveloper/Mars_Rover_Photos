@@ -12,6 +12,7 @@ import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
+import com.akhilasdeveloper.marsroverphotos.utilities.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -28,7 +29,7 @@ class MainViewModel
     private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoDb>?> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
-    private val _dataStateRoverMaster: MutableLiveData<RoverMaster> = MutableLiveData()
+    private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
@@ -42,7 +43,7 @@ class MainViewModel
     val dataStateLoading: LiveData<Boolean>
         get() = _dataStateLoading
 
-    val dataStateRoverMaster: LiveData<RoverMaster>
+    val dataStateRoverMaster: LiveData<Event<RoverMaster>>
         get() = _dataStateRoverMaster
 
     val dataState: LiveData<PagingData<MarsRoverPhotoDb>?>
@@ -55,7 +56,7 @@ class MainViewModel
         get() = _dataStatePosition
 
     fun setRoverMaster(roverMaster: RoverMaster){
-        _dataStateRoverMaster.value = roverMaster
+        _dataStateRoverMaster.value = Event(roverMaster)
     }
 
     fun setEmptyPhotos(){
@@ -77,11 +78,14 @@ class MainViewModel
             marsRoverPhotosRepository.getPhotos(date = date, roverName = roverName).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
-                    _dataStateDate.value = date
                     setLoading(false)
                 }
                 .launchIn(this)
         }
+    }
+
+    fun setDate(date: Long){
+        _dataStateDate.value = date
     }
 
     fun getRoverData(isRefresh: Boolean){
@@ -90,6 +94,7 @@ class MainViewModel
             marsRoverPhotosRepository.getRoverData(isRefresh).collect {
                 setLoading(false)
                 _dataStateRover.value = it
+                setPosition(0)
             }
         }
     }

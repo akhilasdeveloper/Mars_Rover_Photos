@@ -10,9 +10,9 @@ import androidx.core.widget.NestedScrollView
 import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.akhilasdeveloper.marsroverphotos.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.Utilities
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoversBinding
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverAdapter
@@ -154,7 +154,9 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         }
 
         viewModel.dataStateRoverMaster.value?.let {
-            setSheetData(it)
+            it.peekContent?.let {rover->
+                setSheetData(rover)
+            }
         }
 
         viewModel.dataStateLoading.observe(viewLifecycleOwner, {
@@ -167,7 +169,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     private fun navigateToPhotos(master: RoverMaster){
-        viewModel.getData(date = utilities.formatDateToMillis(master.max_date)!!, roverName = master.name)
         viewModel.setRoverMaster(master)
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
     }

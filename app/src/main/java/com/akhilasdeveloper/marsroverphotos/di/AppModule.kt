@@ -3,9 +3,9 @@ package com.akhilasdeveloper.marsroverphotos.di
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
 import androidx.room.Room
-import com.akhilasdeveloper.marsroverphotos.Constants
-import com.akhilasdeveloper.marsroverphotos.Constants.MARS_ROVER_DATABASE_NAME
-import com.akhilasdeveloper.marsroverphotos.Utilities
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MARS_ROVER_DATABASE_NAME
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDatabase
 import com.google.gson.Gson

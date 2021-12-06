@@ -1,29 +1,20 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
-import android.content.Context
-import android.content.res.Configuration
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.graphics.Color
 import android.os.Bundle
-import android.util.AttributeSet
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.*
 import androidx.viewpager2.widget.ViewPager2
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
-import com.akhilasdeveloper.marsroverphotos.showShortToast
+import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
-import com.akhilasdeveloper.marsroverphotos.Utilities
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import javax.inject.Inject
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
-import com.akhilasdeveloper.marsroverphotos.isDarkThemeOn
 
 
 @AndroidEntryPoint
@@ -61,8 +52,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                currentPosition = position
-                setCurrentData()
+                viewModel.setPosition(position)
             }
         }
 
@@ -138,7 +128,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         })
         viewModel.positionState.observe(viewLifecycleOwner,  {
             currentPosition = it
-            binding.viewPage.setCurrentItem(it, false)
+            setCurrentData()
+            if (it!=binding.viewPage.currentItem)
+                binding.viewPage.setCurrentItem(it, false)
         })
         viewModel.dataStateIsLiked.observe(viewLifecycleOwner,{
             updateLikeIcon(it)
@@ -160,13 +152,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
 
         binding.viewPage.adapter = adapter
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        uiCommunicationListener.setTransparentSystemBar()
-        setTheme()
     }
 
     private fun updateLikeIcon(liked:Boolean) {
@@ -198,17 +183,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             show()
     }
 
-    private fun setTheme() {
-        WindowInsetsControllerCompat(requireActivity().window, binding.root).apply {
-            isAppearanceLightStatusBars = false
-            isAppearanceLightNavigationBars = false
-        }
-    }
-
-    private fun removeTheme() {
-        uiCommunicationListener.setStatusBarTheme()
-    }
-
     private fun hide() {
         if (isShow) {
             isShow = false
@@ -230,8 +204,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     override fun onDestroyView() {
         super.onDestroyView()
         show()
-        uiCommunicationListener.removeTransparentSystemBar()
-        removeTheme()
     }
 
     override fun onClick() {

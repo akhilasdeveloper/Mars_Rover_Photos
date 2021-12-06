@@ -7,9 +7,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
-import com.akhilasdeveloper.marsroverphotos.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.Utilities
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
@@ -25,6 +25,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import com.akhilasdeveloper.marsroverphotos.utilities.scrollToCenter
 
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
@@ -101,21 +102,30 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
         })
 
-        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner,  {
-            master = it
-            setData()
+        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, {
+            val isHandled = it.hasBeenHandled()
+            it.peekContent?.let {rover->
+                it.setAsHandled()
+                master = rover
+                setData()
+                if (!isHandled)
+                    setDate()
+            }
         })
 
-        viewModel.dataStateDate.observe(viewLifecycleOwner,  {
+        viewModel.dataStateDate.observe(viewLifecycleOwner, {
             binding.dateButtonText.text = utilities.formatMillis(it)
             currentDate = it
-            if (::master.isInitialized) {
-                binding.solButtonText.text = getString(R.string.sol, utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toString())
-            }
+            getData()
+            setSolButtonText()
         })
 
         viewModel.dataStateLoading.observe(viewLifecycleOwner, {
             binding.progress.isVisible = it
+        })
+
+        viewModel.positionState.observe(viewLifecycleOwner, {
+            scrollToPosition(it)
         })
     }
 
@@ -124,13 +134,29 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             if (::master.isInitialized) {
                 toolbarTitle.text = master.name
                 homeToolbarTop.title = master.name
-                currentDate = utilities.formatDateToMillis(master.max_date)
-                solButtonText.text = getString(R.string.sol,utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toString())
+                setSolButtonText()
             }
         }
     }
 
-    private fun showDialog(){
+    private fun setDate() {
+        utilities.formatDateToMillis(master.max_date)?.let { date ->
+            viewModel.setDate(date)
+        }
+    }
+
+    private fun setSolButtonText() {
+        binding.solButtonText.text = getString(
+            R.string.sol,
+            utilities.calculateDays(master.landing_date, currentDate).toString()
+        )
+    }
+
+    private fun scrollToPosition(position: Int) {
+        binding.photoRecycler.scrollToCenter(position)
+    }
+
+    private fun showDialog() {
         if (::master.isInitialized) {
             val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
             val viewGroup: ViewGroup = binding.root
@@ -139,7 +165,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             val slider = dialogView.findViewById<Slider>(R.id.sol_slider)
             val sol = dialogView.findViewById<TextView>(R.id.solSelectorCount)
             slider.valueTo = master.max_sol.toFloat()
-            slider.value = utilities.calculateDays(utilities.formatDateToMillis(master.landing_date)!!,currentDate!!).toFloat()
+            utilities.calculateDays(master.landing_date, currentDate)?.let {
+                slider.value = it.toFloat()
+            }
             sol.text = slider.value.toInt().toString()
             slider.addOnChangeListener { _, value, _ ->
                 sol.text = "${value.toInt()}"
@@ -148,8 +176,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             val alertDialog: AlertDialog = builder.create()
             alertDialog.show()
             dialogView.findViewById<MaterialButton>(R.id.ok_sol_selector).setOnClickListener {
-                currentDate = utilities.calculateDaysEarthDate(slider.value.toLong(),utilities.formatDateToMillis(master.landing_date)!!)
-                getData()
+                viewModel.setDate(
+                    utilities.calculateDaysEarthDate(
+                        slider.value.toLong(),
+                        utilities.formatDateToMillis(master.landing_date)!!
+                    )
+                )
                 alertDialog.cancel()
             }
             dialogView.findViewById<MaterialButton>(R.id.cancel_sol_selector).setOnClickListener {
@@ -184,6 +216,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun showDatePicker() {
         if (::master.isInitialized) {
+
             val constraintsBuilder = CalendarConstraints.Builder()
             val validators: ArrayList<CalendarConstraints.DateValidator> = ArrayList()
             validators.add(DateValidatorPointForward.from(utilities.formatDateToMillis(master.landing_date)!!))
@@ -201,9 +234,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             datePicker.show(requireActivity().supportFragmentManager, "RoverDatePicker")
 
             datePicker.addOnPositiveButtonClickListener {
-                currentDate = datePicker.selection
+                datePicker.selection?.let {
+                    viewModel.setDate(it)
+                }
                 binding.dateButtonText.text = utilities.formatMillis(currentDate!!)
-                getData()
             }
         }
     }

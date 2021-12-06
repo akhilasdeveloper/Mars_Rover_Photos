@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos
+package com.akhilasdeveloper.marsroverphotos.utilities
 
 object Constants {
 

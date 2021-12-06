@@ -1,57 +1,20 @@
-package com.akhilasdeveloper.marsroverphotos
+package com.akhilasdeveloper.marsroverphotos.utilities
 
-import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.widget.Toast
-import androidx.fragment.app.Fragment
-import com.akhilasdeveloper.marsroverphotos.Constants.MILLIS_IN_A_SOL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
-import kotlin.math.abs
-import android.graphics.BitmapFactory
 
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.IOException
-import java.net.MalformedURLException
-import java.net.URL
-
-
-fun Int.simplify() = when {
-    abs(this / 1000000) > 1 -> {
-        (this / 1000000).toString() + "M"
-    }
-    abs(this / 1000) > 1 -> {
-        (this / 1000).toString() + "K"
-    }
-    else -> {
-        this.toString()
-    }
-}
-
-fun Fragment.showShortToast(message: String) {
-    Toast.makeText(this.requireContext(), message, Toast.LENGTH_SHORT).show()
-}
-
-fun Activity.showShortToast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-}
-
-fun Context.isDarkThemeOn(): Boolean {
-    return resources.configuration.uiMode and
-            Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-}
 
 class Utilities @Inject constructor(
     var context: Context
@@ -104,15 +67,18 @@ class Utilities @Inject constructor(
         return parsedDate?.time
     }
 
-    fun calculateDays(landingDate: Long, currentDate: Long): Long {
-        return (currentDate - landingDate) / MILLIS_IN_A_SOL
-    }
+    fun calculateDays(landingDate: String, currentDate: Long?): Long? =
+        formatDateToMillis(landingDate)?.let { landingDateNotNull ->
+            currentDate?.let {
+                (currentDate - landingDateNotNull) / MILLIS_IN_A_SOL
+            }
+        }
 
     fun calculateDaysEarthDate(sol: Long, minDate: Long): Long {
         return minDate + (sol * MILLIS_IN_A_SOL)
     }
 
-    fun downloadImage(imageUrl: String?, callback:(Bitmap?) -> (Unit)) {
+    fun downloadImage(imageUrl: String?, callback: (Bitmap?) -> (Unit)) {
         Glide.with(context).asBitmap().load(imageUrl)
             .into(object : CustomTarget<Bitmap?>() {
                 override fun onResourceReady(
@@ -121,6 +87,7 @@ class Utilities @Inject constructor(
                 ) {
                     callback(resource)
                 }
+
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
