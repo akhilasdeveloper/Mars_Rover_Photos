@@ -22,7 +22,7 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.setBackgroundDrawableResource(R.color.black)
+        window.setBackgroundDrawableResource(R.color.first)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarBg) { view, insets ->
             val systemWindows =
