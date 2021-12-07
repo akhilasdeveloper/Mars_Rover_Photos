@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/system_border"
+    android:orientation="vertical"
+    android:id="@+id/sheet_frame">
+
+        <ImageView
+            android:id="@+id/rover_image"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_sheet_image_height"
+            android:contentDescription="@string/rover_image"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="@dimen/global_window_padding"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/global_window_padding"
+            android:paddingEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding">
+
+            <TextView
+                android:id="@+id/rover_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                style="@style/tool_bar_title"/>
+
+            <TextView
+                android:id="@+id/rover_photos_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/bottom_appbar_button_ring"
+                app:drawableStartCompat="@drawable/ic_outline_image_24"
+                app:drawableTint="@color/system_for"
+                android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/global_window_padding"
+            android:paddingEnd="@dimen/global_window_padding">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/launch_date"
+                android:textColor="@color/system_for"
+                android:textSize="@dimen/small_text_size"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:layout_weight="1"
+                android:text="@string/landing_date"
+                android:textColor="@color/system_for"
+                android:textSize="@dimen/small_text_size"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/global_window_padding"
+            android:paddingEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding">
+
+            <TextView
+                android:id="@+id/rover_launch_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/launch_date"
+                android:textColor="@color/system_for"
+                android:textSize="@dimen/small_text_size" />
+
+            <TextView
+                android:id="@+id/rover_landing_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="@string/landing_date"
+                android:textColor="@color/system_for"
+                android:textSize="@dimen/small_text_size" />
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/rover_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/system_for"
+            android:textSize="@dimen/small_text_size"
+            android:textStyle="bold"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"/>
+
+        <TextView
+            android:id="@+id/rover_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/system_for"
+            android:textSize="@dimen/small_text_size"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"/>
+    </LinearLayout>

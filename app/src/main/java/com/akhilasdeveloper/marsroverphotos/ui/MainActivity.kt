@@ -3,7 +3,7 @@ package com.akhilasdeveloper.marsroverphotos.ui
 import android.os.Bundle
 import androidx.core.view.*
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
@@ -38,7 +38,8 @@ class MainActivity : BaseActivity() {
             return@setOnApplyWindowInsetsListener insets
         }
 
-        destinationChangedListener = NavController.OnDestinationChangedListener { _, destination, _ ->
+        destinationChangedListener =
+            NavController.OnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
                     R.id.roverViewFragment -> {
                         setTransparentSystemBar()
@@ -51,7 +52,9 @@ class MainActivity : BaseActivity() {
                 }
             }
 
-        navController = findNavController(R.id.navHostFragment)
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
+        navController = navHostFragment.navController
 
         destinationChangedListener?.let {
             navController?.addOnDestinationChangedListener(it)
@@ -101,7 +104,7 @@ class MainActivity : BaseActivity() {
     private fun setStatusBarContrast() {
         WindowInsetsControllerCompat(window, binding.root).apply {
             isAppearanceLightStatusBars = !applicationContext.isDarkThemeOn()
-            isAppearanceLightNavigationBars = false
+            isAppearanceLightNavigationBars = !applicationContext.isDarkThemeOn()
         }
     }
 

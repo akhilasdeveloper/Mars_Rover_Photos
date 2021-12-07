@@ -72,7 +72,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED)
                     binding.homeAppbarTop.visibility = View.VISIBLE
                 else
-                    binding.homeAppbarTop.visibility = View.INVISIBLE
+                    binding.homeAppbarTop.visibility = View.GONE
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -86,19 +86,21 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             return@setOnApplyWindowInsetsListener insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeToolbarTop) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            binding.homeToolbarTop.updatePadding(top = systemWindows.top)
+            val layoutParams = (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
+            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
+            binding.homeToolbarTop.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.sheetFrame) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomSheetView.sheetFrame) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams = (binding.sheetFrame.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, systemWindows.top, 0, systemWindows.bottom)
-            binding.sheetFrame.layoutParams = layoutParams
+            val layoutParams = (binding.bottomSheetView.sheetFrame.layoutParams as? ViewGroup.MarginLayoutParams)
+            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
+            binding.bottomSheetView.sheetFrame.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }
 
@@ -190,7 +192,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     private fun setSheetData(master: RoverMaster) {
-        binding.apply {
+        binding.bottomSheetView.apply {
             Glide.with(binding.root)
                 .load(Constants.URL_DATA + master.image)
                 .centerCrop()
@@ -203,7 +205,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             roverStatus.text = getString(R.string.rover_status,master.status)
             roverPhotosCount.text = getString(R.string.view_photos, master.total_photos.toString())
         }
-        binding.roverPhotosCount.setOnClickListener {
+        binding.bottomSheetView.roverPhotosCount.setOnClickListener {
             navigateToPhotos(master)
         }
     }

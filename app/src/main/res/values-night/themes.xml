@@ -9,18 +9,16 @@
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorSecondaryVariant">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:windowBackground">@drawable/splash</item>
+        <!-- System bar color. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:fontFamily">@font/nunito_sans</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
         <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <!-- Window theme -->
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:fontFamily">@font/nunito_sans</item>
     </style>
-    <style name="tool_bar_title" parent="@style/Base.TextAppearance.AppCompat.Title">
-        <item name="android:textSize">28sp</item>
-        <item name="android:textStyle">bold</item>
-    </style>
+
     <style name="ThemeOverlay.App.DatePicker" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar">
         <item name="colorPrimary">@color/accent</item>
         <item name="colorOnPrimary">@color/light_for</item>

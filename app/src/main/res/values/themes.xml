@@ -9,18 +9,45 @@
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorSecondaryVariant">@color/teal_700</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:windowBackground">@drawable/splash</item>
+        <!-- System bar color. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:fontFamily">@font/nunito_sans</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
         <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+        <!-- Window theme -->
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:fontFamily">@font/nunito_sans</item>
     </style>
-    <style name="tool_bar_title" parent="@style/Base.TextAppearance.AppCompat.Title">
-        <item name="android:textSize">28sp</item>
+
+    <style name="bottom_appbar_button_ring" parent="Theme.MarsRoverPhotos">
+        <item name="android:background">@drawable/button_background_ring</item>
+        <item name="android:drawablePadding">@dimen/drawable_button_background_ring_icon_padding
+        </item>
+        <item name="android:textColor">@color/system_for</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/small_text_size</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="TextAppearance.ToolBarTitle.Collapsed" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textColor">@color/system_for</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="TextAppearance.ToolBarTitle.Expanded" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textColor">@color/system_for</item>
+        <item name="android:textSize">@dimen/large_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="tool_bar_title" parent="Theme.MarsRoverPhotos">
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textColor">@color/system_for</item>
+    </style>
+
     <style name="ThemeOverlay.App.DatePicker" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar">
         <item name="colorPrimary">@color/accent</item>
         <item name="colorOnPrimary">@color/light_for</item>

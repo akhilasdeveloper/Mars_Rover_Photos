@@ -29,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import com.akhilasdeveloper.marsroverphotos.utilities.scrollToCenter
+import com.bumptech.glide.Glide
 
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
@@ -72,10 +73,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             return@setOnApplyWindowInsetsListener insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeToolbarTop) { _, insets ->
+        /*ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            binding.homeToolbarTop.updatePadding(top = systemWindows.top)
+            binding.homeCollapsingToolbarTop.updatePadding(top = systemWindows.top)
+            return@setOnApplyWindowInsetsListener insets
+        }*/
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            val layoutParams = (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
+            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
+            binding.homeToolbarTop.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }
 
@@ -135,8 +145,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun setData() {
         binding.apply {
             if (::master.isInitialized) {
-                toolbarTitle.text = master.name
+                homeToolbarTop.title = master.name
+                homeCollapsingToolbarTop.title = master.name
                 setSolButtonText()
+//                Glide.with(requireContext()).load(Constants.URL_DATA + master.image).into(binding.toolbarImage)
             }
         }
     }

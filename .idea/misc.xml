@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.36770833333333336" />
+        <entry key="app/src/main/res/drawable/button_background_ring.xml" value="0.37538461538461537" />
         <entry key="app/src/main/res/drawable/button_bg.xml" value="0.2861111111111111" />
         <entry key="app/src/main/res/drawable/gradient_to_top.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_baseline_cloud_download_24.xml" value="0.36875" />
@@ -26,6 +27,7 @@
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_rovers.xml" value="0.22030589000976245" />
         <entry key="app/src/main/res/layout/fragment_roverview.xml" value="0.2" />
+        <entry key="app/src/main/res/layout/layout_bottom_sheet.xml" value="0.32971014492753625" />
         <entry key="app/src/main/res/layout/layout_sol_select.xml" value="0.35260416666666666" />
         <entry key="app/src/main/res/layout/marsrover_photo_load_state_footer.xml" value="0.25" />
         <entry key="app/src/main/res/layout/photo_item.xml" value="0.2418478260869565" />
