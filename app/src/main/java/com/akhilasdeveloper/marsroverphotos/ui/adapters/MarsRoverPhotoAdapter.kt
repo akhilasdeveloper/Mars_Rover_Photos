@@ -37,12 +37,14 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
-                    Glide.with(itemView)
-                        .load(it.img_src)
-                        .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(imageDescription)
-                    cameraName.text = it.camera_name
+                    if (!it.is_placeholder) {
+                        Glide.with(itemView)
+                            .load(it.img_src)
+                            .centerCrop()
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(imageDescription)
+                        cameraName.text = "${it.camera_name} : ${it.earth_date} : ${it.id}"
+                    }
                 }
             }
 

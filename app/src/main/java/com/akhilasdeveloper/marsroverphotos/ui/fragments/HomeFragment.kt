@@ -24,12 +24,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.ui.NavigationUI
-import androidx.navigation.ui.setupWithNavController
 import com.akhilasdeveloper.marsroverphotos.utilities.scrollToCenter
-import com.bumptech.glide.Glide
 
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
@@ -99,10 +95,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
-            photoRecycler.adapter = adapter.withLoadStateHeaderAndFooter(
+            photoRecycler.adapter = adapter/*.withLoadStateHeaderAndFooter(
                 header = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
                 footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
-            )
+            )*/
         }
     }
 
@@ -206,7 +202,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun getData() {
         currentDate?.let {
-            viewModel.getData(master.name, it)
+            viewModel.getData(master, it)
         }
     }
 

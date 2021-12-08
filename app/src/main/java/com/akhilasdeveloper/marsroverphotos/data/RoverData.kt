@@ -11,5 +11,6 @@ data class RoverData(
 data class RoverSrc(
     @SerializedName("description") @Expose val description: String,
     @SerializedName("image") @Expose val image: String,
-    @SerializedName("name") @Expose val name: String
+    @SerializedName("name") @Expose val name: String,
+    @SerializedName("id") @Expose val id: Int
 )

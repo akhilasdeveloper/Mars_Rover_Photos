@@ -12,10 +12,11 @@ interface MarsRoverPhotosService {
     @GET
     suspend fun getRoverPhotos(
         @Url url: String,
-        @Query("earth_date") earth_date : String
+        @Query("earth_date") earth_date : String,
+        @Query("page") page : String
     ): MarsRoverPhotosApiResponse?
 
-    @GET(Constants.URL_DATA + "data.json")
+    @GET(Constants.URL_DATA + "mars_rover_data.json")
     suspend fun getRoverData(): RoverData?
 
     @GET

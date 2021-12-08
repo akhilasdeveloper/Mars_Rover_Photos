@@ -9,5 +9,6 @@ data class RoverMaster(
     val status: String,
     val total_photos: Int,
     val description: String,
-    val image: String
+    val image: String,
+    val id: Int
 )

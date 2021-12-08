@@ -10,7 +10,7 @@ data class MarsRoverPhotosApiResponse(
 data class Photo(
     @SerializedName("camera") @Expose val camera: Camera,
     @SerializedName("earth_date") @Expose val earth_date: String,
-    @SerializedName("id") @Expose val id: Int,
+    @SerializedName("id") @Expose val id: Long,
     @SerializedName("img_src") @Expose val img_src: String,
     @SerializedName("rover") @Expose val rover: Rover,
     @SerializedName("sol") @Expose val sol: Int

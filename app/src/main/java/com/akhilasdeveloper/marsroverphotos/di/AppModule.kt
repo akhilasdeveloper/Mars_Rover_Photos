@@ -74,4 +74,8 @@ object AppModule {
     @Provides
     fun provideMarsRoverDao(db: MarsRoverDatabase) = db.getMarsRoverDao()
 
+    @Singleton
+    @Provides
+    fun provideRemoteKeysDao(db: MarsRoverDatabase) = db.getRemoteKeysDao()
+
 }

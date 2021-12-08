@@ -1,9 +1,7 @@
 package com.akhilasdeveloper.marsroverphotos.db
 
-import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.*
-import java.util.*
 
 @Dao
 interface MarsRoverDao {
@@ -13,13 +11,13 @@ interface MarsRoverDao {
      */
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMarsRoverPhoto(marsRoverPhotoDb: MarsRoverPhotoDb)
+    suspend fun insertMarsRoverPhoto(marsRoverPhotoDb: MarsRoverPhotoDb):Long
 
-    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date = :date ORDER BY id DESC")
-    fun getPhotosByRoverIDAndDate(roverName: String, date: Long): PagingSource<Int, MarsRoverPhotoDb>
+    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName ORDER BY id DESC, earth_date DESC")
+    fun getPhotosByRoverIDAndDate(roverName: String): PagingSource<Int, MarsRoverPhotoDb>
 
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
-    fun isPhotosByDateExist(date: Long, roverName:String): Int
+    fun isPhotosByDateExist(date: String, roverName:String): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb)
@@ -28,19 +26,19 @@ interface MarsRoverDao {
     fun removeLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb)
 
     @Query("SELECT count(*) FROM mars_rover_photo_liked_table WHERE id = :id")
-    fun isLiked(id: Int): Int
+    fun isLiked(id: Long): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllMarsRoverPhotos(users: List<MarsRoverPhotoDb>)
 
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date = :date")
-    suspend fun dataCount(roverName: String, date: Long): Int
+    suspend fun dataCount(roverName: String, date: String): Int
 
     @Query("DELETE FROM mars_rover_photo_table")
     suspend fun clearAll()
 
     @Query("DELETE FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
-    suspend fun clearByRoverIDAndDate(date: Long, roverName:String)
+    suspend fun clearByRoverIDAndDate(date: String, roverName:String)
 
     /**
      * MarsRoverSrcDb

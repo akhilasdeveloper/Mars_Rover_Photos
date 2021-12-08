@@ -34,6 +34,8 @@ class MainViewModel
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
 
+    private var job : Job? = null
+
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
@@ -72,10 +74,11 @@ class MainViewModel
     }
 
     @ExperimentalPagingApi
-    fun getData(roverName: String, date: Long){
+    fun getData(rover: RoverMaster, date: Long){
         setLoading(true)
-        viewModelScope.launch {
-            marsRoverPhotosRepository.getPhotos(date = date, roverName = roverName).cachedIn(viewModelScope)
+        job?.cancel()
+        job = viewModelScope.launch {
+            marsRoverPhotosRepository.getPhotos(date = date, rover = rover).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
                     setLoading(false)
@@ -99,7 +102,7 @@ class MainViewModel
         }
     }
 
-    fun isLiked(id: Int){
+    fun isLiked(id: Long){
         viewModelScope.launch {
             marsRoverPhotosRepository.isLiked(id).collect {
                 _dataStateIsLiked.value = it

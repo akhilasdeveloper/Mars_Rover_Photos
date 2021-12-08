@@ -15,5 +15,6 @@ data class MarsRoverSrcDb(
     @SerializedName("roverName")
     @Expose val roverName: String,
     @SerializedName("roverName")
-    @Expose val addedDate: Long
+    @Expose val addedDate: Long,
+    @Expose val id: Int
 )

@@ -12,6 +12,7 @@ import javax.inject.Inject
 
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -60,6 +61,10 @@ class Utilities @Inject constructor(
         val formatter = SimpleDateFormat(pattern, Locale.getDefault())
         return formatter.format(Date(millis))
     }
+
+    fun dateMinus(date: String, day: Int) = formatMillis(formatDateToMillis(date)!! - (day * MILLIS_IN_A_DAY))
+    fun datePlus(date: String, day: Int) = formatMillis(formatDateToMillis(date)!! + (day * MILLIS_IN_A_DAY))
+
 
     fun formatDateToMillis(date: String): Long? {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
