@@ -105,6 +105,7 @@ class RoverRemoteMediator(
 
             marsRoverDataBase.withTransaction {
                 if (loadType == LoadType.REFRESH) {
+                    Timber.d("Refresh ***")
                     remoteKeyDao.deleteByRoverNameAndDate(
                         roverName = rover.name,
                         date = pageDate

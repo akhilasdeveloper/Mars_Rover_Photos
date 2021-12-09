@@ -113,10 +113,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
-            photoRecycler.adapter = adapter.withLoadStateHeaderAndFooter(
+            photoRecycler.adapter = adapter/*.withLoadStateHeaderAndFooter(
                 header = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
                 footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
-            )
+            )*/
         }
     }
 
@@ -231,14 +231,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.solButtonText.setOnClickListener {
             showDialog()
         }
-        lifecycleScope.launch {
+        /*lifecycleScope.launch {
             adapter.loadStateFlow.collectLatest { loadStates ->
                 viewModel.setLoading(loadStates.refresh is LoadState.Loading)
                 binding.emptyMessage.isVisible = loadStates.refresh is LoadState.Error
             }
-        }
+        }*/
         binding.emptyMessage.setOnClickListener {
             getData()
+        }
+        adapter.addLoadStateListener {loadState->
+            binding.photoRecycler.isVisible = loadState.mediator?.refresh is LoadState.NotLoading
+            binding.progress.isVisible = loadState.mediator?.refresh is LoadState.Loading
+            binding.emptyMessage.isVisible = loadState.mediator?.refresh is LoadState.Error
         }
     }
 
