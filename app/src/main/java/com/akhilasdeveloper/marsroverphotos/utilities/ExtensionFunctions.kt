@@ -21,11 +21,7 @@ fun Int.simplify() = when {
     }
 }
 
-fun Fragment.showShortToast(message: String) {
-    Toast.makeText(this.requireContext(), message, Toast.LENGTH_SHORT).show()
-}
-
-fun Activity.showShortToast(message: String) {
+fun Context.showShortToast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
 

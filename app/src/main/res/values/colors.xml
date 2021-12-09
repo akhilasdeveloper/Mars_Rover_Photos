@@ -12,7 +12,7 @@
     <color name="first">#FFFFFF</color>
     <color name="appbar">#FFFFFF</color>
     <color name="third">#E3E3E3</color>
-    <color name="system_border">#DFFFFFFF</color>
+    <color name="system_border">#65FFFFFF</color>
     <color name="system_border_inv">#CB616161</color>
     <color name="system_for">#616161</color>
     <color name="system_for_light">#989898</color>

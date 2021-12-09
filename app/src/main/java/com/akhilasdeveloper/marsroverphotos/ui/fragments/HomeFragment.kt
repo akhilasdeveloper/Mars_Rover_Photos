@@ -13,7 +13,6 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
-import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import com.google.android.material.datepicker.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,14 +23,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.lifecycleScope
 import com.akhilasdeveloper.marsroverphotos.utilities.scrollToCenter
 
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 
 @ExperimentalPagingApi
@@ -44,7 +40,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     @Inject
     lateinit var utilities: Utilities
 
-    private val adapter = MarsRoverPhotoAdapter(this)
+    private lateinit var adapter: MarsRoverPhotoAdapter
     private lateinit var master: RoverMaster
 
     private var currentDate: Long? = null
@@ -93,22 +89,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             false
         )
 
-        /*layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+        adapter = MarsRoverPhotoAdapter(this)
+
+        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                *//*return when {
-                    position % 3 == 0 -> 1
-                    position % 5 == 0 -> 3
-                    else -> 2
-                }*//*
                 return if (adapter.snapshot().size > position)
-                    if (adapter.snapshot()[position]?.is_placeholder == true)
+                    if (adapter.snapshot()[position]?.is_placeholder != true)
                         1
                     else
                         2
                 else
                     2
             }
-        }*/
+        }
 
         binding.apply {
             photoRecycler.setHasFixedSize(true)

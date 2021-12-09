@@ -95,7 +95,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private fun setDownload() {
         currentData?.img_src?.let { url->
             utilities.downloadImage(url){
-                showShortToast(it.toString())
+                requireContext().showShortToast(it.toString())
             }
         }
     }

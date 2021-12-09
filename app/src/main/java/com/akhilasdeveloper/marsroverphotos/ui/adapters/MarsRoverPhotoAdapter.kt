@@ -1,34 +1,60 @@
 package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.R
+import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
+import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
-class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = null) :
-    PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPhotoAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
+class MarsRoverPhotoAdapter(
+    private val interaction: RecyclerClickListener? = null
+) :
+    PagingDataAdapter<MarsRoverPhotoDb, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
-        val bindingPhoto =
-            PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto, interaction)
+    enum class ViewType {
+        SMALL,
+        DETAILED
     }
 
-    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        val currentItem = getItem(position)
-
-        currentItem?.let {
-            holder.bindPhoto(currentItem, position)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val bindingPhoto =
+            PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val bindingDatePhoto =
+            PhotoDateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return when (viewType) {
+            ViewType.DETAILED.ordinal -> PhotoDateViewHolder(bindingDatePhoto, interaction)
+            else -> PhotoViewHolder(bindingPhoto, interaction)
         }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val currentItem = getItem(position)
+        when (holder.itemViewType) {
+            ViewType.DETAILED.ordinal -> {
+                val photoItemViewHolder = holder as PhotoDateViewHolder
+                currentItem?.let {
+                    photoItemViewHolder.bindPhoto(currentItem, position)
+                }
+            }
+            ViewType.SMALL.ordinal -> {
+                val photoViewHolder = holder as PhotoViewHolder
+                currentItem?.let {
+                    photoViewHolder.bindPhoto(currentItem, position)
+                }
+            }
+        }
+
+
     }
 
     class PhotoViewHolder(
@@ -46,8 +72,10 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
                         .centerCrop()
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
-                    cameraName.text = "${it.camera_name} : ${it.earth_date} : ${it.id}"
-
+                    cameraName.text = it.camera_name
+                    cameraName.setOnClickListener {_->
+                        binding.root.context.showShortToast(it.camera_full_name)
+                    }
                 }
             }
 
@@ -56,6 +84,41 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
             }
         }
 
+    }
+
+    class PhotoDateViewHolder(
+        private val binding: PhotoDateItemBinding,
+        private val interaction: RecyclerClickListener?
+    ) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
+            binding.apply {
+                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
+                photo.let {
+                    Glide.with(itemView)
+                        .load(it.img_src)
+                        .centerCrop()
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(imageDescription)
+                    cameraName.text = it.camera_name
+                    cameraName.setOnClickListener {_->
+                        binding.root.context.showShortToast(it.camera_full_name)
+                    }
+                    binding.date.text = it.earth_date
+                }
+            }
+
+            binding.root.setOnClickListener {
+                interaction?.onItemSelected(photo, position)
+            }
+        }
+
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (getItem(position)?.is_placeholder == true) ViewType.DETAILED.ordinal
+        else ViewType.SMALL.ordinal
     }
 
     companion object {
@@ -68,4 +131,5 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
 
         }
     }
+
 }

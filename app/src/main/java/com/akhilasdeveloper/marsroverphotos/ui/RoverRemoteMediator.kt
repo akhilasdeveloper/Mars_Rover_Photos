@@ -181,7 +181,7 @@ class RoverRemoteMediator(
                             nextDate = nextDate,
                         )
                     )
-                    marsRoverDao.insertAllMarsRoverPhotos(list.map {
+                    val data = list.map {
                         MarsRoverPhotoDb(
                             earth_date = it.earth_date,
                             img_src = it.img_src,
@@ -194,9 +194,11 @@ class RoverRemoteMediator(
                             rover_name = it.rover.name,
                             rover_status = it.rover.status,
                             photo_id = it.id,
-                            is_placeholder = it.id.toInt() % 2 == 0
+                            is_placeholder = false
                         )
-                    })
+                    }.toMutableList().apply { set(0,first().copy(is_placeholder = true)) }
+
+                    marsRoverDao.insertAllMarsRoverPhotos(data)
                     /*if (marsRoverDao.isPlaceHolderSet(
                             roverName = rover.name,
                             date = pageDate
