@@ -69,17 +69,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             return@setOnApplyWindowInsetsListener insets
         }
 
-        /*ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            binding.homeCollapsingToolbarTop.updatePadding(top = systemWindows.top)
+            binding.photoRecycler.updatePadding(bottom = systemWindows.bottom)
             return@setOnApplyWindowInsetsListener insets
-        }*/
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams = (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
+            val layoutParams =
+                (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
             layoutParams?.setMargins(0, systemWindows.top, 0, 0)
             binding.homeToolbarTop.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
@@ -92,13 +93,30 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             false
         )
 
+        /*layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                *//*return when {
+                    position % 3 == 0 -> 1
+                    position % 5 == 0 -> 3
+                    else -> 2
+                }*//*
+                return if (adapter.snapshot().size > position)
+                    if (adapter.snapshot()[position]?.is_placeholder == true)
+                        1
+                    else
+                        2
+                else
+                    2
+            }
+        }*/
+
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
-            photoRecycler.adapter = adapter/*.withLoadStateHeaderAndFooter(
+            photoRecycler.adapter = adapter.withLoadStateHeaderAndFooter(
                 header = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
                 footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
-            )*/
+            )
         }
     }
 
@@ -113,7 +131,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, {
             val isHandled = it.hasBeenHandled()
-            it.peekContent?.let {rover->
+            it.peekContent?.let { rover ->
                 it.setAsHandled()
                 master = rover
                 setData()

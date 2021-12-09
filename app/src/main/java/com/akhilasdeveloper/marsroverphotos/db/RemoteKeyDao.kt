@@ -13,9 +13,6 @@ interface RemoteKeyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(remoteKeyDb: List<RemoteKeysDb>)
 
-    @Query("SELECT * FROM remote_keys WHERE itemID = :itemID ")
-    suspend fun remoteKeyByQuery(itemID: Long): RemoteKeysDb
-
     @Query("SELECT * FROM remote_keys WHERE roverName = :roverName AND currDate = :currDate ")
     suspend fun remoteKeyByNameAndDate(roverName: String, currDate: String): RemoteKeysDb
 

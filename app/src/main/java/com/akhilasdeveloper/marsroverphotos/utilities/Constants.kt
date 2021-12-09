@@ -15,6 +15,7 @@ object Constants {
     const val PAGE_VALIDATED = "PAGE_VALIDATED"
     const val PAGE_NOT_VALIDATED = "PAGE_NOT_VALIDATED"
     const val PLACEHOLDER_STRING = "PLACEHOLDER_STRING"
+    const val PLACEHOLDER_ID = (-999).toLong()
 
     const val ERROR_NO_INTERNET = "No Internet! Offline mode"
 }

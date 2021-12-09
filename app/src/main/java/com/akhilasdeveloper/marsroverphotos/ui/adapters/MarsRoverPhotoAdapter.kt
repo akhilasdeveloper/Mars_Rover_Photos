@@ -1,5 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
@@ -30,21 +31,23 @@ class MarsRoverPhotoAdapter(private val interaction: RecyclerClickListener? = nu
         }
     }
 
-    class PhotoViewHolder(private val binding: PhotoItemBinding, private val interaction: RecyclerClickListener?) :
+    class PhotoViewHolder(
+        private val binding: PhotoItemBinding,
+        private val interaction: RecyclerClickListener?
+    ) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
-                    if (!it.is_placeholder) {
-                        Glide.with(itemView)
-                            .load(it.img_src)
-                            .centerCrop()
-                            .transition(DrawableTransitionOptions.withCrossFade())
-                            .into(imageDescription)
-                        cameraName.text = "${it.camera_name} : ${it.earth_date} : ${it.id}"
-                    }
+                    Glide.with(itemView)
+                        .load(it.img_src)
+                        .centerCrop()
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(imageDescription)
+                    cameraName.text = "${it.camera_name} : ${it.earth_date} : ${it.id}"
+
                 }
             }
 

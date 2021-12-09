@@ -12,6 +12,7 @@ import com.akhilasdeveloper.marsroverphotos.api.Rover
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.PLACEHOLDER_ID
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.PLACEHOLDER_STRING
 import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.google.gson.annotations.Expose
@@ -34,12 +35,11 @@ class RoverRemoteMediator(
 ) : RemoteMediator<Int, MarsRoverPhotoDb>() {
 
     override suspend fun initialize(): InitializeAction {
-        return if (marsRoverDao.dataCount(rover.name, rover.max_date) > 0) {
+        return if (marsRoverDao.dataCount(rover.name, utilities.formatMillis(date)) > 0) {
             InitializeAction.SKIP_INITIAL_REFRESH
         } else {
             InitializeAction.LAUNCH_INITIAL_REFRESH
         }
-//        return InitializeAction.LAUNCH_INITIAL_REFRESH
     }
 
     override suspend fun load(
@@ -48,7 +48,7 @@ class RoverRemoteMediator(
     ): MediatorResult {
 
         val pageKeyData = getPageData(loadType, state)
-        val pageDate = when (pageKeyData) {
+        var pageDate = when (pageKeyData) {
             is MediatorResult.Success -> {
                 return pageKeyData
             }
@@ -60,15 +60,48 @@ class RoverRemoteMediator(
         return try {
 
             val url = Constants.URL_PHOTO + rover.name + "/photos"
-            val response = marsRoverPhotosService.getRoverPhotos(
-                url = url, earth_date = pageDate,
-                page = Constants.STARTING_PAGE_INDEX.toString()
-            )
-            Timber.d("marsRoverPhotosService.getRoverPhotos ## url : $url ; earth_date : $pageDate ; response : $response")
-            val isEndOfList = /*response?.photos?.isEmpty()?:true*/
+            val isEndOfList =
                 utilities.formatDateToMillis(pageDate)!! < utilities.formatDateToMillis(rover.landing_date)!! || utilities.formatDateToMillis(
                     pageDate
                 )!! > utilities.formatDateToMillis(rover.max_date)!!
+            var response = marsRoverPhotosService.getRoverPhotos(
+                url = url, earth_date = pageDate,
+                page = Constants.STARTING_PAGE_INDEX.toString()
+            )
+
+            val startPageKey = pageDate
+
+            while (!isEndOfList) {
+                var exit = false
+                response?.photos?.let { list ->
+                    if (list.isEmpty()) {
+                        pageDate = when (loadType) {
+                            LoadType.PREPEND -> {
+                                utilities.datePlus(pageDate, 1)
+                            }
+                            LoadType.APPEND -> {
+                                utilities.dateMinus(pageDate, 1)
+                            }
+                            LoadType.REFRESH -> {
+                                rover.max_date
+                            }
+                        }
+                    } else {
+                        exit = true
+                    }
+                }
+                if (exit)
+                    break
+                else
+                    response = marsRoverPhotosService.getRoverPhotos(
+                        url = url, earth_date = pageDate,
+                        page = Constants.STARTING_PAGE_INDEX.toString()
+                    )
+            }
+
+            Timber.d("marsRoverPhotosService.getRoverPhotos ## url : $url ; earth_date : $pageDate ; response : $response")
+
+
 
             marsRoverDataBase.withTransaction {
                 if (loadType == LoadType.REFRESH) {
@@ -91,7 +124,8 @@ class RoverRemoteMediator(
                         1
                     )
 
-                val prevDate = if (utilities.formatDateToMillis(pageDate)!! >= utilities.formatDateToMillis(
+                val prevDate =
+                    if (utilities.formatDateToMillis(pageDate)!! >= utilities.formatDateToMillis(
                             rover.max_date
                         )!!
                     ) null else utilities.datePlus(
@@ -99,8 +133,7 @@ class RoverRemoteMediator(
                         1
                     )
 
-                val placeholder = System.currentTimeMillis()
-                    marsRoverDao.insertMarsRoverPhoto(
+                /*marsRoverDao.insertMarsRoverPhoto(
                         MarsRoverPhotoDb(
                             earth_date = pageDate,
                             img_src = PLACEHOLDER_STRING,
@@ -113,35 +146,40 @@ class RoverRemoteMediator(
                             rover_name = rover.name,
                             rover_status = rover.status,
                             is_placeholder = true,
-                            id = placeholder
+                            photo_id = PLACEHOLDER_ID
                         )
-                    )
-                remoteKeyDao.insertOrReplace(
-                    RemoteKeysDb(
-                        itemID = placeholder,
-                        roverName = rover.name,
-                        currDate = pageDate,
-                        prevDate = prevDate,
-                        nextDate = nextDate,
-                    )
-                )
+                    )*/
 
-                response?.photos?.let {list->
+                response?.photos?.let { list ->
 
-                    /*if(list.isEmpty() && !isEndOfList){
-                        remoteKeyDao.remoteKeyUpdateNextDate(nextDate = nextDate, currNextDate = pageDate, roverName = rover.name)
-                        remoteKeyDao.remoteKeyUpdatePreDate(prevDate = prevDate, currPrevDate = pageDate, roverName = rover.name)
-                    }*/
+                    if (startPageKey != pageDate) {
+                        when (loadType) {
+                            LoadType.PREPEND -> {
+                                remoteKeyDao.remoteKeyUpdatePreDate(
+                                    prevDate = pageDate,
+                                    currPrevDate = startPageKey,
+                                    roverName = rover.name
+                                )
+                            }
+                            LoadType.APPEND -> {
+                                remoteKeyDao.remoteKeyUpdateNextDate(
+                                    nextDate = pageDate,
+                                    currNextDate = startPageKey,
+                                    roverName = rover.name
+                                )
+                            }
+                            LoadType.REFRESH -> {}
+                        }
+                    }
 
-                    /*remoteKeyDao.insertAll(list.map {
+                    remoteKeyDao.insertOrReplace(
                         RemoteKeysDb(
-                            itemID = it.id.toString(),
-                            currDate = it.earth_date,
+                            roverName = rover.name,
+                            currDate = pageDate,
                             prevDate = prevDate,
                             nextDate = nextDate,
-                            roverName = it.rover.name
                         )
-                    })*/
+                    )
                     marsRoverDao.insertAllMarsRoverPhotos(list.map {
                         MarsRoverPhotoDb(
                             earth_date = it.earth_date,
@@ -154,10 +192,17 @@ class RoverRemoteMediator(
                             rover_launch_date = it.rover.launch_date,
                             rover_name = it.rover.name,
                             rover_status = it.rover.status,
-                            id = it.id,
-                            is_placeholder = false
+                            photo_id = it.id,
+                            is_placeholder = it.id.toInt() % 2 == 0
                         )
                     })
+                    /*if (marsRoverDao.isPlaceHolderSet(
+                            roverName = rover.name,
+                            date = pageDate
+                        ) <= 0
+                    ) {
+                        marsRoverDao.updatePlaceHolder(roverName = rover.name, currDate = pageDate)
+                    }*/
                 }
 
 
@@ -180,18 +225,21 @@ class RoverRemoteMediator(
         return when (loadType) {
             LoadType.REFRESH -> {
                 val remoteKeys = getRemoteKeyClosesToCurrentPosition(state)
-                remoteKeys?.currDate ?: rover.max_date
+                Timber.d("loadType : REFRESH")
+                remoteKeys?.currDate ?: utilities.formatMillis(date)
             }
             LoadType.PREPEND -> {
-                /*val remoteKeys = getFirstRemoteKey(state)
+                val remoteKeys = getFirstRemoteKey(state)
                 remoteKeys?.prevDate ?: return MediatorResult.Success(
                     endOfPaginationReached = false
-                )*/
-                MediatorResult.Success(
-                    endOfPaginationReached = false
                 )
+                Timber.d("loadType : PREPEND")
+                /*MediatorResult.Success(
+                    endOfPaginationReached = false
+                )*/
             }
             LoadType.APPEND -> {
+                Timber.d("loadType : APPEND")
                 val remoteKeys = getLastRemoteKey(state)
                 val nextDate = remoteKeys?.nextDate
                 nextDate ?: return MediatorResult.Success(endOfPaginationReached = false)
@@ -204,7 +252,10 @@ class RoverRemoteMediator(
             .firstOrNull { it.data.isNotEmpty() }
             ?.data?.firstOrNull()
             ?.let { marsDb ->
-                remoteKeyDao.remoteKeyByNameAndDate(roverName = marsDb.rover_name , currDate = marsDb.earth_date)
+                remoteKeyDao.remoteKeyByNameAndDate(
+                    roverName = marsDb.rover_name,
+                    currDate = marsDb.earth_date
+                )
             }
     }
 
@@ -213,14 +264,20 @@ class RoverRemoteMediator(
             .lastOrNull { it.data.isNotEmpty() }
             ?.data?.lastOrNull()
             ?.let { marsDb ->
-                remoteKeyDao.remoteKeyByNameAndDate(roverName = marsDb.rover_name , currDate = marsDb.earth_date)
+                remoteKeyDao.remoteKeyByNameAndDate(
+                    roverName = marsDb.rover_name,
+                    currDate = marsDb.earth_date
+                )
             }
     }
 
     private suspend fun getRemoteKeyClosesToCurrentPosition(state: PagingState<Int, MarsRoverPhotoDb>): RemoteKeysDb? {
         return state.anchorPosition?.let { position ->
             state.closestItemToPosition(position)?.let { marsDb ->
-                remoteKeyDao.remoteKeyByNameAndDate(roverName = marsDb.rover_name , currDate = marsDb.earth_date)
+                remoteKeyDao.remoteKeyByNameAndDate(
+                    roverName = marsDb.rover_name,
+                    currDate = marsDb.earth_date
+                )
             }
         }
     }
