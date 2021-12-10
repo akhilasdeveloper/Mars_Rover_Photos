@@ -14,13 +14,13 @@ interface RemoteKeyDao {
     suspend fun insertAll(remoteKeyDb: List<RemoteKeysDb>)
 
     @Query("SELECT * FROM remote_keys WHERE roverName = :roverName AND currDate = :currDate ")
-    suspend fun remoteKeyByNameAndDate(roverName: String, currDate: String): RemoteKeysDb
+    suspend fun remoteKeyByNameAndDate(roverName: String, currDate: Long): RemoteKeysDb
 
     @Query("UPDATE remote_keys SET nextDate = :nextDate WHERE roverName = :roverName AND nextDate = :currNextDate")
-    suspend fun remoteKeyUpdateNextDate(nextDate: String?, currNextDate:String, roverName: String)
+    suspend fun remoteKeyUpdateNextDate(nextDate: Long?, currNextDate:Long, roverName: String)
 
     @Query("UPDATE remote_keys SET prevDate = :prevDate WHERE roverName = :roverName AND prevDate = :currPrevDate")
-    suspend fun remoteKeyUpdatePreDate(prevDate: String?, currPrevDate:String, roverName: String)
+    suspend fun remoteKeyUpdatePreDate(prevDate: Long?, currPrevDate:Long, roverName: String)
 
     @Query("DELETE FROM remote_keys")
     suspend fun deleteAll()

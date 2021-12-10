@@ -33,11 +33,15 @@ class MainViewModel
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
+    private val _dataStateDatePosition: MutableLiveData<Int> = MutableLiveData()
 
     private var job : Job? = null
 
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
+
+    val dataStateDatePosition: LiveData<Int>
+        get() = _dataStateDatePosition
 
     val dataStateIsLiked: LiveData<Boolean>
         get() = _dataStateIsLiked
@@ -106,6 +110,14 @@ class MainViewModel
         viewModelScope.launch {
             marsRoverPhotosRepository.isLiked(id).collect {
                 _dataStateIsLiked.value = it
+            }
+        }
+    }
+
+    fun getDatePosition(roverName: String, date: String){
+        viewModelScope.launch {
+            marsRoverPhotosRepository.getDatePosition(roverName, date).collect {
+                _dataStateDatePosition.value = it
             }
         }
     }

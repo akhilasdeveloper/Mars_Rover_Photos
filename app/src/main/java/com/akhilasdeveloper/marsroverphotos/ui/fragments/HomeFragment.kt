@@ -7,9 +7,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
@@ -19,15 +17,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
 import android.view.LayoutInflater
-
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import com.akhilasdeveloper.marsroverphotos.utilities.scrollToCenter
-
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
+import com.akhilasdeveloper.marsroverphotos.utilities.*
 
 
 @ExperimentalPagingApi
@@ -90,6 +90,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         )
 
         adapter = MarsRoverPhotoAdapter(this)
+        val loadStateAdapter = MarsRoverPhotoLoadStateAdapter { adapter.retry() }
 
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
@@ -107,10 +108,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
             photoRecycler.adapter = adapter/*.withLoadStateHeaderAndFooter(
-                header = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
-                footer = MarsRoverPhotoLoadStateAdapter { adapter.retry() },
+                header = loadStateAdapter,
+                footer = loadStateAdapter,
             )*/
         }
+
     }
 
     private fun subscribeObservers() {
@@ -128,15 +130,16 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 it.setAsHandled()
                 master = rover
                 setData()
-                if (!isHandled)
+                if (!isHandled) {
+                    currentDate = rover.max_date_in_millis
+                    getData()
                     setDate()
+                }
             }
         })
 
         viewModel.dataStateDate.observe(viewLifecycleOwner, {
-            binding.dateButtonText.text = utilities.formatMillis(it)
             currentDate = it
-            getData()
             setSolButtonText()
         })
 
@@ -154,22 +157,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             if (::master.isInitialized) {
                 homeToolbarTop.title = master.name
                 homeCollapsingToolbarTop.title = master.name
-                setSolButtonText()
-//                Glide.with(requireContext()).load(Constants.URL_DATA + master.image).into(binding.toolbarImage)
             }
         }
     }
 
     private fun setDate() {
-        utilities.formatDateToMillis(master.max_date)?.let { date ->
+        master.max_date_in_millis.let { date ->
             viewModel.setDate(date)
         }
     }
 
     private fun setSolButtonText() {
+        binding.dateButtonText.text = currentDate!!.formatMillisToDate()
         binding.solButtonText.text = getString(
             R.string.sol,
-            utilities.calculateDays(master.landing_date, currentDate).toString()
+            utilities.calculateDays(master.landing_date_in_millis, currentDate).toString()
         )
     }
 
@@ -186,7 +188,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             val slider = dialogView.findViewById<Slider>(R.id.sol_slider)
             val sol = dialogView.findViewById<TextView>(R.id.solSelectorCount)
             slider.valueTo = master.max_sol.toFloat()
-            utilities.calculateDays(master.landing_date, currentDate)?.let {
+            utilities.calculateDays(master.landing_date_in_millis, currentDate)?.let {
                 slider.value = it.toFloat()
             }
             sol.text = slider.value.toInt().toString()
@@ -197,12 +199,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             val alertDialog: AlertDialog = builder.create()
             alertDialog.show()
             dialogView.findViewById<MaterialButton>(R.id.ok_sol_selector).setOnClickListener {
-                viewModel.setDate(
-                    utilities.calculateDaysEarthDate(
-                        slider.value.toLong(),
-                        utilities.formatDateToMillis(master.landing_date)!!
-                    )
-                )
+                utilities.calculateDaysEarthDate(
+                    slider.value.toLong(),
+                    master.landing_date_in_millis
+                ).let {
+                    currentDate = it
+                    getData()
+                    viewModel.setDate(it)
+                }
                 alertDialog.cancel()
             }
             dialogView.findViewById<MaterialButton>(R.id.cancel_sol_selector).setOnClickListener {
@@ -212,8 +216,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun getData() {
-        currentDate?.let {
-            viewModel.getData(master, it)
+        currentDate?.let { currentDate ->
+            viewModel.getData(master, currentDate)
         }
     }
 
@@ -224,20 +228,28 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.solButtonText.setOnClickListener {
             showDialog()
         }
-        /*lifecycleScope.launch {
+        lifecycleScope.launch {
             adapter.loadStateFlow.collectLatest { loadStates ->
-                viewModel.setLoading(loadStates.refresh is LoadState.Loading)
-                binding.emptyMessage.isVisible = loadStates.refresh is LoadState.Error
+                binding.photoRecycler.isVisible =
+                    loadStates.mediator?.refresh is LoadState.NotLoading
+                binding.progress.isVisible = loadStates.mediator?.refresh is LoadState.Loading
+                binding.emptyMessage.isVisible = loadStates.mediator?.refresh is LoadState.Error
             }
-        }*/
+        }
+
         binding.emptyMessage.setOnClickListener {
             getData()
         }
-        adapter.addLoadStateListener {loadState->
-            binding.photoRecycler.isVisible = loadState.mediator?.refresh is LoadState.NotLoading
-            binding.progress.isVisible = loadState.mediator?.refresh is LoadState.Loading
-            binding.emptyMessage.isVisible = loadState.mediator?.refresh is LoadState.Error
-        }
+
+        binding.photoRecycler.observeFirstItemPosition(firstItemPosition = { position ->
+            adapter.snapshot().let { items ->
+                if (items.isNotEmpty() && items.size > position)
+                    items[position]?.let {
+                        viewModel.setDate(it.earth_date)
+                    }
+            }
+        })
+
     }
 
     private fun showDatePicker() {
@@ -245,8 +257,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
             val constraintsBuilder = CalendarConstraints.Builder()
             val validators: ArrayList<CalendarConstraints.DateValidator> = ArrayList()
-            validators.add(DateValidatorPointForward.from(utilities.formatDateToMillis(master.landing_date)!!))
-            validators.add(DateValidatorPointBackward.before(utilities.formatDateToMillis(master.max_date)!!))
+            validators.add(DateValidatorPointForward.from(master.landing_date_in_millis))
+            validators.add(DateValidatorPointBackward.before(master.max_date_in_millis))
             constraintsBuilder.setValidator(CompositeDateValidator.allOf(validators))
 
             val datePicker =
@@ -261,9 +273,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
             datePicker.addOnPositiveButtonClickListener {
                 datePicker.selection?.let {
+                    Timber.d("Selected Date : $it")
+                    currentDate = it
                     viewModel.setDate(it)
+                    getData()
                 }
-                binding.dateButtonText.text = utilities.formatMillis(currentDate!!)
+                binding.dateButtonText.text = currentDate!!.formatMillisToDate()
             }
         }
     }

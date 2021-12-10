@@ -1,6 +1,5 @@
 package com.akhilasdeveloper.marsroverphotos.db
 
-import androidx.constraintlayout.widget.Placeholder
 import androidx.paging.PagingSource
 import androidx.room.*
 
@@ -14,8 +13,11 @@ interface MarsRoverDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarsRoverPhoto(marsRoverPhotoDb: MarsRoverPhotoDb):Long
 
-    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName ORDER BY earth_date DESC, id ASC")
-    fun getPhotosByRoverIDAndDate(roverName: String): PagingSource<Int, MarsRoverPhotoDb>
+    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date <= :date ORDER BY earth_date DESC,is_placeholder DESC, id ASC")
+    fun getPhotosByRoverIDAndDate(roverName: String, date: Long): PagingSource<Int, MarsRoverPhotoDb>
+
+    @Query("SELECT min (foo.cnt) FROM (SELECT earth_date, (SELECT count(*) FROM mars_rover_photo_table b  WHERE a.id >= b.id AND b.rover_name = :roverName) AS cnt FROM mars_rover_photo_table a WHERE a.rover_name = :roverName) foo WHERE foo.earth_date = :date")
+    fun getDatePosition(roverName: String, date: String): Int
 
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
     fun isPhotosByDateExist(date: String, roverName:String): Int
@@ -23,7 +25,7 @@ interface MarsRoverDao {
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName AND is_placeholder = :isPlaceholder")
     fun isPlaceHolderSet(date: String, roverName:String, isPlaceholder: Boolean = true): Int
 
-    @Query("UPDATE mars_rover_photo_table SET is_placeholder = :isPlaceholder WHERE photo_id = (SELECT min(photo_id) FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date = :currDate) ")
+    @Query("UPDATE mars_rover_photo_table SET is_placeholder = :isPlaceholder WHERE id = (SELECT min(id) FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date <= :currDate) ")
     fun updatePlaceHolder(roverName: String, currDate:String, isPlaceholder: Boolean = true)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -39,7 +41,7 @@ interface MarsRoverDao {
     suspend fun insertAllMarsRoverPhotos(users: List<MarsRoverPhotoDb>)
 
     @Query("SELECT count(*) FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date = :date")
-    suspend fun dataCount(roverName: String, date: String): Int
+    suspend fun dataCount(roverName: String, date: Long): Int
 
     @Query("DELETE FROM mars_rover_photo_table")
     suspend fun clearAll()

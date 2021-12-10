@@ -6,16 +6,8 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 
 class Utilities @Inject constructor(
     var context: Context
@@ -56,45 +48,13 @@ class Utilities @Inject constructor(
         return false
     }
 
-    fun formatMillis(millis: Long): String {
-        val pattern = "yyyy-MM-dd"
-        val formatter = SimpleDateFormat(pattern, Locale.getDefault())
-        return formatter.format(Date(millis))
-    }
-
-    fun dateMinus(date: String, day: Int) = formatMillis(formatDateToMillis(date)!! - (day * MILLIS_IN_A_DAY))
-    fun datePlus(date: String, day: Int) = formatMillis(formatDateToMillis(date)!! + (day * MILLIS_IN_A_DAY))
-
-
-    fun formatDateToMillis(date: String): Long? {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val parsedDate = dateFormat.parse(date)
-        return parsedDate?.time
-    }
-
-    fun calculateDays(landingDate: String, currentDate: Long?): Long? =
-        formatDateToMillis(landingDate)?.let { landingDateNotNull ->
-            currentDate?.let {
-                (currentDate - landingDateNotNull) / MILLIS_IN_A_SOL
-            }
+    fun calculateDays(landingDate: Long, currentDate: Long?): Long? =
+        currentDate?.let {
+            (currentDate - landingDate) / MILLIS_IN_A_SOL
         }
 
     fun calculateDaysEarthDate(sol: Long, minDate: Long): Long {
         return minDate + (sol * MILLIS_IN_A_SOL)
-    }
-
-    fun downloadImage(imageUrl: String?, callback: (Bitmap?) -> (Unit)) {
-        Glide.with(context).asBitmap().load(imageUrl)
-            .into(object : CustomTarget<Bitmap?>() {
-                override fun onResourceReady(
-                    resource: Bitmap,
-                    transition: Transition<in Bitmap?>?
-                ) {
-                    callback(resource)
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
     }
 
 }

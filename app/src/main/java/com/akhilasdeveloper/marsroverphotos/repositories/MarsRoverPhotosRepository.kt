@@ -11,6 +11,7 @@ import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.*
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.ui.RoverRemoteMediator
+import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -42,12 +43,15 @@ class MarsRoverPhotosRepository @Inject constructor(
                     response.add(
                         RoverMaster(
                             launch_date = manifest.launch_date,
+                            launch_date_in_millis = manifest.launch_date.formatDateToMillis()!!,
                             name = src.roverName,
                             total_photos = manifest.total_photos,
                             status = manifest.status,
                             max_sol = manifest.max_sol,
                             max_date = manifest.max_date,
+                            max_date_in_millis = manifest.max_date.formatDateToMillis()!!,
                             landing_date = manifest.landing_date,
+                            landing_date_in_millis = manifest.landing_date.formatDateToMillis()!!,
                             description = src.roverDescription,
                             image = src.roverImage,
                             id = src.id
@@ -197,20 +201,21 @@ class MarsRoverPhotosRepository @Inject constructor(
         date: Long,
         rover: RoverMaster
     ) = Pager(
-        config = PagingConfig(pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE),
+        config = PagingConfig(pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE, enablePlaceholders = true),
         remoteMediator = RoverRemoteMediator(
             date,
             rover,
             marsRoverPhotosService,
             marsRoverDao,
             remoteKeyDao,
-            marsRoverDataBase,
-            utilities
+            marsRoverDataBase
         ),
         pagingSourceFactory = {
-            marsRoverDao.getPhotosByRoverIDAndDate(roverName = rover.name)
+            marsRoverDao.getPhotosByRoverIDAndDate(roverName = rover.name, date = date)
         }
     ).flow
+
+    suspend fun getDatePosition(roverName: String, date: String) = flow<Int> { emit(withContext(Dispatchers.IO){marsRoverDao.getDatePosition(roverName, date)}) }
 
     /**
      * Rover Photo END

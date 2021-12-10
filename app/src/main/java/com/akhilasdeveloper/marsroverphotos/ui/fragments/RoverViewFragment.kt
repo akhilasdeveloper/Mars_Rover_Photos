@@ -15,6 +15,7 @@ import kotlinx.coroutines.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import javax.inject.Inject
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
+import com.akhilasdeveloper.marsroverphotos.utilities.downloadImage
 
 
 @AndroidEntryPoint
@@ -28,8 +29,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     private var currentData: MarsRoverPhotoDb? = null
     private var currentPosition: Int? = null
-    @Inject
-    lateinit var utilities: Utilities
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -93,10 +92,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setDownload() {
-        currentData?.img_src?.let { url->
-            utilities.downloadImage(url){
-                requireContext().showShortToast(it.toString())
-            }
+        currentData?.img_src?.downloadImage(requireContext()){
+            requireContext().showShortToast(it.toString())
         }
     }
 

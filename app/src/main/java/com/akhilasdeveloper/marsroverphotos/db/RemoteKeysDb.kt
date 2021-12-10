@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName
 @Entity(tableName = "remote_keys", primaryKeys = ["roverName","currDate"])
 data class RemoteKeysDb(
     val roverName: String,
-    val currDate: String,
-    val prevDate: String?,
-    val nextDate: String?
+    val currDate: Long,
+    val prevDate: Long?,
+    val nextDate: Long?
 )

@@ -5,16 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.setupWithNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoversBinding
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverAdapter
@@ -22,7 +19,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
@@ -32,7 +28,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     private val binding get() = _binding!!
     private var adapter: MarsRoverAdapter =  MarsRoverAdapter(this)
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
-    @Inject lateinit var utilities: Utilities
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

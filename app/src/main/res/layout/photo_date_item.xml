@@ -1,48 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="300dp"
-    android:gravity="center"
+    android:layout_height="@dimen/photo_date_item_height"
+    android:gravity="bottom"
     android:background="@drawable/imageview_placeholder"
-    android:layout_margin="@dimen/stroke_light">
+    android:layout_margin="@dimen/stroke_medium"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/date"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_gravity="top"
-        android:paddingStart="@dimen/global_window_padding"
-        android:paddingEnd="@dimen/global_window_padding"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="10dp"
-        android:textColor="@color/system_for"
-        android:textSize="18sp"
-        android:gravity="center_vertical"
-        style="@style/TextAppearance.ToolBarTitle.Collapsed"/>
+        android:layout_height="@dimen/toolbar_top_title_text_height"
+        style="@style/photo_item_date"/>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_gravity="bottom">
-        <ImageView
-            android:id="@+id/image_description"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:contentDescription="@string/rover_captured_image" />
-        <TextView
-            android:id="@+id/camera_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="@color/system_border"
-            android:gravity="center_vertical"
-            android:drawablePadding="5dp"
-            android:textColor="@color/system_for"
-            android:padding="5dp"
-            app:drawableStartCompat="@drawable/ic_round_camera_alt_24" />
-    </FrameLayout>
-
-
-
-</FrameLayout>
+    <include layout="@layout/photo_item"
+        android:id="@+id/photo_item"/>
+</LinearLayout>

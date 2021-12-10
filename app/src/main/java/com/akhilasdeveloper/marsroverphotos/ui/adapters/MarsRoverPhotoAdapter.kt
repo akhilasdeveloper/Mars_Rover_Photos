@@ -12,6 +12,7 @@ import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
+import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDate
 import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -78,7 +79,6 @@ class MarsRoverPhotoAdapter(
                     }
                 }
             }
-
             binding.root.setOnClickListener {
                 interaction?.onItemSelected(photo, position)
             }
@@ -96,16 +96,18 @@ class MarsRoverPhotoAdapter(
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
-                    Glide.with(itemView)
-                        .load(it.img_src)
-                        .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(imageDescription)
-                    cameraName.text = it.camera_name
-                    cameraName.setOnClickListener {_->
-                        binding.root.context.showShortToast(it.camera_full_name)
+                    photoItem.apply {
+                        Glide.with(itemView)
+                            .load(it.img_src)
+                            .centerCrop()
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(imageDescription)
+                        cameraName.text = it.camera_name
+                        cameraName.setOnClickListener {_->
+                            binding.root.context.showShortToast(it.camera_full_name)
+                        }
                     }
-                    binding.date.text = it.earth_date
+                    binding.date.text = it.earth_date.formatMillisToDate()
                 }
             }
 
