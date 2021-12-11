@@ -7,6 +7,8 @@ import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
+import com.github.piasy.biv.BigImageViewer
+import com.github.piasy.biv.loader.glide.GlideImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,6 +22,9 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // or load with glide
+        BigImageViewer.initialize(GlideImageLoader.with(applicationContext))
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.setBackgroundDrawableResource(R.color.first)

@@ -13,6 +13,7 @@ import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDate
+import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -107,7 +108,7 @@ class MarsRoverPhotoAdapter(
                             binding.root.context.showShortToast(it.camera_full_name)
                         }
                     }
-                    binding.date.text = it.earth_date.formatMillisToDate()
+                    binding.date.text = it.earth_date.formatMillisToDisplayDate()
                 }
             }
 

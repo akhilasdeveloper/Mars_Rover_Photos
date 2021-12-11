@@ -26,5 +26,5 @@ interface RemoteKeyDao {
     suspend fun deleteAll()
 
     @Query("DELETE FROM remote_keys WHERE roverName = :roverName AND currDate = :date")
-    suspend fun deleteByRoverNameAndDate(roverName: String, date: String)
+    suspend fun deleteByRoverNameAndDate(roverName: String, date: Long)
 }

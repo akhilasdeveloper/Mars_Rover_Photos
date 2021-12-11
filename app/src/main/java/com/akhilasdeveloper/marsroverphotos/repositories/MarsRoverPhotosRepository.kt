@@ -203,19 +203,19 @@ class MarsRoverPhotosRepository @Inject constructor(
     ) = Pager(
         config = PagingConfig(pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE, enablePlaceholders = true),
         remoteMediator = RoverRemoteMediator(
-            date,
-            rover,
-            marsRoverPhotosService,
-            marsRoverDao,
-            remoteKeyDao,
-            marsRoverDataBase
+            rover = rover,
+            marsRoverPhotosService = marsRoverPhotosService,
+            marsRoverDao = marsRoverDao,
+            remoteKeyDao = remoteKeyDao,
+            marsRoverDataBase = marsRoverDataBase,
+            date = date
         ),
         pagingSourceFactory = {
-            marsRoverDao.getPhotosByRoverIDAndDate(roverName = rover.name, date = date)
+            marsRoverDao.getPhotosByRoverIDAndDate(roverName = rover.name)
         }
     ).flow
 
-    suspend fun getDatePosition(roverName: String, date: String) = flow<Int> { emit(withContext(Dispatchers.IO){marsRoverDao.getDatePosition(roverName, date)}) }
+    suspend fun getDatePosition(roverName: String, date: Long) = flow<Int> { emit(withContext(Dispatchers.IO){marsRoverDao.getDatePosition(roverName, date)}) }
 
     /**
      * Rover Photo END

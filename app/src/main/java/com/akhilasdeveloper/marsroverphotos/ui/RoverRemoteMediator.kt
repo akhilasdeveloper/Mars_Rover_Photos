@@ -24,23 +24,23 @@ import java.io.IOException
 
 @ExperimentalPagingApi
 class RoverRemoteMediator(
-    private val date: Long,
     private val rover: RoverMaster,
+    private val date: Long = rover.max_date_in_millis,
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val marsRoverDao: MarsRoverDao,
     private val remoteKeyDao: RemoteKeyDao,
     private val marsRoverDataBase: MarsRoverDatabase
 ) : RemoteMediator<Int, MarsRoverPhotoDb>() {
 
-    private val masterDate = rover.max_date_in_millis
-//        if (date > rover.max_date_in_millis || date == 0L) rover.max_date_in_millis else date
+    private val masterDate = date
 
     override suspend fun initialize(): InitializeAction {
-        return if (marsRoverDao.dataCount(rover.name, masterDate) > 0) {
-            InitializeAction.SKIP_INITIAL_REFRESH
-        } else {
-            InitializeAction.LAUNCH_INITIAL_REFRESH
-        }
+        return InitializeAction.LAUNCH_INITIAL_REFRESH
+        /*if (marsRoverDao.dataCount(rover.name, masterDate) > 0) {
+                   InitializeAction.SKIP_INITIAL_REFRESH
+               } else {
+                   InitializeAction.LAUNCH_INITIAL_REFRESH
+               }*/
     }
 
     override suspend fun load(
@@ -58,14 +58,29 @@ class RoverRemoteMediator(
             }
         }
 
+        Timber.d(
+            "**loadType : ${
+                when (loadType) {
+                    LoadType.REFRESH -> {
+                        "REFRESH"
+                    }
+                    LoadType.PREPEND -> {
+                        "PREPEND"
+                    }
+                    LoadType.APPEND -> {
+                        "APPEND"
+                    }
+                }
+            } : $pageDate"
+        )
+
         return try {
 
             val url = Constants.URL_PHOTO + rover.name + "/photos"
             var isEndOfList =
                 pageDate < rover.landing_date_in_millis || pageDate > rover.max_date_in_millis
             var response = marsRoverPhotosService.getRoverPhotos(
-                url = url, earth_date = pageDate.formatMillisToDate(),
-                page = Constants.STARTING_PAGE_INDEX.toString()
+                url = url, earth_date = pageDate.formatMillisToDate()
             )
 
             val startPageKey = pageDate
@@ -95,13 +110,12 @@ class RoverRemoteMediator(
                     break
                 else
                     response = marsRoverPhotosService.getRoverPhotos(
-                        url = url, earth_date = pageDate.formatMillisToDate(),
-                        page = Constants.STARTING_PAGE_INDEX.toString()
+                        url = url, earth_date = pageDate.formatMillisToDate()
                     )
             }
 
             marsRoverDataBase.withTransaction {
-                /*if (loadType == LoadType.REFRESH) {
+                if (loadType == LoadType.REFRESH) {
                     remoteKeyDao.deleteByRoverNameAndDate(
                         roverName = rover.name,
                         date = pageDate
@@ -110,7 +124,7 @@ class RoverRemoteMediator(
                         roverName = rover.name,
                         date = pageDate
                     )
-                }*/
+                }
 
                 val nextDate =
                     if (pageDate <= rover.landing_date_in_millis) null else pageDate.prevDate()
@@ -165,13 +179,6 @@ class RoverRemoteMediator(
                     }.toMutableList().apply { set(0, first().copy(is_placeholder = true)) }
 
                     marsRoverDao.insertAllMarsRoverPhotos(data)
-                    /*if (marsRoverDao.isPlaceHolderSet(
-                            roverName = rover.name,
-                            date = pageDate
-                        ) <= 0
-                    ) {
-                        marsRoverDao.updatePlaceHolder(roverName = rover.name, currDate = pageDate)
-                    }*/
                 }
 
 

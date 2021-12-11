@@ -16,6 +16,7 @@ object Constants {
     const val PAGE_NOT_VALIDATED = "PAGE_NOT_VALIDATED"
     const val PLACEHOLDER_STRING = "PLACEHOLDER_STRING"
     const val DATE_FORMAT = "yyyy-MM-dd"
+    const val DISPLAY_DATE_FORMAT = "dd MMMM yyyy"
     const val SCROLL_DIRECTION_UP = -1
     const val SCROLL_DIRECTION_DOWN = 1
     const val PLACEHOLDER_ID = (-999).toLong()

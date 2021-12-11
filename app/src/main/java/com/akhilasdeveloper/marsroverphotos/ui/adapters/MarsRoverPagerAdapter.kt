@@ -1,18 +1,15 @@
 package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsUri
+import com.davemorrissey.labs.subscaleview.ImageSource
 
 class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null) :
     PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
@@ -29,10 +26,17 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
         fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
             binding.apply {
                 photo.let {
-                    Glide.with(itemView)
+//                    viewPageImage.showImage(Uri.parse(it.img_src))
+                    /*Glide.with(itemView)
                         .load(it.img_src)
                         .centerInside()
-                        .into(viewPageImage)
+                        .into(viewPageImage)*/
+                    it.img_src.downloadImageAsUri(root.context){ resource->
+                        resource?.let {
+                            viewPageImage.setImage(ImageSource.uri(resource))
+                        }
+                    }
+                    viewPageImage.setMinimumDpi(60)
                 }
             }
             binding.viewPageImage.setOnClickListener {

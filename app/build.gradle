@@ -110,5 +110,11 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
+    /*implementation 'com.github.piasy:BigImageViewer:1.8.1'
+    // load with glide
+    implementation 'com.github.piasy:GlideImageLoader:1.8.1'*/
+
+    implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
+
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 }

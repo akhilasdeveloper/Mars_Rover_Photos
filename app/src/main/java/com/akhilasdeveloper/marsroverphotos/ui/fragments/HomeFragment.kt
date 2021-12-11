@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagingData
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
 import com.akhilasdeveloper.marsroverphotos.utilities.*
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
 
 
 @ExperimentalPagingApi
@@ -84,7 +86,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         val layoutManager = GridLayoutManager(
             requireContext(),
-            Constants.GALLERY_SPAN,
+            GALLERY_SPAN,
             GridLayoutManager.VERTICAL,
             false
         )
@@ -98,9 +100,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     if (adapter.snapshot()[position]?.is_placeholder != true)
                         1
                     else
-                        2
+                        GALLERY_SPAN
                 else
-                    2
+                    GALLERY_SPAN
             }
         }
 
@@ -121,6 +123,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             response?.let {
                 Timber.d("dataState1 : $response")
                 adapter.submitData(viewLifecycleOwner.lifecycle, response)
+                if (::master.isInitialized)
+                    viewModel.getDatePosition(master.name, currentDate!!)
             }
         })
 
@@ -144,10 +148,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         })
 
         viewModel.dataStateLoading.observe(viewLifecycleOwner, {
-            binding.progress.isVisible = it
+//            binding.progress.isVisible = it
         })
 
         viewModel.positionState.observe(viewLifecycleOwner, {
+//            scrollToPosition(it)
+        })
+        viewModel.dataStateDatePosition.observe(viewLifecycleOwner, {
             scrollToPosition(it)
         })
     }
@@ -217,7 +224,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun getData() {
         currentDate?.let { currentDate ->
-            viewModel.getData(master, currentDate)
+            lifecycleScope.launch {
+                viewModel.getData(master, currentDate)
+            }
         }
     }
 
@@ -228,12 +237,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.solButtonText.setOnClickListener {
             showDialog()
         }
-        lifecycleScope.launch {
-            adapter.loadStateFlow.collectLatest { loadStates ->
-                binding.photoRecycler.isVisible =
-                    loadStates.mediator?.refresh is LoadState.NotLoading
-                binding.progress.isVisible = loadStates.mediator?.refresh is LoadState.Loading
-                binding.emptyMessage.isVisible = loadStates.mediator?.refresh is LoadState.Error
+        adapter.addLoadStateListener { loadStates ->
+            binding.photoRecycler.isVisible = loadStates.mediator?.refresh is LoadState.NotLoading
+            binding.progress.isVisible =
+                loadStates.mediator?.refresh is LoadState.Loading || loadStates.mediator?.append is LoadState.Loading || loadStates.mediator?.prepend is LoadState.Loading
+            binding.emptyMessage.isVisible = loadStates.mediator?.refresh is LoadState.Error
+
+            if (loadStates.mediator?.refresh is LoadState.NotLoading &&
+                loadStates.append.endOfPaginationReached &&
+                adapter.itemCount < 1
+            ) {
+                binding.photoRecycler.isVisible = false
+                binding.emptyMessage.isVisible = true
             }
         }
 

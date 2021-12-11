@@ -12,10 +12,8 @@ import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
-import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
-import javax.inject.Inject
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
-import com.akhilasdeveloper.marsroverphotos.utilities.downloadImage
+import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsBitmap
 
 
 @AndroidEntryPoint
@@ -92,7 +90,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setDownload() {
-        currentData?.img_src?.downloadImage(requireContext()){
+        currentData?.img_src?.downloadImageAsBitmap(requireContext()){
             requireContext().showShortToast(it.toString())
         }
     }

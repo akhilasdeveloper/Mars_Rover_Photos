@@ -114,7 +114,7 @@ class MainViewModel
         }
     }
 
-    fun getDatePosition(roverName: String, date: String){
+    fun getDatePosition(roverName: String, date: Long){
         viewModelScope.launch {
             marsRoverPhotosRepository.getDatePosition(roverName, date).collect {
                 _dataStateDatePosition.value = it

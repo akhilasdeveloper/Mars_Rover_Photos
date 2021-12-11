@@ -50,7 +50,7 @@ class Utilities @Inject constructor(
 
     fun calculateDays(landingDate: Long, currentDate: Long?): Long? =
         currentDate?.let {
-            (currentDate - landingDate) / MILLIS_IN_A_SOL
+            ((currentDate - landingDate) / MILLIS_IN_A_SOL) + 1
         }
 
     fun calculateDaysEarthDate(sol: Long, minDate: Long): Long {
