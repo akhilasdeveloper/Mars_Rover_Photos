@@ -10,7 +10,7 @@ import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.*
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
-import com.akhilasdeveloper.marsroverphotos.ui.RoverRemoteMediator
+import com.akhilasdeveloper.marsroverphotos.paging.RoverRemoteMediator
 import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -22,7 +22,6 @@ import javax.inject.Inject
 class MarsRoverPhotosRepository @Inject constructor(
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val marsRoverDao: MarsRoverDao,
-    private val remoteKeyDao: RemoteKeyDao,
     private val marsRoverDataBase: MarsRoverDatabase,
     private val utilities: Utilities
 ) {
@@ -205,13 +204,10 @@ class MarsRoverPhotosRepository @Inject constructor(
         remoteMediator = RoverRemoteMediator(
             rover = rover,
             marsRoverPhotosService = marsRoverPhotosService,
-            marsRoverDao = marsRoverDao,
-            remoteKeyDao = remoteKeyDao,
-            marsRoverDataBase = marsRoverDataBase,
-            date = date
+            marsRoverDataBase = marsRoverDataBase
         ),
         pagingSourceFactory = {
-            marsRoverDao.getPhotosByRoverIDAndDate(roverName = rover.name)
+            marsRoverDao.getPhotosByRoverIDAndDate(roverName = rover.name, date = date)
         }
     ).flow
 

@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        android:paddingBottom="@dimen/photo_date_item_height" />
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/home_appbar_top"
@@ -22,30 +23,30 @@
         app:liftOnScroll="true">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/home_collapsing_toolbar_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/home_collapsing_toolbar_top"
+            android:background="@color/appbar"
+            app:collapsedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"
+            app:contentScrim="@color/appbar"
+            app:expandedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Expanded"
             app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
             app:statusBarScrim="@color/appbar"
-            android:background="@color/appbar"
-            app:contentScrim="@color/appbar"
-            app:titleEnabled="true"
             app:titleCollapseMode="scale"
-            app:collapsedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"
-            app:expandedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Expanded">
+            app:titleEnabled="true">
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/toolbar_top_image_height"/>
+                android:layout_height="@dimen/toolbar_top_image_height" />
 
             <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/home_toolbar_top"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="none"
                 android:elevation="0dp"
-                android:id="@+id/home_toolbar_top"
                 app:contentInsetStart="@dimen/global_window_padding"
-                app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"/>
+                app:layout_collapseMode="none"
+                app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed" />
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -77,24 +78,24 @@
 
                 <TextView
                     android:id="@+id/sol_button_text"
+                    style="@style/bottom_appbar_button_ring"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/toolbar_bottom_horizontal_padding"
                     android:layout_marginEnd="@dimen/toolbar_bottom_horizontal_padding"
                     android:layout_weight="1"
                     app:drawableStartCompat="@drawable/ic_mars_icon"
-                    app:drawableTint="@color/system_for"
-                    style="@style/bottom_appbar_button_ring"/>
+                    app:drawableTint="@color/system_for" />
 
                 <TextView
                     android:id="@+id/date_button_text"
+                    style="@style/bottom_appbar_button_ring"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/toolbar_bottom_horizontal_padding"
                     android:layout_weight="1"
                     app:drawableStartCompat="@drawable/ic_round_date_range_24"
-                    app:drawableTint="@color/system_for"
-                    style="@style/bottom_appbar_button_ring"/>
+                    app:drawableTint="@color/system_for" />
 
             </LinearLayout>
 
@@ -114,11 +115,15 @@
         app:cardBackgroundColor="@color/accent"
         app:cardCornerRadius="20dp" />
 
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:indeterminateTint="@color/accent" />
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:indeterminate="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-4dp"
+            android:layout_marginBottom="-4dp"
+            android:indeterminateTint="@color/accent"
+            android:layout_gravity="bottom"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

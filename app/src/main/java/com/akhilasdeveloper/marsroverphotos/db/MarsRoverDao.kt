@@ -13,8 +13,8 @@ interface MarsRoverDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarsRoverPhoto(marsRoverPhotoDb: MarsRoverPhotoDb):Long
 
-    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName ORDER BY earth_date DESC,is_placeholder DESC, id ASC")
-    fun getPhotosByRoverIDAndDate(roverName: String): PagingSource<Int, MarsRoverPhotoDb>
+    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date <= :date ORDER BY earth_date DESC")
+    fun getPhotosByRoverIDAndDate(roverName: String, date: Long): PagingSource<Int, MarsRoverPhotoDb>
 
     @Query("SELECT min (foo.cnt) FROM (SELECT earth_date, (SELECT count(*) FROM mars_rover_photo_table b  WHERE a.id >= b.id AND b.rover_name = :roverName) AS cnt FROM mars_rover_photo_table a WHERE a.rover_name = :roverName) foo WHERE foo.earth_date = :date")
     fun getDatePosition(roverName: String, date: Long): Int

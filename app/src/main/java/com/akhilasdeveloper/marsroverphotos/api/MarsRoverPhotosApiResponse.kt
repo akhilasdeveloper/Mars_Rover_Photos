@@ -1,5 +1,7 @@
 package com.akhilasdeveloper.marsroverphotos.api
 
+import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 

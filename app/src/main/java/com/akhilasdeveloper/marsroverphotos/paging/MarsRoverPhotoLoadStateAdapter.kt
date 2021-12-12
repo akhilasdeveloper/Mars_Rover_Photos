@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.ui
+package com.akhilasdeveloper.marsroverphotos.paging
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

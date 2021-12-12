@@ -20,16 +20,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagingData
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import com.akhilasdeveloper.marsroverphotos.ui.MarsRoverPhotoLoadStateAdapter
+import com.akhilasdeveloper.marsroverphotos.paging.MarsRoverPhotoLoadStateAdapter
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
+import kotlinx.coroutines.*
 
 
 @ExperimentalPagingApi
@@ -58,31 +55,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun init() {
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams = (binding.homeToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
-            binding.homeToolbar.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            binding.photoRecycler.updatePadding(bottom = systemWindows.bottom)
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams =
-                (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
-            binding.homeToolbarTop.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
+        setWindowInsets()
 
         val layoutManager = GridLayoutManager(
             requireContext(),
@@ -117,14 +90,65 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     }
 
+    private fun setWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            val layoutParams = (binding.homeToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
+            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
+            binding.homeToolbar.layoutParams = layoutParams
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        val recyclerBottomPadding = binding.photoRecycler.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            binding.photoRecycler.updatePadding(bottom = systemWindows.bottom + recyclerBottomPadding)
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            val layoutParams =
+                (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
+            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
+            binding.homeToolbarTop.layoutParams = layoutParams
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        val layoutParams =  (binding.progress.layoutParams as? ViewGroup.MarginLayoutParams)
+        val marginBottom = layoutParams?.bottomMargin ?: 0
+        ViewCompat.setOnApplyWindowInsetsListener(binding.progress) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + marginBottom)
+            binding.progress.layoutParams = layoutParams
+            return@setOnApplyWindowInsetsListener insets
+        }
+    }
+
+    private fun showProgress() {
+        binding.progress.apply {
+            if (!isVisible)
+                isVisible = true
+        }
+    }
+
+    private fun hideProgress() {
+        binding.progress.apply {
+            if (isVisible)
+                isVisible = false
+        }
+    }
+
     private fun subscribeObservers() {
 
         viewModel.dataState.observe(viewLifecycleOwner, { response ->
             response?.let {
                 Timber.d("dataState1 : $response")
                 adapter.submitData(viewLifecycleOwner.lifecycle, response)
-                if (::master.isInitialized)
-                    viewModel.getDatePosition(master.name, currentDate!!)
             }
         })
 
@@ -148,13 +172,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         })
 
         viewModel.dataStateLoading.observe(viewLifecycleOwner, {
+            if (it) showProgress()
+            else
+                hideProgress()
 //            binding.progress.isVisible = it
         })
 
         viewModel.positionState.observe(viewLifecycleOwner, {
-//            scrollToPosition(it)
-        })
-        viewModel.dataStateDatePosition.observe(viewLifecycleOwner, {
             scrollToPosition(it)
         })
     }
@@ -224,9 +248,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun getData() {
         currentDate?.let { currentDate ->
-            lifecycleScope.launch {
-                viewModel.getData(master, currentDate)
-            }
+            viewModel.getData(master, currentDate)
         }
     }
 
@@ -239,8 +261,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
         adapter.addLoadStateListener { loadStates ->
             binding.photoRecycler.isVisible = loadStates.mediator?.refresh is LoadState.NotLoading
-            binding.progress.isVisible =
-                loadStates.mediator?.refresh is LoadState.Loading || loadStates.mediator?.append is LoadState.Loading || loadStates.mediator?.prepend is LoadState.Loading
+            viewModel.setLoading(
+                        loadStates.mediator?.append is LoadState.Loading ||
+                        loadStates.mediator?.refresh is LoadState.Loading
+            )
             binding.emptyMessage.isVisible = loadStates.mediator?.refresh is LoadState.Error
 
             if (loadStates.mediator?.refresh is LoadState.NotLoading &&
