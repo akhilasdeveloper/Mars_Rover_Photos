@@ -13,6 +13,9 @@ interface PhotoKeyDao {
     suspend fun insertDisplayPhotos(displayPhotosTable: DisplayPhotosTable)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllDisplayPhotos(displayPhotosTables: List<DisplayPhotosTable>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPhotoDate(photoDatesTable: PhotoDatesTable)
 
     @Query("SELECT * FROM display_photos")

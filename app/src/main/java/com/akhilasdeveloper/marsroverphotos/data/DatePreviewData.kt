@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 data class DatePreviewData(
     val roverName: String,
     val currentDate: Long,
-    val photos: Flow<List<MarsRoverPhotoTable>>
+    val photos: List<MarsRoverPhotoTable>
 )

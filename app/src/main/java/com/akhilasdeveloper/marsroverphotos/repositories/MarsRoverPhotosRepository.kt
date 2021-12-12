@@ -1,6 +1,5 @@
 package com.akhilasdeveloper.marsroverphotos.repositories
 
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -19,12 +18,13 @@ import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTa
 import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
 import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
-import com.akhilasdeveloper.marsroverphotos.paging.RoverRemoteMediator
 import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -225,16 +225,31 @@ class MarsRoverPhotosRepository @Inject constructor(
         }
     ).flow*/
 
-    fun getPhotos(
+    suspend fun getPhotos(
         rover: RoverMaster,
         date: Long
-    ):Flow<PagingData<DatePreviewData>> = Pager(
-        config = PagingConfig(
-            pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE,
-            enablePlaceholders = true
-        ),
-        pagingSourceFactory = { MarsPagingSource(photoKeyDao = photoKeyDao, roverMaster = rover, marsPhotoDao = marsPhotoDao, date = date) }
-    ).flow
+    ): Flow<PagingData<DatePreviewData>> {
+
+        val getAllPhotoDatesCountByDate = withContext(Dispatchers.IO) {
+            photoKeyDao.getAllPhotoDatesCountByDate(roverName = rover.name, date = date)
+        }
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE,
+                enablePlaceholders = true
+            ),
+            pagingSourceFactory = {
+
+                MarsPagingSource(
+                    photoKeyDao = photoKeyDao,
+                    roverMaster = rover,
+                    marsPhotoDao = marsPhotoDao,
+                    marsRoverPhotosService = marsRoverPhotosService,
+                    count = getAllPhotoDatesCountByDate
+                )
+            }
+        ).flow
+    }
 
     suspend fun getDatePosition(roverName: String, date: Long) = flow<Int> {
         emit(withContext(Dispatchers.IO) {

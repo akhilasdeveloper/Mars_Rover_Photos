@@ -95,7 +95,7 @@ class MarsRoverPhotoAdapter(
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
-                    photoItem.apply {
+                   /* photoItem.apply {
                         Glide.with(itemView)
                             .load(it.img_src)
                             .centerCrop()
@@ -105,7 +105,7 @@ class MarsRoverPhotoAdapter(
                         cameraName.setOnClickListener {_->
                             binding.root.context.showShortToast(it.camera_full_name)
                         }
-                    }
+                    }*/
                     binding.date.text = it.earth_date.formatMillisToDisplayDate()
                 }
             }

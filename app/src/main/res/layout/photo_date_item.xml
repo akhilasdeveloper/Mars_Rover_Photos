@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/photo_date_item_height"
+    android:layout_height="wrap_content"
     android:gravity="bottom"
-    android:background="@drawable/imageview_placeholder"
-    android:layout_margin="@dimen/stroke_medium"
     android:orientation="vertical">
 
     <TextView
@@ -13,6 +11,58 @@
         android:layout_height="@dimen/toolbar_top_title_text_height"
         style="@style/photo_item_date"/>
 
-    <include layout="@layout/photo_item"
-        android:id="@+id/photo_item"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <ImageView
+            android:id="@+id/image_description"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/photo_item_height"
+            android:contentDescription="@string/rover_captured_image"
+            android:background="@drawable/imageview_placeholder"
+            android:visibility="invisible"
+            android:layout_margin="@dimen/stroke_medium"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageView
+                android:id="@+id/image_description1"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/photo_item_small_height"
+                android:layout_weight="1"
+                android:contentDescription="@string/rover_captured_image"
+                android:background="@drawable/imageview_placeholder"
+                android:visibility="invisible"
+                android:layout_margin="@dimen/stroke_medium"/>
+            <ImageView
+                android:id="@+id/image_description2"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/photo_item_small_height"
+                android:layout_weight="1"
+                android:contentDescription="@string/rover_captured_image"
+                android:background="@drawable/imageview_placeholder"
+                android:visibility="invisible"
+                android:layout_margin="@dimen/stroke_medium"/>
+            <ImageView
+                android:id="@+id/image_description3"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/photo_item_small_height"
+                android:layout_weight="1"
+                android:contentDescription="@string/rover_captured_image"
+                android:background="@drawable/imageview_placeholder"
+                android:visibility="invisible"
+                android:layout_margin="@dimen/stroke_medium"/>
+            <ImageView
+                android:id="@+id/image_description4"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/photo_item_small_height"
+                android:layout_weight="1"
+                android:contentDescription="@string/rover_captured_image"
+                android:background="@drawable/imageview_placeholder"
+                android:visibility="invisible"
+                android:layout_margin="@dimen/stroke_medium"/>
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

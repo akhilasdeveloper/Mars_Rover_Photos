@@ -1,7 +1,9 @@
 package com.akhilasdeveloper.marsroverphotos.ui.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingDataAdapter
@@ -23,7 +25,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class MarsRoverDateAdapter(
-    private val scope: LifecycleCoroutineScope,
     private val interaction: RecyclerClickListener? = null
 ) :
     PagingDataAdapter<DatePreviewData, MarsRoverDateAdapter.DateViewHolder>(PHOTO_COMPARATOR) {
@@ -31,7 +32,7 @@ class MarsRoverDateAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DateViewHolder {
         val bindingDatePhoto =
             PhotoDateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return DateViewHolder(bindingDatePhoto, interaction, scope)
+        return DateViewHolder(bindingDatePhoto, interaction)
     }
 
     override fun onBindViewHolder(holder: DateViewHolder, position: Int) {
@@ -43,27 +44,43 @@ class MarsRoverDateAdapter(
 
     class DateViewHolder(
         private val binding: PhotoDateItemBinding,
-        private val interaction: RecyclerClickListener?,
-        private val scope: LifecycleCoroutineScope
+        private val interaction: RecyclerClickListener?
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: DatePreviewData, position: Int) {
             binding.apply {
+
                 photo.let {
                     binding.date.text = it.currentDate.formatMillisToDisplayDate()
-                    scope.launch {
-                        it.photos
-                            .onEach { photoList->
-                                binding.photoItem.cameraName.text = photoList.toString()
-                            }
-                            .launchIn(this)
+                    it.photos.forEachIndexed { pos, db ->
+                        getIDFromNum(pos).apply {
+                            Glide.with(itemView)
+                                .load(db.img_src)
+                                .centerCrop()
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(this)
+                            isVisible = true
+                        }
                     }
                 }
             }
         }
 
+        private fun getIDFromNum(num: Int) = when (num) {
+            0 -> binding.imageDescription
+            1 -> binding.imageDescription1
+            2 -> binding.imageDescription2
+            3 -> binding.imageDescription3
+            4 -> binding.imageDescription4
+            else -> binding.imageDescription
+        }
     }
+
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
 
     companion object {
         private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<DatePreviewData>() {

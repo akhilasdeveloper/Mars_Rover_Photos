@@ -74,7 +74,7 @@ fun RecyclerView.observeFirstItemPosition(firstItemPosition: (position: Int) -> 
 fun RecyclerView.observeVisibleItemPositions(visibleItemPosition: (firstVisibleItemPosition: Int, secondVisibleItemPosition: Int) -> Unit) {
     addOnScrollListener(object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            if (newState == RecyclerView.SCROLL_STATE_IDLE){
+            if (newState == RecyclerView.SCROLL_STATE_IDLE || newState == RecyclerView.SCROLL_STATE_SETTLING){
                 val layoutManager = layoutManager
                 if (layoutManager is LinearLayoutManager) {
                     visibleItemPosition(

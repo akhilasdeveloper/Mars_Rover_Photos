@@ -20,5 +20,6 @@
     <dimen name="bottom_sheet_image_height">300dp</dimen>
     <dimen name="toolbar_top_image_height">200dp</dimen>
     <dimen name="photo_item_height">200dp</dimen>
+    <dimen name="photo_item_small_height">100dp</dimen>
     <dimen name="photo_date_item_height">300dp</dimen>
 </resources>

@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagingData
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
@@ -67,7 +68,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             false
         )
 
-        adapterDate = MarsRoverDateAdapter(lifecycleScope)
+        adapterDate = MarsRoverDateAdapter()
         adapter = MarsRoverPhotoAdapter(this)
         val loadStateAdapter = MarsRoverPhotoLoadStateAdapter { adapter.retry() }
 
@@ -307,7 +308,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         binding.photoRecycler.observeVisibleItemPositions(){firstVisibleItemPosition, secondVisibleItemPosition ->
             if (firstVisibleItemPosition!=-1 && secondVisibleItemPosition!=-1){
-
+                Timber.d("Scroll position : $firstVisibleItemPosition : $secondVisibleItemPosition")
             }
         }
 
@@ -338,6 +339,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     currentDate = it
                     viewModel.setDate(it)
                     binding.photoRecycler.layoutManager?.scrollToPosition(100)
+                    adapterDate.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
                     viewModel.getData(master, it)
 //                    viewModel.getDatePosition(master.name, it)
 //                    getData()

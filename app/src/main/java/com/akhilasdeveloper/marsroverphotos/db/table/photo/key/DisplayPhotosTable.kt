@@ -7,5 +7,5 @@ import androidx.room.Entity
 data class DisplayPhotosTable(
     val roverName: String,
     val date: Long,
-    val photoID : Int
+    val photoID : Long
 )

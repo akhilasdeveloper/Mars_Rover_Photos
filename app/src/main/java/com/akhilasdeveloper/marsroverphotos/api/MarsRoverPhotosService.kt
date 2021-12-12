@@ -18,7 +18,7 @@ interface MarsRoverPhotosService {
     suspend fun getRoverPhotosByPage(
         @Url url: String,
         @Query("earth_date") earth_date : String,
-        @Query("page_no") page_no : String
+        @Query("page_no") page_no : Int
     ): MarsRoverPhotosApiResponse?
 
     @GET(Constants.URL_DATA + "mars_rover_data.json")
