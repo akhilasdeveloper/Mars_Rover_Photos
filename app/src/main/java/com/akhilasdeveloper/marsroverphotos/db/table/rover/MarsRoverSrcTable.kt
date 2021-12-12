@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.db
+package com.akhilasdeveloper.marsroverphotos.db.table.rover
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -8,7 +8,7 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "mars_rover_source_table")
-data class MarsRoverSrcDb(
+data class MarsRoverSrcTable(
     @SerializedName("roverDescription") @Expose val roverDescription: String,
     @SerializedName("roverImage") @Expose val roverImage: String,
     @PrimaryKey(autoGenerate = false)

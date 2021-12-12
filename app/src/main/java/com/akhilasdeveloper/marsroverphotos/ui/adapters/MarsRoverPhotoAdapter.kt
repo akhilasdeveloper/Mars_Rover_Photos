@@ -5,14 +5,12 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
-import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDate
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.bumptech.glide.Glide
@@ -21,7 +19,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 class MarsRoverPhotoAdapter(
     private val interaction: RecyclerClickListener? = null
 ) :
-    PagingDataAdapter<MarsRoverPhotoDb, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
+    PagingDataAdapter<MarsRoverPhotoTable, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
 
     enum class ViewType {
         SMALL,
@@ -65,7 +63,7 @@ class MarsRoverPhotoAdapter(
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
+        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
@@ -93,7 +91,7 @@ class MarsRoverPhotoAdapter(
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
+        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
                 photo.let {
@@ -125,11 +123,11 @@ class MarsRoverPhotoAdapter(
     }
 
     companion object {
-        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoDb>() {
-            override fun areItemsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
+        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoTable>() {
+            override fun areItemsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
                 oldItem.id == newItem.id
 
-            override fun areContentsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
+            override fun areContentsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
                 oldItem == newItem
 
         }

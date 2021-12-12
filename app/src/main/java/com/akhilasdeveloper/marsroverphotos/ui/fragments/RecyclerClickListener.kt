@@ -1,7 +1,7 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 
 interface RecyclerClickListener {
-    fun onItemSelected(marsRoverPhoto: MarsRoverPhotoDb, position: Int)
+    fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int)
 }

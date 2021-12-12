@@ -9,6 +9,8 @@ import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.api.Photo
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.*
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.RemoteKeysTable
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
 import retrofit2.HttpException
@@ -21,12 +23,12 @@ class RoverRemoteMediator(
     private val date: Long = rover.max_date_in_millis,
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val marsRoverDataBase: MarsRoverDatabase
-) : RemoteMediator<Int, MarsRoverPhotoDb>() {
+) : RemoteMediator<Int, MarsRoverPhotoTable>() {
 
     private val masterDate = date
 
     override suspend fun initialize(): InitializeAction {
-        return if (marsRoverDataBase.getMarsRoverDao().dataCount(rover.name, masterDate) > 0) {
+        return if (marsRoverDataBase.getMarsPhotoDao().dataCount(rover.name, masterDate) > 0) {
             InitializeAction.SKIP_INITIAL_REFRESH
         } else {
             InitializeAction.LAUNCH_INITIAL_REFRESH
@@ -35,7 +37,7 @@ class RoverRemoteMediator(
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, MarsRoverPhotoDb>
+        state: PagingState<Int, MarsRoverPhotoTable>
     ): MediatorResult {
 
         var pageDate = when (val pageKeyData = getPageData(loadType, state)) {
@@ -97,7 +99,7 @@ class RoverRemoteMediator(
                         date = pageDate
                     )
                 }*/
-                marsRoverDataBase.getMarsRoverDao().insertAllMarsRoverPhotos(data)
+                marsRoverDataBase.getMarsPhotoDao().insertAllMarsRoverPhotos(data)
             }
 
 
@@ -134,7 +136,7 @@ class RoverRemoteMediator(
     private suspend fun addRemoteKey(currDate: Long, prevDate: Long?, nextDate: Long?) {
         marsRoverDataBase.withTransaction {
             marsRoverDataBase.getRemoteKeysDao().insertOrReplace(
-                RemoteKeysDb(
+                RemoteKeysTable(
                     roverName = rover.name,
                     currDate = currDate,
                     prevDate = prevDate,
@@ -192,7 +194,7 @@ class RoverRemoteMediator(
         }
 
 
-    private suspend fun getMarsApi(pageDate: Long): List<MarsRoverPhotoDb> {
+    private suspend fun getMarsApi(pageDate: Long): List<MarsRoverPhotoTable> {
         val url = Constants.URL_PHOTO + rover.name + "/photos"
         val response = marsRoverPhotosService.getRoverPhotos(
             url = url,
@@ -201,9 +203,9 @@ class RoverRemoteMediator(
         return mapToMarsRoverPhotoDb(response?.photos)
     }
 
-    private fun mapToMarsRoverPhotoDb(photos: List<Photo>?): List<MarsRoverPhotoDb> {
+    private fun mapToMarsRoverPhotoDb(photos: List<Photo>?): List<MarsRoverPhotoTable> {
         return photos?.map {
-            MarsRoverPhotoDb(
+            MarsRoverPhotoTable(
                 earth_date = it.earth_date.formatDateToMillis()!!,
                 img_src = it.img_src,
                 sol = it.sol,
@@ -225,7 +227,7 @@ class RoverRemoteMediator(
 
     private suspend fun getPageData(
         loadType: LoadType,
-        state: PagingState<Int, MarsRoverPhotoDb>
+        state: PagingState<Int, MarsRoverPhotoTable>
     ): Any {
         return when (loadType) {
             LoadType.REFRESH -> {
@@ -249,7 +251,7 @@ class RoverRemoteMediator(
         }
     }
 
-    private suspend fun getFirstRemoteKey(state: PagingState<Int, MarsRoverPhotoDb>): RemoteKeysDb? {
+    private suspend fun getFirstRemoteKey(state: PagingState<Int, MarsRoverPhotoTable>): RemoteKeysTable? {
         return state.pages
             .firstOrNull { it.data.isNotEmpty() }
             ?.data?.firstOrNull()
@@ -261,7 +263,7 @@ class RoverRemoteMediator(
             }
     }
 
-    private suspend fun getLastRemoteKey(state: PagingState<Int, MarsRoverPhotoDb>): RemoteKeysDb? {
+    private suspend fun getLastRemoteKey(state: PagingState<Int, MarsRoverPhotoTable>): RemoteKeysTable? {
         return state.pages
             .lastOrNull { it.data.isNotEmpty() }
             ?.data?.lastOrNull()
@@ -273,7 +275,7 @@ class RoverRemoteMediator(
             }
     }
 
-    private suspend fun getRemoteKeyClosesToCurrentPosition(state: PagingState<Int, MarsRoverPhotoDb>): RemoteKeysDb? {
+    private suspend fun getRemoteKeyClosesToCurrentPosition(state: PagingState<Int, MarsRoverPhotoTable>): RemoteKeysTable? {
         return state.anchorPosition?.let { position ->
             state.closestItemToPosition(position)?.let { marsDb ->
                 marsRoverDataBase.getRemoteKeysDao().remoteKeyByNameAndDate(

@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.db
+package com.akhilasdeveloper.marsroverphotos.db.table.photo
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName
 import java.util.*
 
 @Entity(tableName = "mars_rover_photo_table")
-data class MarsRoverPhotoDb(
+data class MarsRoverPhotoTable(
     @SerializedName("is_placeholder") @Expose val is_placeholder: Boolean,
     @SerializedName("earth_date") @Expose val earth_date: Long,
     @SerializedName("img_src") @Expose val img_src: String,

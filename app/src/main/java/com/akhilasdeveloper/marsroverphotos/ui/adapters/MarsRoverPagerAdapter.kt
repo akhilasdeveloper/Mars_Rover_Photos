@@ -6,13 +6,13 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
 import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsUri
 import com.davemorrissey.labs.subscaleview.ImageSource
 
 class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null) :
-    PagingDataAdapter<MarsRoverPhotoDb, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
+    PagingDataAdapter<MarsRoverPhotoTable, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val bindingPhoto =
@@ -23,7 +23,7 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
     class PhotoViewHolder(private val binding: ViewPagerItemBinding, private val interaction: PagerClickListener?) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: MarsRoverPhotoDb, position: Int) {
+        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 photo.let {
 //                    viewPageImage.showImage(Uri.parse(it.img_src))
@@ -47,11 +47,11 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
     }
 
     companion object {
-        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoDb>() {
-            override fun areItemsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
+        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoTable>() {
+            override fun areItemsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
                 oldItem.id == newItem.id
 
-            override fun areContentsTheSame(oldItem: MarsRoverPhotoDb, newItem: MarsRoverPhotoDb) =
+            override fun areContentsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
                 oldItem == newItem
 
         }

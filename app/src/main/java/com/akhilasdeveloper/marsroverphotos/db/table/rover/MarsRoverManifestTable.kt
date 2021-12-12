@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.db
+package com.akhilasdeveloper.marsroverphotos.db.table.rover
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -9,7 +9,7 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "mars_rover_manifest_table")
-data class MarsRoverManifestDb(
+data class MarsRoverManifestTable(
     @SerializedName("landing_date") @Expose val landing_date: String,
     @SerializedName("launch_date") @Expose val launch_date: String,
     @SerializedName("max_date") @Expose val max_date: String,

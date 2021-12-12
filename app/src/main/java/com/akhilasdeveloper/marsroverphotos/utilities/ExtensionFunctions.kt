@@ -71,6 +71,22 @@ fun RecyclerView.observeFirstItemPosition(firstItemPosition: (position: Int) -> 
     })
 }
 
+fun RecyclerView.observeVisibleItemPositions(visibleItemPosition: (firstVisibleItemPosition: Int, secondVisibleItemPosition: Int) -> Unit) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            if (newState == RecyclerView.SCROLL_STATE_IDLE){
+                val layoutManager = layoutManager
+                if (layoutManager is LinearLayoutManager) {
+                    visibleItemPosition(
+                        layoutManager.findFirstVisibleItemPosition(), layoutManager.findLastVisibleItemPosition())
+                } else {
+                    visibleItemPosition(-1,-1)
+                }
+            }
+        }
+    })
+}
+
 fun RecyclerView.scrollToCenter(position: Int) {
     addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
         override fun onLayoutChange(

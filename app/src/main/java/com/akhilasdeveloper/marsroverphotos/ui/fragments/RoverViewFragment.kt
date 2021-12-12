@@ -6,13 +6,13 @@ import androidx.core.view.*
 import androidx.viewpager2.widget.ViewPager2
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsBitmap
 
 
@@ -25,7 +25,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private val adapter = MarsRoverPagerAdapter(this)
     private var isShow = true
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
-    private var currentData: MarsRoverPhotoDb? = null
+    private var currentData: MarsRoverPhotoTable? = null
     private var currentPosition: Int? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -106,10 +106,11 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private fun setLike() {
         currentData?.let {
             it.id?.let { id->
-                viewModel.updateLike(marsRoverPhotoLikedDb = MarsRoverPhotoLikedDb(
+                viewModel.updateLike(marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
                     id = id,
                     rover_id = it.rover_id
-                ))
+                )
+                )
             }
         }
     }

@@ -3,12 +3,21 @@ package com.akhilasdeveloper.marsroverphotos.repositories
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NO_INTERNET
 import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
+import com.akhilasdeveloper.marsroverphotos.data.DatePreviewData
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.*
+import com.akhilasdeveloper.marsroverphotos.db.dao.MarsPhotoDao
+import com.akhilasdeveloper.marsroverphotos.db.dao.MarsRoverDao
+import com.akhilasdeveloper.marsroverphotos.db.dao.PhotoKeyDao
+import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverManifestTable
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
+import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
+import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.paging.RoverRemoteMediator
 import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
@@ -22,6 +31,8 @@ import javax.inject.Inject
 class MarsRoverPhotosRepository @Inject constructor(
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val marsRoverDao: MarsRoverDao,
+    private val marsPhotoDao: MarsPhotoDao,
+    private val photoKeyDao: PhotoKeyDao,
     private val marsRoverDataBase: MarsRoverDatabase,
     private val utilities: Utilities
 ) {
@@ -31,7 +42,7 @@ class MarsRoverPhotosRepository @Inject constructor(
      */
 
     private suspend fun getRoverManifest(
-        data: List<MarsRoverSrcDb>,
+        data: List<MarsRoverSrcTable>,
         isCache: Boolean
     ): List<RoverMaster> {
         val response = mutableListOf<RoverMaster>()
@@ -65,7 +76,7 @@ class MarsRoverPhotosRepository @Inject constructor(
     private suspend fun getRoverManifestData(
         roverName: String,
         isCache: Boolean
-    ): MarsRoverManifestDb? {
+    ): MarsRoverManifestTable? {
 
         if (utilities.isConnectedToTheInternet() && !isCache) {
             withContext(Dispatchers.IO) {
@@ -76,8 +87,8 @@ class MarsRoverPhotosRepository @Inject constructor(
         return marsRoverDao.getMarsRoverManifest(roverName)
     }
 
-    private suspend fun insertRoverManifest(marsRoverManifestDb: MarsRoverManifestDb) {
-        marsRoverDao.insertMarsRoverManifestDb(marsRoverManifestDb)
+    private suspend fun insertRoverManifest(marsRoverManifestTable: MarsRoverManifestTable) {
+        marsRoverDao.insertMarsRoverManifestDb(marsRoverManifestTable)
     }
 
     private suspend fun refreshRoverManifest(roverName: String) {
@@ -87,7 +98,7 @@ class MarsRoverPhotosRepository @Inject constructor(
 
         response?.photo_manifest?.let { lis ->
             insertRoverManifest(
-                MarsRoverManifestDb(
+                MarsRoverManifestTable(
                     landing_date = lis.landing_date,
                     launch_date = lis.launch_date,
                     max_date = lis.max_date,
@@ -136,37 +147,37 @@ class MarsRoverPhotosRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    private suspend fun insertMarsRoverSrc(marsRoverSrcDb: MarsRoverSrcDb) {
-        marsRoverDao.insertMarsRoverSrc(marsRoverSrcDb)
+    private suspend fun insertMarsRoverSrc(marsRoverSrcTable: MarsRoverSrcTable) {
+        marsRoverDao.insertMarsRoverSrc(marsRoverSrcTable)
     }
 
-    suspend fun updateLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb) {
+    suspend fun updateLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
         withContext(Dispatchers.IO) {
-            marsRoverPhotoLikedDb.let {
+            marsRoverPhotoLikedTable.let {
                 if (checkLike(it.id))
-                    removeLike(marsRoverPhotoLikedDb)
+                    removeLike(marsRoverPhotoLikedTable)
                 else
-                    addLike(marsRoverPhotoLikedDb)
+                    addLike(marsRoverPhotoLikedTable)
             }
         }
     }
 
-    private suspend fun addLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb) {
+    private suspend fun addLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
         withContext(Dispatchers.IO) {
-            marsRoverDao.addLike(marsRoverPhotoLikedDb = marsRoverPhotoLikedDb)
+            marsPhotoDao.addLike(marsRoverPhotoLikedTable = marsRoverPhotoLikedTable)
         }
     }
 
-    private suspend fun removeLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb) {
+    private suspend fun removeLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
         withContext(Dispatchers.IO) {
-            marsRoverDao.removeLike(marsRoverPhotoLikedDb = marsRoverPhotoLikedDb)
+            marsPhotoDao.removeLike(marsRoverPhotoLikedTable = marsRoverPhotoLikedTable)
         }
     }
 
     suspend fun isLiked(id: Long) = flow<Boolean> { emit(checkLike(id)) }
 
     private suspend fun checkLike(id: Long) =
-        withContext(Dispatchers.IO) { marsRoverDao.isLiked(id) > 0 }
+        withContext(Dispatchers.IO) { marsPhotoDao.isLiked(id) > 0 }
 
     private suspend fun refreshRoverSrcDb() {
 
@@ -175,7 +186,7 @@ class MarsRoverPhotosRepository @Inject constructor(
         response?.roverSrc?.let { lis ->
             lis.forEach {
                 insertMarsRoverSrc(
-                    MarsRoverSrcDb(
+                    MarsRoverSrcTable(
                         roverDescription = it.description,
                         roverImage = it.image,
                         roverName = it.name,
@@ -195,23 +206,44 @@ class MarsRoverPhotosRepository @Inject constructor(
      * Rover Photo START
      */
 
-    @ExperimentalPagingApi
+    /*@ExperimentalPagingApi
     fun getPhotos(
         date: Long,
         rover: RoverMaster
     ) = Pager(
-        config = PagingConfig(pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE, enablePlaceholders = true),
+        config = PagingConfig(
+            pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE,
+            enablePlaceholders = true
+        ),
         remoteMediator = RoverRemoteMediator(
             rover = rover,
             marsRoverPhotosService = marsRoverPhotosService,
             marsRoverDataBase = marsRoverDataBase
         ),
         pagingSourceFactory = {
-            marsRoverDao.getPhotosByRoverIDAndDate(roverName = rover.name, date = date)
+            marsPhotoDao.getPhotosByRoverIDAndDate(roverName = rover.name, date = date)
         }
+    ).flow*/
+
+    fun getPhotos(
+        rover: RoverMaster,
+        date: Long
+    ):Flow<PagingData<DatePreviewData>> = Pager(
+        config = PagingConfig(
+            pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE,
+            enablePlaceholders = true
+        ),
+        pagingSourceFactory = { MarsPagingSource(photoKeyDao = photoKeyDao, roverMaster = rover, marsPhotoDao = marsPhotoDao, date = date) }
     ).flow
 
-    suspend fun getDatePosition(roverName: String, date: Long) = flow<Int> { emit(withContext(Dispatchers.IO){marsRoverDao.getDatePosition(roverName, date)}) }
+    suspend fun getDatePosition(roverName: String, date: Long) = flow<Int> {
+        emit(withContext(Dispatchers.IO) {
+            marsPhotoDao.getDatePosition(
+                roverName,
+                date
+            )
+        })
+    }
 
     /**
      * Rover Photo END

@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import com.google.android.material.datepicker.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,10 +20,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
 import com.akhilasdeveloper.marsroverphotos.paging.MarsRoverPhotoLoadStateAdapter
+import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverDateAdapter
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
 import kotlinx.coroutines.*
@@ -40,6 +42,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     lateinit var utilities: Utilities
 
     private lateinit var adapter: MarsRoverPhotoAdapter
+    private lateinit var adapterDate: MarsRoverDateAdapter
     private lateinit var master: RoverMaster
 
     private var currentDate: Long? = null
@@ -64,6 +67,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             false
         )
 
+        adapterDate = MarsRoverDateAdapter(lifecycleScope)
         adapter = MarsRoverPhotoAdapter(this)
         val loadStateAdapter = MarsRoverPhotoLoadStateAdapter { adapter.retry() }
 
@@ -82,7 +86,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.layoutManager = layoutManager
-            photoRecycler.adapter = adapter/*.withLoadStateHeaderAndFooter(
+            photoRecycler.adapter = adapterDate/*.withLoadStateHeaderAndFooter(
                 header = loadStateAdapter,
                 footer = loadStateAdapter,
             )*/
@@ -181,6 +185,17 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         viewModel.positionState.observe(viewLifecycleOwner, {
             scrollToPosition(it)
         })
+
+        viewModel.dataStateDatePosition.observe(viewLifecycleOwner, {
+            scrollToPosition(it)
+        })
+
+        viewModel.dataStatePaging.observe(viewLifecycleOwner,{
+            it?.let {
+                Timber.d("dataStatePaging : $it")
+                adapterDate.submitData(viewLifecycleOwner.lifecycle,it)
+            }
+        })
     }
 
     private fun setData() {
@@ -235,7 +250,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     master.landing_date_in_millis
                 ).let {
                     currentDate = it
-                    getData()
+//                    getData()
                     viewModel.setDate(it)
                 }
                 alertDialog.cancel()
@@ -248,6 +263,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun getData() {
         currentDate?.let { currentDate ->
+//            viewModel.getData(master, currentDate)
             viewModel.getData(master, currentDate)
         }
     }
@@ -260,7 +276,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             showDialog()
         }
         adapter.addLoadStateListener { loadStates ->
-            binding.photoRecycler.isVisible = loadStates.mediator?.refresh is LoadState.NotLoading
+//            binding.photoRecycler.isVisible = loadStates.mediator?.refresh is LoadState.NotLoading
             viewModel.setLoading(
                         loadStates.mediator?.append is LoadState.Loading ||
                         loadStates.mediator?.refresh is LoadState.Loading
@@ -289,6 +305,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
         })
 
+        binding.photoRecycler.observeVisibleItemPositions(){firstVisibleItemPosition, secondVisibleItemPosition ->
+            if (firstVisibleItemPosition!=-1 && secondVisibleItemPosition!=-1){
+
+            }
+        }
+
     }
 
     private fun showDatePicker() {
@@ -315,7 +337,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     Timber.d("Selected Date : $it")
                     currentDate = it
                     viewModel.setDate(it)
-                    getData()
+                    binding.photoRecycler.layoutManager?.scrollToPosition(100)
+                    viewModel.getData(master, it)
+//                    viewModel.getDatePosition(master.name, it)
+//                    getData()
                 }
                 binding.dateButtonText.text = currentDate!!.formatMillisToDate()
             }
@@ -327,7 +352,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         _binding = null
     }
 
-    override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoDb, position: Int) {
+    override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {
         findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         viewModel.setPosition(position)
     }

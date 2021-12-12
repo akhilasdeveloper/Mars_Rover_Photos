@@ -76,6 +76,14 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideMarsPhotoDao(db: MarsRoverDatabase) = db.getMarsPhotoDao()
+
+    @Singleton
+    @Provides
     fun provideRemoteKeysDao(db: MarsRoverDatabase) = db.getRemoteKeysDao()
+
+    @Singleton
+    @Provides
+    fun providePhotoKeysDao(db: MarsRoverDatabase) = db.getPhotoKeyDao()
 
 }

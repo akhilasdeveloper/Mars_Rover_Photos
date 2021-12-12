@@ -7,9 +7,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.akhilasdeveloper.marsroverphotos.data.DatePreviewData
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoDb
-import com.akhilasdeveloper.marsroverphotos.db.MarsRoverPhotoLikedDb
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
@@ -26,7 +27,8 @@ class MainViewModel
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
-    private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoDb>?> = MutableLiveData()
+    private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoTable>?> = MutableLiveData()
+    private val _dataStatePaging: MutableLiveData<PagingData<DatePreviewData>?> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
@@ -40,6 +42,9 @@ class MainViewModel
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
+    val dataStatePaging: LiveData<PagingData<DatePreviewData>?>
+        get() = _dataStatePaging
+
     val dataStateDatePosition: LiveData<Int>
         get() = _dataStateDatePosition
 
@@ -52,7 +57,7 @@ class MainViewModel
     val dataStateRoverMaster: LiveData<Event<RoverMaster>>
         get() = _dataStateRoverMaster
 
-    val dataState: LiveData<PagingData<MarsRoverPhotoDb>?>
+    val dataState: LiveData<PagingData<MarsRoverPhotoTable>?>
         get() = _dataState
 
     val dataStateRover: LiveData<MarsRoverSrcResponse>
@@ -77,7 +82,7 @@ class MainViewModel
         _dataStateLoading.value = isLoading
     }
 
-    @ExperimentalPagingApi
+    /*@ExperimentalPagingApi
     fun getData(rover: RoverMaster, date: Long){
         setLoading(true)
         job?.cancel()
@@ -85,6 +90,19 @@ class MainViewModel
             marsRoverPhotosRepository.getPhotos(date = date, rover = rover).cachedIn(viewModelScope)
                 .onEach { its->
                     _dataState.value = its
+                    setLoading(false)
+                }
+                .launchIn(this)
+        }
+    }*/
+
+    fun getData(rover: RoverMaster, date: Long){
+        setLoading(true)
+        job?.cancel()
+        job = viewModelScope.launch {
+            marsRoverPhotosRepository.getPhotos(rover = rover, date = date).cachedIn(viewModelScope)
+                .onEach { its->
+                    _dataStatePaging.value = its
                     setLoading(false)
                 }
                 .launchIn(this)
@@ -122,10 +140,10 @@ class MainViewModel
         }
     }
 
-    fun updateLike(marsRoverPhotoLikedDb: MarsRoverPhotoLikedDb){
+    fun updateLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable){
         viewModelScope.launch {
-            marsRoverPhotosRepository.updateLike(marsRoverPhotoLikedDb)
-            isLiked(marsRoverPhotoLikedDb.id)
+            marsRoverPhotosRepository.updateLike(marsRoverPhotoLikedTable)
+            isLiked(marsRoverPhotoLikedTable.id)
         }
     }
 
