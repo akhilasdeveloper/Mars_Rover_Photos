@@ -15,7 +15,7 @@ interface RemoteKeyDao {
     suspend fun insertAll(remoteKeyTable: List<RemoteKeysTable>)
 
     @Query("SELECT * FROM remote_keys WHERE roverName = :roverName AND currDate = :currDate ")
-    suspend fun remoteKeyByNameAndDate(roverName: String, currDate: Long): RemoteKeysTable
+    suspend fun remoteKeyByNameAndDate(roverName: String, currDate: Long): RemoteKeysTable?
 
     @Query("UPDATE remote_keys SET nextDate = :nextDate WHERE roverName = :roverName AND nextDate = :currNextDate")
     suspend fun remoteKeyUpdateNextDate(nextDate: Long?, currNextDate:Long, roverName: String)

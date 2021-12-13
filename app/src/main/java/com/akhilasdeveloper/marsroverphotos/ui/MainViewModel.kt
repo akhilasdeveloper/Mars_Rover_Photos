@@ -27,8 +27,7 @@ class MainViewModel
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
-    private val _dataState: MutableLiveData<PagingData<MarsRoverPhotoTable>?> = MutableLiveData()
-    private val _dataStatePaging: MutableLiveData<PagingData<DatePreviewData>?> = MutableLiveData()
+    private val _dataStatePaging: MutableLiveData<PagingData<MarsRoverPhotoTable>?> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
@@ -42,7 +41,7 @@ class MainViewModel
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
-    val dataStatePaging: LiveData<PagingData<DatePreviewData>?>
+    val dataStatePaging: LiveData<PagingData<MarsRoverPhotoTable>?>
         get() = _dataStatePaging
 
     val dataStateDatePosition: LiveData<Int>
@@ -57,9 +56,6 @@ class MainViewModel
     val dataStateRoverMaster: LiveData<Event<RoverMaster>>
         get() = _dataStateRoverMaster
 
-    val dataState: LiveData<PagingData<MarsRoverPhotoTable>?>
-        get() = _dataState
-
     val dataStateRover: LiveData<MarsRoverSrcResponse>
         get() = _dataStateRover
 
@@ -71,7 +67,7 @@ class MainViewModel
     }
 
     fun setEmptyPhotos(){
-        _dataState.value = PagingData.empty()
+        _dataStatePaging.value = PagingData.empty()
     }
 
     fun setPosition(position: Int){
@@ -81,20 +77,6 @@ class MainViewModel
     fun setLoading(isLoading: Boolean){
         _dataStateLoading.value = isLoading
     }
-
-    /*@ExperimentalPagingApi
-    fun getData(rover: RoverMaster, date: Long){
-        setLoading(true)
-        job?.cancel()
-        job = viewModelScope.launch {
-            marsRoverPhotosRepository.getPhotos(date = date, rover = rover).cachedIn(viewModelScope)
-                .onEach { its->
-                    _dataState.value = its
-                    setLoading(false)
-                }
-                .launchIn(this)
-        }
-    }*/
 
     fun getData(rover: RoverMaster, date: Long){
         setLoading(true)
@@ -128,14 +110,6 @@ class MainViewModel
         viewModelScope.launch {
             marsRoverPhotosRepository.isLiked(id).collect {
                 _dataStateIsLiked.value = it
-            }
-        }
-    }
-
-    fun getDatePosition(roverName: String, date: Long){
-        viewModelScope.launch {
-            marsRoverPhotosRepository.getDatePosition(roverName, date).collect {
-                _dataStateDatePosition.value = it
             }
         }
     }

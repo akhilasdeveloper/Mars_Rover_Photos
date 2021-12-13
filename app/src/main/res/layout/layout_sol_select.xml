@@ -1,74 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/appbar"
-    android:orientation="vertical"
-    android:padding="10dp">
+    app:cardBackgroundColor="@color/appbar"
+    app:cardCornerRadius="@dimen/corner_radius">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="@dimen/global_window_padding">
 
-        <TextView
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/system_for"
-            android:text="@string/select_sol"
-            android:textStyle="bold"
-            android:padding="10dp"
-            android:layout_weight="1"
-            android:textSize="16sp"/>
+            android:layout_margin="@dimen/global_window_padding"
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
+            <TextView
+                style="@style/tool_bar_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/select_sol"
+                android:textColor="@color/system_for"
+                app:drawableStartCompat="@drawable/ic_mars_icon"
+                app:drawableTint="@color/system_for"
+                android:drawablePadding="@dimen/global_window_padding"
+                android:labelFor="@id/solSelectorCount"/>
+
+            <EditText
+                android:id="@+id/solSelectorCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/bottom_appbar_button_ring"
+                android:inputType="numberSigned"
+                android:importantForAutofill="no" />
+
+
+        </LinearLayout>
+
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sol_slider"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/solSelectorCount"
-            android:padding="10dp"/>
+            android:layout_marginBottom="@dimen/global_window_padding"
+            android:stepSize="1"
+            android:value="50"
+            android:valueFrom="0"
+            android:valueTo="100"
+            app:thumbColor="@color/accent"
+            app:tickColorActive="@color/accent"
+            app:tickColorInactive="@color/system_for"
+            app:trackColorActive="@color/accent" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding">
 
+            <TextView
+                android:id="@+id/cancel_sol_selector"
+                style="@style/bottom_appbar_button_ring"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/global_window_padding"
+                android:text="@string/cancel"/>
+
+            <TextView
+                android:id="@+id/ok_sol_selector"
+                style="@style/bottom_appbar_button_ring"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ok" />
+        </LinearLayout>
     </LinearLayout>
 
 
-    <com.google.android.material.slider.Slider
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:valueFrom="0"
-        android:stepSize="1"
-        android:layout_margin="10dp"
-        android:valueTo="100"
-        android:value="50"
-        app:tickColorActive="@color/accent"
-        app:tickColorInactive="@color/system_for"
-        app:trackColorActive="@color/accent"
-        app:thumbColor="@color/accent"
-        android:id="@+id/sol_slider"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end">
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/cancel_sol_selector"
-            android:text="@string/cancel"
-            android:layout_marginEnd="10dp"
-            android:background="@color/appbar"
-            android:textColor="@color/system_for"
-            android:layout_marginBottom="10dp"/>
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/ok_sol_selector"
-            android:text="@string/ok"
-            android:background="@color/appbar"
-            android:textColor="@color/system_for"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="10dp"/>
-    </LinearLayout>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

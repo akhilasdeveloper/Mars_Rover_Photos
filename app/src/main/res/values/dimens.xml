@@ -10,6 +10,7 @@
     <dimen name="stroke_strong">2dp</dimen>
     <dimen name="corner_radius">20dp</dimen>
     <dimen name="global_window_padding">16dp</dimen>
+    <dimen name="popup_window_padding">32dp</dimen>
     <dimen name="card_separation_margin_vertical">10dp</dimen>
     <dimen name="toolbar_top_title_text_height">64dp</dimen>
     <dimen name="toolbar_bottom_vertical_padding">16dp</dimen>

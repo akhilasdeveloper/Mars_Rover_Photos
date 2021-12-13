@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.DatePreviewData
+import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItem2Binding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
@@ -27,11 +28,11 @@ import kotlinx.coroutines.launch
 class MarsRoverDateAdapter(
     private val interaction: RecyclerClickListener? = null
 ) :
-    PagingDataAdapter<DatePreviewData, MarsRoverDateAdapter.DateViewHolder>(PHOTO_COMPARATOR) {
+    PagingDataAdapter<MarsRoverPhotoTable, MarsRoverDateAdapter.DateViewHolder>(PHOTO_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DateViewHolder {
         val bindingDatePhoto =
-            PhotoDateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            PhotoDateItem2Binding.inflate(LayoutInflater.from(parent.context), parent, false)
         return DateViewHolder(bindingDatePhoto, interaction)
     }
 
@@ -43,25 +44,22 @@ class MarsRoverDateAdapter(
     }
 
     class DateViewHolder(
-        private val binding: PhotoDateItemBinding,
+        private val binding: PhotoDateItem2Binding,
         private val interaction: RecyclerClickListener?
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: DatePreviewData, position: Int) {
+        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
-
                 photo.let {
-                    binding.date.text = it.currentDate.formatMillisToDisplayDate()
-                    it.photos.forEachIndexed { pos, db ->
-                        getIDFromNum(pos).apply {
-                            Glide.with(itemView)
-                                .load(db.img_src)
-                                .centerCrop()
-                                .transition(DrawableTransitionOptions.withCrossFade())
-                                .into(this)
-                            isVisible = true
-                        }
+                    binding.date.text = it.earth_date.formatMillisToDisplayDate()
+                    binding.imageDescription.apply {
+                        Glide.with(itemView)
+                            .load(it.img_src)
+                            .centerCrop()
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(this)
+                        isVisible = true
                     }
                 }
             }
@@ -83,11 +81,11 @@ class MarsRoverDateAdapter(
 
 
     companion object {
-        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<DatePreviewData>() {
-            override fun areItemsTheSame(oldItem: DatePreviewData, newItem: DatePreviewData) =
-                oldItem.currentDate == newItem.currentDate && oldItem.roverName == newItem.roverName
+        private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoTable>() {
+            override fun areItemsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
+                oldItem.photo_id == newItem.photo_id && oldItem.rover_id == newItem.rover_id
 
-            override fun areContentsTheSame(oldItem: DatePreviewData, newItem: DatePreviewData) =
+            override fun areContentsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
                 oldItem == newItem
 
         }

@@ -26,11 +26,6 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 photo.let {
-//                    viewPageImage.showImage(Uri.parse(it.img_src))
-                    /*Glide.with(itemView)
-                        .load(it.img_src)
-                        .centerInside()
-                        .into(viewPageImage)*/
                     it.img_src.downloadImageAsUri(root.context){ resource->
                         resource?.let {
                             viewPageImage.setImage(ImageSource.uri(resource))
@@ -63,5 +58,9 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
         currentItem?.let {
             holder.bindPhoto(currentItem, position)
         }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return position
     }
 }

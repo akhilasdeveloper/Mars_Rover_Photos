@@ -124,8 +124,10 @@ fun Long.formatMillisToDate(): String = SimpleDateFormat(DATE_FORMAT, Locale.get
 fun String.formatDateToMillis(): Long? = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).parse(this)?.time
 fun String.nextDate(): String = (this.formatDateToMillis()!!.nextDate()).formatMillisToDate()
 fun Long.nextDate(): Long = (this + Constants.MILLIS_IN_A_DAY)
+fun Long.plusDate(days:Int): Long = (this + (Constants.MILLIS_IN_A_DAY * days))
 fun String.prevDate(): String = (this.formatDateToMillis()!!.prevDate()).formatMillisToDate()
 fun Long.prevDate(): Long = (this - Constants.MILLIS_IN_A_DAY)
+fun Long.minusDate(days:Int): Long = (this - (Constants.MILLIS_IN_A_DAY * days))
 
 fun String.downloadImageAsBitmap(context: Context, callback: (Bitmap?) -> (Unit)) {
     Glide.with(context).asBitmap().load(this)

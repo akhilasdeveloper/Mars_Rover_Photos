@@ -4,79 +4,78 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.api.Photo
-import com.akhilasdeveloper.marsroverphotos.data.DatePreviewData
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.dao.MarsPhotoDao
 import com.akhilasdeveloper.marsroverphotos.db.dao.PhotoKeyDao
+import com.akhilasdeveloper.marsroverphotos.db.dao.RemoteKeyDao
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.DisplayPhotosTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.PhotoDatesTable
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MARS_ROVER_PHOTOS_DISPLAY_PAGE_SIZE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.RemoteKeysTable
+import com.akhilasdeveloper.marsroverphotos.utilities.*
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.STARTING_PAGE_INDEX
-import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
-import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDate
-import com.akhilasdeveloper.marsroverphotos.utilities.prevDate
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.IOException
 import java.sql.SQLException
 
 class MarsPagingSource(
-    private val photoKeyDao: PhotoKeyDao,
+    private val remoteKeyDao: RemoteKeyDao,
     private val roverMaster: RoverMaster,
     private val marsPhotoDao: MarsPhotoDao,
     private val marsRoverPhotosService: MarsRoverPhotosService,
-    private val count: Int
-) : PagingSource<Int, DatePreviewData>() {
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, DatePreviewData> {
+    private val date: Long
+) : PagingSource<Long, MarsRoverPhotoTable>() {
+    override suspend fun load(params: LoadParams<Long>): LoadResult<Long, MarsRoverPhotoTable> {
 
         return try {
 
             withContext(Dispatchers.IO) {
 
-                var page = params.key ?: STARTING_PAGE_INDEX
-                var size = MARS_ROVER_PHOTOS_PAGE_SIZE
-                val offset = count % size
-
-                if (params.key == null) {
-                    page = (count / size).plus(1)
-                }
-
-                var pageOffset = ((page - 1) * size).plus(offset)
-
-                if (page == STARTING_PAGE_INDEX - 1 && offset != 0) {
-                    size = offset
-                    pageOffset = 0
-                }
-
-                configureDateKey()
-
-                val dates = photoKeyDao.getPhotoDatesByPage(
+                val date = params.key ?: date
+                val remoteKey = remoteKeyDao.remoteKeyByNameAndDate(
                     roverName = roverMaster.name,
-                    pageSize = size,
-                    pageOffset = pageOffset
+                    currDate = date
                 )
+                val nextKey: Long?
+                val prevKey: Long?
 
-                loadPhotos(dates)
-
-                val response = dates.map {
-                    DatePreviewData(
-                        roverName = roverMaster.name,
-                        currentDate = it.date,
-                        photos = marsPhotoDao.getDisplayPhotosByRoverNameAndDate(
-                            roverName = it.roverName,
-                            date = it.date
+                if (remoteKey == null) {
+                    nextKey =
+                        if (date > roverMaster.landing_date_in_millis) date.prevDate() else null
+                    prevKey =
+                        if (date < roverMaster.max_date_in_millis) date.nextDate() else null
+                    remoteKeyDao.insertOrReplace(
+                        RemoteKeysTable(
+                            roverName = roverMaster.name,
+                            currDate = date,
+                            prevDate = prevKey,
+                            nextDate = nextKey,
                         )
                     )
+                } else {
+                    nextKey = remoteKey.nextDate
+                    prevKey = remoteKey.prevDate
                 }
+
+                var response = marsPhotoDao.getDisplayPhotosByRoverNameAndDate(
+                    roverName = roverMaster.name,
+                    date = date
+                )
+                if (response.isEmpty()) {
+                    response = loadPhotos(date)
+
+                    if (response.isEmpty())
+                        reConfigureRemoteKey(date, nextKey, prevKey)
+                }
+
+                Timber.d("response response : $response")
+
                 LoadResult.Page(
                     data = response,
-                    prevKey = if (page <= STARTING_PAGE_INDEX) if (page != STARTING_PAGE_INDEX - 1 && offset != 0) STARTING_PAGE_INDEX - 1 else null else page - 1,
-                    nextKey = if (response.isEmpty()) null else page + 1
+                    prevKey = prevKey,
+                    nextKey = nextKey
                 )
             }
         } catch (exception: IOException) {
@@ -86,41 +85,35 @@ class MarsPagingSource(
         }
     }
 
-    private fun loadPhotos(dates: List<PhotoDatesTable>) {
-        CoroutineScope(Dispatchers.IO).launch {
+    private suspend fun reConfigureRemoteKey(date: Long, nextKey: Long?, prevKey: Long?) {
+        remoteKeyDao.remoteKeyUpdatePreDate(
+            prevDate = prevKey,
+            currPrevDate = date,
+            roverName = roverMaster.name
+        )
+        remoteKeyDao.remoteKeyUpdateNextDate(
+            nextDate = nextKey,
+            currNextDate = date,
+            roverName = roverMaster.name
+        )
+    }
 
-            dates.forEach { date ->
-                val count = marsPhotoDao.getDisplayPhotosCountByRoverNameAndDate(
-                    roverName = date.roverName,
-                    date = date.date
-                )
-                if (count <= 0) {
-                    val response = getMarsApi(date.date)
-                    val size = response.size
-                    marsPhotoDao.insertAllMarsRoverPhotos(response)
-                    photoKeyDao.insertAllDisplayPhotos(
-                        response.map {
-                            DisplayPhotosTable(
-                                roverName = it.rover_name,
-                                date = it.earth_date,
-                                photoID = it.photo_id
-                            )
-                        }.subList(
-                            0,
-                            if (size < MARS_ROVER_PHOTOS_DISPLAY_PAGE_SIZE) size else MARS_ROVER_PHOTOS_DISPLAY_PAGE_SIZE
-                        )
-                    )
-                }
-            }
+    private suspend fun loadPhotos(date: Long): List<MarsRoverPhotoTable> {
+        val response = getMarsApi(date).toMutableList()
+        val size = response.size
+        if (size > 0) {
+            marsPhotoDao.insertAllMarsRoverPhotos(response.apply {
+                set(0, first().copy(is_placeholder = true))
+            }.toList())
         }
+        return response.toList()
     }
 
     private suspend fun getMarsApi(pageDate: Long): List<MarsRoverPhotoTable> {
         val url = Constants.URL_PHOTO + roverMaster.name + "/photos"
-        val response = marsRoverPhotosService.getRoverPhotosByPage(
+        val response = marsRoverPhotosService.getRoverPhotos(
             url = url,
-            earth_date = pageDate.formatMillisToDate(),
-            page_no = STARTING_PAGE_INDEX
+            earth_date = pageDate.formatMillisToDate()
         )
         return mapToMarsRoverPhotoDb(response?.photos)
     }
@@ -144,40 +137,7 @@ class MarsPagingSource(
         } ?: listOf()
     }
 
-    private suspend fun configureDateKey() {
-        var currDate = roverMaster.max_date_in_millis
-        val endDate = roverMaster.landing_date_in_millis
-
-        if (checkIfDatesKeysEmpty()) {
-            while (currDate >= endDate) {
-                photoKeyDao.insertPhotoDate(
-                    PhotoDatesTable(
-                        roverName = roverMaster.name,
-                        date = currDate
-                    )
-                )
-                currDate = currDate.prevDate()
-            }
-        } else {
-            while (!checkIfDatesKeysExist(currDate)) {
-                photoKeyDao.insertPhotoDate(
-                    PhotoDatesTable(
-                        roverName = roverMaster.name,
-                        date = currDate
-                    )
-                )
-                currDate = currDate.prevDate()
-            }
-        }
-    }
-
-    private fun checkIfDatesKeysExist(date: Long) =
-        photoKeyDao.getPhotoDatesCountByDate(roverName = roverMaster.name, date = date) > 0
-
-    private fun checkIfDatesKeysEmpty() =
-        photoKeyDao.getPhotoDatesCount(roverName = roverMaster.name) <= 0
-
-    override fun getRefreshKey(state: PagingState<Int, DatePreviewData>): Int? {
+    override fun getRefreshKey(state: PagingState<Long, MarsRoverPhotoTable>): Long? {
         return state.anchorPosition?.let { anchorPosition ->
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
                 ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)

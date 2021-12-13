@@ -13,8 +13,10 @@ import com.akhilasdeveloper.marsroverphotos.db.*
 import com.akhilasdeveloper.marsroverphotos.db.dao.MarsPhotoDao
 import com.akhilasdeveloper.marsroverphotos.db.dao.MarsRoverDao
 import com.akhilasdeveloper.marsroverphotos.db.dao.PhotoKeyDao
+import com.akhilasdeveloper.marsroverphotos.db.dao.RemoteKeyDao
 import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverManifestTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
 import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
@@ -32,7 +34,7 @@ class MarsRoverPhotosRepository @Inject constructor(
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val marsRoverDao: MarsRoverDao,
     private val marsPhotoDao: MarsPhotoDao,
-    private val photoKeyDao: PhotoKeyDao,
+    private val remoteKeyDao: RemoteKeyDao,
     private val marsRoverDataBase: MarsRoverDatabase,
     private val utilities: Utilities
 ) {
@@ -225,27 +227,22 @@ class MarsRoverPhotosRepository @Inject constructor(
         }
     ).flow*/
 
-    suspend fun getPhotos(
+    fun getPhotos(
         rover: RoverMaster,
         date: Long
-    ): Flow<PagingData<DatePreviewData>> {
-
-        val getAllPhotoDatesCountByDate = withContext(Dispatchers.IO) {
-            photoKeyDao.getAllPhotoDatesCountByDate(roverName = rover.name, date = date)
-        }
+    ): Flow<PagingData<MarsRoverPhotoTable>> {
         return Pager(
             config = PagingConfig(
                 pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE,
-                enablePlaceholders = true
             ),
             pagingSourceFactory = {
 
                 MarsPagingSource(
-                    photoKeyDao = photoKeyDao,
+                    remoteKeyDao = remoteKeyDao,
                     roverMaster = rover,
                     marsPhotoDao = marsPhotoDao,
                     marsRoverPhotosService = marsRoverPhotosService,
-                    count = getAllPhotoDatesCountByDate
+                    date = date
                 )
             }
         ).flow

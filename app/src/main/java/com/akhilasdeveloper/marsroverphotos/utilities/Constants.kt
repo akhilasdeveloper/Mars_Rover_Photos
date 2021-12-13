@@ -6,7 +6,7 @@ object Constants {
     const val URL_PHOTO = URL + "rovers/"
     const val URL_MANIFEST = URL + "manifests/"
     const val URL_DATA = "https://mars-rover-photos-58b3f.firebaseapp.com/"
-    const val MARS_ROVER_PHOTOS_PAGE_SIZE = 10
+    const val MARS_ROVER_PHOTOS_PAGE_SIZE = 1
     const val MARS_ROVER_PHOTOS_DISPLAY_PAGE_SIZE = 5
     const val MARS_ROVER_DATABASE_NAME = "MARS_ROVER_DATABASE"
     const val MILLIS_IN_A_DAY = (1000 * 60 * 60 * 24).toLong()

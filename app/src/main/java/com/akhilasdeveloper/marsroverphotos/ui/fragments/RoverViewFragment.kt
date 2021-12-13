@@ -2,7 +2,9 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.view.*
+import androidx.paging.PagingData
 import androidx.viewpager2.widget.ViewPager2
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
@@ -14,6 +16,7 @@ import kotlinx.coroutines.*
 
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsBitmap
+import timber.log.Timber
 
 
 @AndroidEntryPoint
@@ -38,7 +41,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setListeners() {
-        onPageChangeCallback = object : ViewPager2.OnPageChangeCallback(){
+        onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
 
             override fun onPageScrollStateChanged(state: Int) {
                 if (state == ViewPager2.SCROLL_STATE_IDLE)
@@ -77,6 +80,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private fun setCurrentData() {
         currentPosition?.let {
             currentData = adapter.snapshot()[it]
+            Timber.d("position : $it : ${currentData?.photo_id}")
             getIsLiked()
         }
     }
@@ -90,14 +94,14 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setDownload() {
-        currentData?.img_src?.downloadImageAsBitmap(requireContext()){
+        currentData?.img_src?.downloadImageAsBitmap(requireContext()) {
             requireContext().showShortToast(it.toString())
         }
     }
 
-    private fun getIsLiked(){
+    private fun getIsLiked() {
         currentData?.let {
-            it.id?.let { id ->
+            it.photo_id.let { id ->
                 viewModel.isLiked(id)
             }
         }
@@ -105,30 +109,32 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun setLike() {
         currentData?.let {
-            it.id?.let { id->
-                viewModel.updateLike(marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
-                    id = id,
-                    rover_id = it.rover_id
-                )
+            it.photo_id.let { id ->
+                viewModel.updateLike(
+                    marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
+                        id = id,
+                        rover_id = it.rover_id
+                    )
                 )
             }
         }
     }
 
     private fun subscribeObservers() {
-        viewModel.dataState.observe(viewLifecycleOwner,  { response ->
-            response?.let {
-                adapter.submitData(viewLifecycleOwner.lifecycle, response)
+        viewModel.dataStatePaging.observe(viewLifecycleOwner, {
+            it?.let {
+                Timber.d("dataStatePaging : $it")
+                adapter.submitData(viewLifecycleOwner.lifecycle, it)
                 setCurrentData()
             }
         })
-        viewModel.positionState.observe(viewLifecycleOwner,  {
+        viewModel.positionState.observe(viewLifecycleOwner, {
             currentPosition = it
             setCurrentData()
-            if (it!=binding.viewPage.currentItem)
+            if (it != binding.viewPage.currentItem)
                 binding.viewPage.setCurrentItem(it, false)
         })
-        viewModel.dataStateIsLiked.observe(viewLifecycleOwner,{
+        viewModel.dataStateIsLiked.observe(viewLifecycleOwner, {
             updateLikeIcon(it)
         })
     }
@@ -150,11 +156,16 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         binding.viewPage.adapter = adapter
     }
 
-    private fun updateLikeIcon(liked:Boolean) {
-        if (liked){
-            binding.like.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.ic_heart_fill, 0, 0)
-        }else{
-            binding.like.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.ic_heart_unfill, 0, 0)
+    private fun updateLikeIcon(liked: Boolean) {
+        if (liked) {
+            binding.like.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_heart_fill, 0, 0)
+        } else {
+            binding.like.setCompoundDrawablesWithIntrinsicBounds(
+                0,
+                R.drawable.ic_heart_unfill,
+                0,
+                0
+            )
         }
     }
 
