@@ -65,7 +65,7 @@ class MarsRoverPhotoAdapter(
 
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
-                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
+//                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
                 photo.let {
                     Glide.with(itemView)
                         .load(it.img_src)
@@ -93,7 +93,7 @@ class MarsRoverPhotoAdapter(
 
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
-                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.fade_in)
+//                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
                 photo.let {
                     photoItem.apply {
                         Glide.with(itemView)

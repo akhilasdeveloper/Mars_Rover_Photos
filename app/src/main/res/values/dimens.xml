@@ -11,6 +11,7 @@
     <dimen name="corner_radius">20dp</dimen>
     <dimen name="global_window_padding">16dp</dimen>
     <dimen name="popup_window_padding">32dp</dimen>
+    <dimen name="popup_window_width">400dp</dimen>
     <dimen name="card_separation_margin_vertical">10dp</dimen>
     <dimen name="toolbar_top_title_text_height">64dp</dimen>
     <dimen name="toolbar_bottom_vertical_padding">16dp</dimen>
@@ -20,7 +21,7 @@
     <dimen name="drawable_button_background_ring_icon_padding">10dp</dimen>
     <dimen name="bottom_sheet_image_height">300dp</dimen>
     <dimen name="toolbar_top_image_height">200dp</dimen>
-    <dimen name="photo_item_height">200dp</dimen>
+    <dimen name="photo_item_height">150dp</dimen>
     <dimen name="photo_item_small_height">100dp</dimen>
     <dimen name="photo_date_item_height">300dp</dimen>
 </resources>

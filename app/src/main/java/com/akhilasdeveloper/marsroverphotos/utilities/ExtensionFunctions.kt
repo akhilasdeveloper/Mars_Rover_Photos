@@ -4,8 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
+import android.util.DisplayMetrics
 import android.view.View
 import android.widget.Toast
 import androidx.core.net.toUri
@@ -27,6 +30,7 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 fun Int.simplify() = when {
     abs(this / 1000000) > 1 -> {
@@ -54,16 +58,18 @@ fun RecyclerView.observeFirstItemPosition(firstItemPosition: (position: Int) -> 
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             evaluate()
         }
+
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
             evaluate()
         }
 
-        fun evaluate(){
+        fun evaluate() {
             val layoutManager = layoutManager
             if (layoutManager is LinearLayoutManager) {
                 firstItemPosition(
-                    layoutManager.findFirstVisibleItemPosition())
+                    layoutManager.findFirstVisibleItemPosition()
+                )
             } else {
                 firstItemPosition(0)
             }
@@ -71,21 +77,41 @@ fun RecyclerView.observeFirstItemPosition(firstItemPosition: (position: Int) -> 
     })
 }
 
+fun RecyclerView.fastScrollListener(fastScrolled: (isFastScrolled: Boolean) -> Unit) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+            fastScrolled(dy > 80)
+        }
+    })
+}
+
+fun RecyclerView.isIdle(isIdle: (isIdle: Boolean) -> Unit) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            isIdle(newState == RecyclerView.SCROLL_STATE_IDLE)
+        }
+    })
+}
+
 fun RecyclerView.observeVisibleItemPositions(visibleItemPosition: (firstVisibleItemPosition: Int, secondVisibleItemPosition: Int) -> Unit) {
     addOnScrollListener(object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            if (newState == RecyclerView.SCROLL_STATE_IDLE || newState == RecyclerView.SCROLL_STATE_SETTLING){
+            if (newState == RecyclerView.SCROLL_STATE_IDLE || newState == RecyclerView.SCROLL_STATE_SETTLING) {
                 val layoutManager = layoutManager
                 if (layoutManager is LinearLayoutManager) {
                     visibleItemPosition(
-                        layoutManager.findFirstVisibleItemPosition(), layoutManager.findLastVisibleItemPosition())
+                        layoutManager.findFirstVisibleItemPosition(),
+                        layoutManager.findLastVisibleItemPosition()
+                    )
                 } else {
-                    visibleItemPosition(-1,-1)
+                    visibleItemPosition(-1, -1)
                 }
             }
         }
     })
 }
+
 
 fun RecyclerView.scrollToCenter(position: Int) {
     addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
@@ -119,15 +145,21 @@ fun RecyclerView.scrollToCenter(position: Int) {
     })
 }
 
-fun Long.formatMillisToDisplayDate(): String = SimpleDateFormat(DISPLAY_DATE_FORMAT, Locale.getDefault()).format(Date(this))
-fun Long.formatMillisToDate(): String = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date(this))
-fun String.formatDateToMillis(): Long? = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).parse(this)?.time
+fun Long.formatMillisToDisplayDate(): String =
+    SimpleDateFormat(DISPLAY_DATE_FORMAT, Locale.getDefault()).format(Date(this))
+
+fun Long.formatMillisToDate(): String =
+    SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date(this))
+
+fun String.formatDateToMillis(): Long? =
+    SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).parse(this)?.time
+
 fun String.nextDate(): String = (this.formatDateToMillis()!!.nextDate()).formatMillisToDate()
 fun Long.nextDate(): Long = (this + Constants.MILLIS_IN_A_DAY)
-fun Long.plusDate(days:Int): Long = (this + (Constants.MILLIS_IN_A_DAY * days))
+fun Long.plusDate(days: Int): Long = (this + (Constants.MILLIS_IN_A_DAY * days))
 fun String.prevDate(): String = (this.formatDateToMillis()!!.prevDate()).formatMillisToDate()
 fun Long.prevDate(): Long = (this - Constants.MILLIS_IN_A_DAY)
-fun Long.minusDate(days:Int): Long = (this - (Constants.MILLIS_IN_A_DAY * days))
+fun Long.minusDate(days: Int): Long = (this - (Constants.MILLIS_IN_A_DAY * days))
 
 fun String.downloadImageAsBitmap(context: Context, callback: (Bitmap?) -> (Unit)) {
     Glide.with(context).asBitmap().load(this)
@@ -138,16 +170,34 @@ fun String.downloadImageAsBitmap(context: Context, callback: (Bitmap?) -> (Unit)
             ) {
                 callback(resource)
             }
+
             override fun onLoadCleared(placeholder: Drawable?) {}
         })
 }
 
 fun String.downloadImageAsUri(context: Context, callback: (Uri?) -> (Unit)) {
     CoroutineScope(Dispatchers.IO).launch {
-        val data =Glide.with(context).asFile().load(this@downloadImageAsUri).submit().get()
-        withContext(Dispatchers.Main){
+        val data = Glide.with(context).asFile().load(this@downloadImageAsUri).submit().get()
+        withContext(Dispatchers.Main) {
             callback(data.toUri())
         }
     }
 }
+
+inline fun <T> sdk29andUp(onSdk29: () -> T): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        onSdk29()
+    else null
+}
+
+val Context.screenSizeInDp: Point
+    get() {
+        val point = Point()
+        resources.displayMetrics.apply {
+            point.x = (widthPixels / density).roundToInt()
+            point.y = (heightPixels / density).roundToInt()
+        }
+
+        return point
+    }
 

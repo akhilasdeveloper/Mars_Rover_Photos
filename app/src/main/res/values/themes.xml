@@ -21,8 +21,6 @@
 
     <style name="bottom_appbar_button_ring" parent="Theme.MarsRoverPhotos">
         <item name="android:background">@drawable/button_background_ring</item>
-        <item name="android:drawablePadding">@dimen/drawable_button_background_ring_icon_padding
-        </item>
         <item name="android:textColor">@color/system_for</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/extra_small_text_size</item>

@@ -1,5 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments
 
+import android.Manifest
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -15,8 +16,28 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
+import com.akhilasdeveloper.marsroverphotos.ui.DepthPageTransformer
+import com.akhilasdeveloper.marsroverphotos.ui.ZoomOutPageTransformer
 import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsBitmap
 import timber.log.Timber
+import android.graphics.Bitmap
+
+import android.provider.MediaStore
+
+import android.os.Environment
+
+import android.content.ContentValues
+
+import android.content.ContentResolver
+import android.content.pm.PackageManager
+import android.net.Uri
+
+import android.os.Build
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
+import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsUri
+import java.io.File
+import java.lang.Exception
 
 
 @AndroidEntryPoint
@@ -30,6 +51,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     private var currentData: MarsRoverPhotoTable? = null
     private var currentPosition: Int? = null
+
+    private var writePermissionGranted = false
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -85,6 +109,20 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
     }
 
+    private fun updateOrRequestPermission(){
+        val hasWritePermission = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val minSdk29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        writePermissionGranted = hasWritePermission || minSdk29
+
+        if (!writePermissionGranted){
+            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+    }
+
     private fun setWallpaper() {
 
     }
@@ -94,8 +132,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setDownload() {
-        currentData?.img_src?.downloadImageAsBitmap(requireContext()) {
-            requireContext().showShortToast(it.toString())
+        currentData?.img_src?.downloadImageAsUri(requireContext()) {image->
+            
         }
     }
 
@@ -124,8 +162,10 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         viewModel.dataStatePaging.observe(viewLifecycleOwner, {
             it?.let {
                 Timber.d("dataStatePaging : $it")
-                adapter.submitData(viewLifecycleOwner.lifecycle, it)
-                setCurrentData()
+                it.peekContent?.let {photos->
+                    adapter.submitData(viewLifecycleOwner.lifecycle, photos)
+                    setCurrentData()
+                }
             }
         })
         viewModel.positionState.observe(viewLifecycleOwner, {

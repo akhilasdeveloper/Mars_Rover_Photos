@@ -233,7 +233,7 @@ class MarsRoverPhotosRepository @Inject constructor(
     ): Flow<PagingData<MarsRoverPhotoTable>> {
         return Pager(
             config = PagingConfig(
-                pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE,
+                pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
             ),
             pagingSourceFactory = {
 

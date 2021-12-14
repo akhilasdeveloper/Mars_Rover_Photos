@@ -8,6 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent50">#77000000</color>
+    <color name="transparent100">#dd000000</color>
 
     <color name="first">#222222</color>
     <color name="appbar">#222222</color>

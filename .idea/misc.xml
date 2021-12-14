@@ -7,6 +7,7 @@
         <entry key="app/src/main/res/drawable/button_background_ring.xml" value="0.37538461538461537" />
         <entry key="app/src/main/res/drawable/button_bg.xml" value="0.2861111111111111" />
         <entry key="app/src/main/res/drawable/dialog_background.xml" value="0.38125" />
+        <entry key="app/src/main/res/drawable/gradient_from_center.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/gradient_to_top.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_baseline_cloud_download_24.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_heart_fill.xml" value="0.22239583333333332" />
@@ -30,7 +31,7 @@
         <entry key="app/src/main/res/layout/fragment_roverview.xml" value="0.2" />
         <entry key="app/src/main/res/layout/layout_bottom_sheet.xml" value="0.32971014492753625" />
         <entry key="app/src/main/res/layout/layout_date_select.xml" value="0.3651041666666667" />
-        <entry key="app/src/main/res/layout/layout_sol_select.xml" value="0.35260416666666666" />
+        <entry key="app/src/main/res/layout/layout_sol_select.xml" value="0.5" />
         <entry key="app/src/main/res/layout/marsrover_photo_load_state_footer.xml" value="0.25" />
         <entry key="app/src/main/res/layout/photo_date_item.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/photo_date_item2.xml" value="0.3651041666666667" />

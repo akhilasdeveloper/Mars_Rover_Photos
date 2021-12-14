@@ -27,7 +27,7 @@ class MainViewModel
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
-    private val _dataStatePaging: MutableLiveData<PagingData<MarsRoverPhotoTable>?> = MutableLiveData()
+    private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> = MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
@@ -41,7 +41,7 @@ class MainViewModel
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
-    val dataStatePaging: LiveData<PagingData<MarsRoverPhotoTable>?>
+    val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>>
         get() = _dataStatePaging
 
     val dataStateDatePosition: LiveData<Int>
@@ -67,7 +67,7 @@ class MainViewModel
     }
 
     fun setEmptyPhotos(){
-        _dataStatePaging.value = PagingData.empty()
+        _dataStatePaging.value = Event(PagingData.empty())
     }
 
     fun setPosition(position: Int){
@@ -84,7 +84,7 @@ class MainViewModel
         job = viewModelScope.launch {
             marsRoverPhotosRepository.getPhotos(rover = rover, date = date).cachedIn(viewModelScope)
                 .onEach { its->
-                    _dataStatePaging.value = its
+                    _dataStatePaging.value = Event(its)
                     setLoading(false)
                 }
                 .launchIn(this)

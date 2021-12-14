@@ -10,61 +10,113 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/global_window_padding">
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/global_window_padding"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
                 style="@style/tool_bar_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:drawablePadding="@dimen/global_window_padding"
+                android:labelFor="@id/solSelectorCount"
                 android:text="@string/select_sol"
                 android:textColor="@color/system_for"
                 app:drawableStartCompat="@drawable/ic_mars_icon"
                 app:drawableTint="@color/system_for"
-                android:drawablePadding="@dimen/global_window_padding"
-                android:labelFor="@id/solSelectorCount"/>
+                />
 
             <EditText
                 android:id="@+id/solSelectorCount"
+                style="@style/bottom_appbar_button_ring"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/bottom_appbar_button_ring"
-                android:inputType="numberSigned"
-                android:importantForAutofill="no" />
+                android:importantForAutofill="no"
+                android:inputType="numberSigned" />
 
 
         </LinearLayout>
 
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/sol_slider"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:layout_marginBottom="@dimen/global_window_padding"
-            android:stepSize="1"
-            android:value="50"
-            android:valueFrom="0"
-            android:valueTo="100"
-            app:thumbColor="@color/accent"
-            app:tickColorActive="@color/accent"
-            app:tickColorInactive="@color/system_for"
-            app:trackColorActive="@color/accent" />
+            >
+
+            <TextView
+                android:id="@+id/prev_sol_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:drawableStartCompat="@drawable/ic_baseline_navigate_before_24"
+                app:drawableTint="@color/accent"
+                android:layout_gravity="start|center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="12dp"/>
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/sol_slider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stepSize="1"
+                android:value="50"
+                android:valueFrom="0"
+                android:valueTo="100"
+                android:layout_marginStart="48dp"
+                android:layout_marginEnd="48dp"
+                app:thumbColor="@color/accent"
+                app:tickColorActive="@color/accent"
+                app:tickColorInactive="@color/system_for"
+                app:trackColorActive="@color/accent"/>
+
+            <TextView
+                android:id="@+id/next_sol_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:drawableStartCompat="@drawable/ic_round_navigate_next_24"
+                app:drawableTint="@color/accent"
+                android:layout_gravity="end|center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="12dp"/>
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="48dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintGuide_begin="59dp"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="48dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintGuide_begin="253dp"
+                app:layout_constraintTop_toTopOf="parent" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="horizontal"
             android:layout_marginStart="@dimen/global_window_padding"
             android:layout_marginEnd="@dimen/global_window_padding"
-            android:layout_marginBottom="@dimen/global_window_padding">
+            android:layout_marginBottom="@dimen/global_window_padding"
+            android:gravity="end"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/cancel_sol_selector"
@@ -72,7 +124,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/global_window_padding"
-                android:text="@string/cancel"/>
+                android:text="@string/cancel" />
 
             <TextView
                 android:id="@+id/ok_sol_selector"

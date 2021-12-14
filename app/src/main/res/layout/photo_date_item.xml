@@ -9,7 +9,8 @@
         android:id="@+id/date"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_top_title_text_height"
-        style="@style/photo_item_date"/>
+        style="@style/photo_item_date"
+        android:layout_marginTop="48dp"/>
 
     <include layout="@layout/photo_item"
         android:id="@+id/photo_item"/>
