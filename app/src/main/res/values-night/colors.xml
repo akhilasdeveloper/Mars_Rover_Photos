@@ -11,6 +11,7 @@
     <color name="transparent100">#dd000000</color>
 
     <color name="first">#222222</color>
+    <color name="second">#292929</color>
     <color name="appbar">#222222</color>
     <color name="third">#2B2B2B</color>
     <color name="system_border">#D5222222</color>
@@ -21,7 +22,7 @@
     <color name="light_for">#E1E1E1</color>
     <color name="date">#bbbbbb</color>
     <color name="splashbg">#222222</color>
-    <color name="system_status_bar_background">#E6222222</color>
-    <color name="system_navigation_bar_background">#E6222222</color>
+    <color name="system_status_bar_background">#BE222222</color>
+    <color name="system_navigation_bar_background">#BE222222</color>
 
 </resources>

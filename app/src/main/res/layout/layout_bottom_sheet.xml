@@ -7,13 +7,21 @@
     android:orientation="vertical"
     android:id="@+id/sheet_frame">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/global_window_padding">
         <ImageView
             android:id="@+id/rover_image"
             android:layout_width="match_parent"
             android:layout_height="@dimen/bottom_sheet_image_height"
             android:contentDescription="@string/rover_image"
-            android:scaleType="centerCrop"
-            android:layout_marginBottom="@dimen/global_window_padding"/>
+            android:scaleType="centerCrop" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_from_edges"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,27 +30,31 @@
             android:orientation="horizontal"
             android:paddingStart="@dimen/global_window_padding"
             android:paddingEnd="@dimen/global_window_padding"
-            android:layout_marginTop="@dimen/global_window_padding"
-            android:layout_marginBottom="@dimen/global_window_padding"
-            >
+            android:paddingBottom="@dimen/global_window_padding"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="@dimen/global_window_padding">
 
             <TextView
                 android:id="@+id/rover_name"
+                style="@style/TextAppearance.ToolBarTitle.Expanded"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                style="@style/tool_bar_title"/>
+                android:textColor="@color/white"
+                android:background="@android:color/transparent"/>
 
             <TextView
                 android:id="@+id/rover_photos_count"
+                style="@style/bottom_appbar_button_ring"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/bottom_appbar_button_ring"
+                android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
                 app:drawableStartCompat="@drawable/ic_outline_image_24"
-                app:drawableTint="@color/system_for"
-                android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"/>
+                app:drawableTint="@color/system_for" />
 
         </LinearLayout>
+    </FrameLayout>
+
 
 
         <LinearLayout

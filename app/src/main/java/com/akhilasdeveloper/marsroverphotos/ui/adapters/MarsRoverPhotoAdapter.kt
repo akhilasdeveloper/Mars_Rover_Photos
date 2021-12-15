@@ -73,7 +73,7 @@ class MarsRoverPhotoAdapter(
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
                     cameraName.text = it.camera_name
-                    cameraName.setOnClickListener {_->
+                    cameraName.setOnClickListener { _ ->
                         binding.root.context.showShortToast(it.camera_full_name)
                     }
                 }
@@ -95,17 +95,14 @@ class MarsRoverPhotoAdapter(
             binding.apply {
 //                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
                 photo.let {
-                    photoItem.apply {
-                        Glide.with(itemView)
-                            .load(it.img_src)
-                            .centerCrop()
-                            .transition(DrawableTransitionOptions.withCrossFade())
-                            .into(imageDescription)
-                        cameraName.text = it.camera_name
-                        cameraName.setOnClickListener {_->
-                            binding.root.context.showShortToast(it.camera_full_name)
-                        }
-                    }
+
+                    Glide.with(itemView)
+                        .load(it.img_src)
+                        .centerCrop()
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(imageDescription)
+
+
                     binding.date.text = it.earth_date.formatMillisToDisplayDate()
                 }
             }
@@ -124,10 +121,16 @@ class MarsRoverPhotoAdapter(
 
     companion object {
         private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoTable>() {
-            override fun areItemsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
+            override fun areItemsTheSame(
+                oldItem: MarsRoverPhotoTable,
+                newItem: MarsRoverPhotoTable
+            ) =
                 oldItem.id == newItem.id
 
-            override fun areContentsTheSame(oldItem: MarsRoverPhotoTable, newItem: MarsRoverPhotoTable) =
+            override fun areContentsTheSame(
+                oldItem: MarsRoverPhotoTable,
+                newItem: MarsRoverPhotoTable
+            ) =
                 oldItem == newItem
 
         }

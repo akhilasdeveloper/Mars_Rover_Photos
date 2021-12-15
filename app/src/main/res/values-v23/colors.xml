@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="system_status_bar_background">#DFFFFFFF</color>
+    <color name="system_status_bar_background">#9EFFFFFF</color>
     <color name="system_navigation_bar_background">#EFA3805A</color>
 
 </resources>

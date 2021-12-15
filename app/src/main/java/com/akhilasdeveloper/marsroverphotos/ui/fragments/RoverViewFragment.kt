@@ -3,41 +3,32 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments
 import android.Manifest
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.*
-import androidx.paging.PagingData
 import androidx.viewpager2.widget.ViewPager2
-import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
-import com.akhilasdeveloper.marsroverphotos.ui.DepthPageTransformer
-import com.akhilasdeveloper.marsroverphotos.ui.ZoomOutPageTransformer
-import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsBitmap
 import timber.log.Timber
 import android.graphics.Bitmap
-
 import android.provider.MediaStore
-
-import android.os.Environment
-
 import android.content.ContentValues
-
-import android.content.ContentResolver
 import android.content.pm.PackageManager
 import android.net.Uri
-
 import android.os.Build
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsUri
-import java.io.File
-import java.lang.Exception
+import com.akhilasdeveloper.marsroverphotos.utilities.*
+import com.google.android.material.snackbar.Snackbar
+import java.io.IOException
+import android.content.Intent
+import android.graphics.Color
+import android.widget.TextView
+import com.akhilasdeveloper.marsroverphotos.R
+import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 
 
 @AndroidEntryPoint
@@ -109,7 +100,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
     }
 
-    private fun updateOrRequestPermission(){
+    private fun updateOrRequestPermission() {
         val hasWritePermission = ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -118,7 +109,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         val minSdk29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         writePermissionGranted = hasWritePermission || minSdk29
 
-        if (!writePermissionGranted){
+        if (!writePermissionGranted) {
             permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
     }
@@ -132,9 +123,74 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setDownload() {
-        currentData?.img_src?.downloadImageAsUri(requireContext()) {image->
-            
+
+        currentData?.img_src?.downloadImageAsBitmap(requireContext()) { image ->
+            image?.let {
+                savePhotoToExternalStorage(getDisplayName(), it).let { path ->
+                    if (path != null) {
+                        showSnackBar("Image Saved to Gallery", "View Image"){
+                            val intent = Intent()
+                            intent.action = Intent.ACTION_VIEW
+                            intent.setDataAndType(
+                                path,
+                                "image/*"
+                            )
+                            startActivity(intent)
+                        }
+                    } else {
+                        requireContext().showShortToast("Failed to Save Image")
+                    }
+                }
+            }
         }
+    }
+
+    private fun getDisplayName() =
+        "${currentData!!.rover_name}_${currentData!!.camera_name}_${currentData!!.earth_date.formatMillisToFileDate()}_${currentData!!.photo_id}"
+
+    private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap): Uri? {
+        val imageCollection = sdk29andUp {
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } ?: MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "$displayName.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.WIDTH, bmp.width)
+            put(MediaStore.Images.Media.HEIGHT, bmp.height)
+        }
+
+        try {
+            requireActivity().contentResolver.insert(imageCollection, contentValues)?.also { uri ->
+                requireActivity().contentResolver.openOutputStream(uri).use { outputStream ->
+                    if (!bmp.compress(Bitmap.CompressFormat.JPEG, 95, outputStream))
+                        throw IOException("Failed to save Image!")
+                    return uri
+                }
+            } ?: throw IOException("Couldn't Create MediaStore Entry")
+            return null
+        } catch (exception: IOException) {
+            Timber.e(exception.fillInStackTrace())
+            return null
+        }
+    }
+
+    fun showSnackBar(messageText: String, buttonText: String,onClick:() -> Unit){
+        val snackbar = Snackbar.make(binding.root, "", Snackbar.LENGTH_LONG)
+        val customSnackView: View = layoutInflater.inflate(com.akhilasdeveloper.marsroverphotos.R.layout.snack_bar_layout, null)
+        snackbar.view.setBackgroundColor(Color.TRANSPARENT)
+        val snackbarLayout = snackbar.view as SnackbarLayout
+        snackbarLayout.setPadding(0, 0, 0, 0)
+        val message: TextView = customSnackView.findViewById(com.akhilasdeveloper.marsroverphotos.R.id.message)
+        message.text = messageText
+        val button: TextView = customSnackView.findViewById(com.akhilasdeveloper.marsroverphotos.R.id.button)
+        button.text = buttonText
+        button.setOnClickListener(View.OnClickListener {
+            onClick()
+            snackbar.dismiss()
+        })
+        snackbarLayout.addView(customSnackView, 0)
+        snackbar.show()
     }
 
     private fun getIsLiked() {
@@ -162,7 +218,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         viewModel.dataStatePaging.observe(viewLifecycleOwner, {
             it?.let {
                 Timber.d("dataStatePaging : $it")
-                it.peekContent?.let {photos->
+                it.peekContent?.let { photos ->
                     adapter.submitData(viewLifecycleOwner.lifecycle, photos)
                     setCurrentData()
                 }
@@ -194,6 +250,13 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
 
         binding.viewPage.adapter = adapter
+
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                writePermissionGranted = it
+            }
+
+        updateOrRequestPermission()
     }
 
     private fun updateLikeIcon(liked: Boolean) {
@@ -202,7 +265,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         } else {
             binding.like.setCompoundDrawablesWithIntrinsicBounds(
                 0,
-                R.drawable.ic_heart_unfill,
+                com.akhilasdeveloper.marsroverphotos.R.drawable.ic_heart_unfill,
                 0,
                 0
             )

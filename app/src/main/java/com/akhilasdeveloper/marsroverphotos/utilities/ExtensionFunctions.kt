@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATE_FORMAT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DISPLAY_DATE_FORMAT
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FILE_DATE_FORMAT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_DOWN
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_UP
 import com.bumptech.glide.Glide
@@ -81,7 +82,16 @@ fun RecyclerView.fastScrollListener(fastScrolled: (isFastScrolled: Boolean) -> U
     addOnScrollListener(object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
-            fastScrolled(dy > 80)
+            fastScrolled(dy > 30)
+        }
+    })
+}
+
+fun RecyclerView.scrollDirectionListener(scrolled: (scrollDirection: Int) -> Unit) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+            scrolled(if (dy>0) Constants.SCROLL_DIRECTION_UP else SCROLL_DIRECTION_DOWN)
         }
     })
 }
@@ -148,6 +158,9 @@ fun RecyclerView.scrollToCenter(position: Int) {
 fun Long.formatMillisToDisplayDate(): String =
     SimpleDateFormat(DISPLAY_DATE_FORMAT, Locale.getDefault()).format(Date(this))
 
+fun Long.formatMillisToFileDate(): String =
+    SimpleDateFormat(FILE_DATE_FORMAT, Locale.getDefault()).format(Date(this))
+
 fun Long.formatMillisToDate(): String =
     SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date(this))
 
@@ -188,6 +201,12 @@ inline fun <T> sdk29andUp(onSdk29: () -> T): T? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
         onSdk29()
     else null
+}
+
+inline fun sdkAndUp(version : Int, onSdkAndAbove: () -> Unit, belowSdk: () -> Unit) {
+    if (Build.VERSION.SDK_INT >= version)
+        onSdkAndAbove()
+    else belowSdk()
 }
 
 val Context.screenSizeInDp: Point

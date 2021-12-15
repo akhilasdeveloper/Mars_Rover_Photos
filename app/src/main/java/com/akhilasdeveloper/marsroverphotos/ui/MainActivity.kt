@@ -1,12 +1,17 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.core.view.*
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
+import com.akhilasdeveloper.marsroverphotos.utilities.sdk29andUp
+import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
 import com.github.piasy.biv.BigImageViewer
 import com.github.piasy.biv.loader.glide.GlideImageLoader
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,25 +28,38 @@ class MainActivity : BaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // or load with glide
-        BigImageViewer.initialize(GlideImageLoader.with(applicationContext))
+        sdkAndUp(Build.VERSION_CODES.R, onSdkAndAbove = {
+            window.setDecorFitsSystemWindows(false)
+            binding.statusBarBg.setOnApplyWindowInsetsListener { view, insets ->
+                val systemWindows =
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.updateLayoutParams { height = systemWindows.top }
+                return@setOnApplyWindowInsetsListener insets
+            }
+            binding.navigationBarBg.setOnApplyWindowInsetsListener { view, insets ->
+                val systemWindows =
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.updateLayoutParams { height = systemWindows.bottom }
+                return@setOnApplyWindowInsetsListener insets
+            }
+        }, belowSdk = {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarBg) { view, insets ->
+                val systemWindows =
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.updateLayoutParams { height = systemWindows.top }
+                return@setOnApplyWindowInsetsListener insets
+            }
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+            ViewCompat.setOnApplyWindowInsetsListener(binding.navigationBarBg) { view, insets ->
+                val systemWindows =
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.updateLayoutParams { height = systemWindows.bottom }
+                return@setOnApplyWindowInsetsListener insets
+            }
+        })
+
         window.setBackgroundDrawableResource(R.color.first)
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarBg) { view, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updateLayoutParams { height = systemWindows.top }
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.navigationBarBg) { view, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updateLayoutParams { height = systemWindows.bottom }
-            return@setOnApplyWindowInsetsListener insets
-        }
 
         destinationChangedListener =
             NavController.OnDestinationChangedListener { _, destination, _ ->
@@ -68,17 +86,31 @@ class MainActivity : BaseActivity() {
     }
 
     override fun hideSystemBar() {
-        WindowInsetsControllerCompat(window, binding.root).apply {
-            hide(WindowInsetsCompat.Type.systemBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
-        }
+        sdkAndUp(Build.VERSION_CODES.S, onSdkAndAbove = {
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.systemBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+            }
+        }, belowSdk = {
+            WindowInsetsControllerCompat(window, binding.root).apply {
+                hide(WindowInsetsCompat.Type.systemBars())
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
+            }
+        })
+
     }
 
     override fun showSystemBar() {
-        WindowInsetsControllerCompat(
-            window,
-            binding.root
-        ).show(WindowInsetsCompat.Type.systemBars())
+        sdkAndUp(Build.VERSION_CODES.S, onSdkAndAbove = {
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.systemBars())
+            }
+        }, belowSdk = {
+            WindowInsetsControllerCompat(
+                window,
+                binding.root
+            ).show(WindowInsetsCompat.Type.systemBars())
+        })
     }
 
     private fun setTransparentSystemBar() {
@@ -100,17 +132,39 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setStatusBarDarkTheme() {
-        WindowInsetsControllerCompat(window, binding.root).apply {
-            isAppearanceLightStatusBars = false
-            isAppearanceLightNavigationBars = false
-        }
+        sdkAndUp(Build.VERSION_CODES.R, onSdkAndAbove = {
+            window.insetsController?.setSystemBarsAppearance(
+                0,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+            window.insetsController?.setSystemBarsAppearance(
+                0,
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            )
+        }, belowSdk = {
+            WindowInsetsControllerCompat(window, binding.root).apply {
+                isAppearanceLightStatusBars = false
+                isAppearanceLightNavigationBars = false
+            }
+        })
     }
 
     private fun setStatusBarContrast() {
-        WindowInsetsControllerCompat(window, binding.root).apply {
-            isAppearanceLightStatusBars = !applicationContext.isDarkThemeOn()
-            isAppearanceLightNavigationBars = !applicationContext.isDarkThemeOn()
-        }
+        sdkAndUp(Build.VERSION_CODES.R, onSdkAndAbove = {
+            window.insetsController?.setSystemBarsAppearance(
+                if (!applicationContext.isDarkThemeOn()) WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS else 0,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+            window.insetsController?.setSystemBarsAppearance(
+                if (!applicationContext.isDarkThemeOn()) WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS else 0,
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            )
+        }, belowSdk = {
+            WindowInsetsControllerCompat(window, binding.root).apply {
+                isAppearanceLightStatusBars = !applicationContext.isDarkThemeOn()
+                isAppearanceLightNavigationBars = !applicationContext.isDarkThemeOn()
+            }
+        })
     }
 
     override fun onDestroy() {

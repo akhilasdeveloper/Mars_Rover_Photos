@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="bottom"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/first">
+
+    <com.akhilasdeveloper.marsroverphotos.ui.views.SpanImageView
+        android:id="@+id/image_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/rover_captured_image"
+        android:background="@drawable/imageview_placeholder"
+        android:layout_margin="@dimen/stroke_strong"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent50"
+        android:layout_margin="@dimen/stroke_strong" />
 
     <TextView
         android:id="@+id/date"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_top_title_text_height"
         style="@style/photo_item_date"
-        android:layout_marginTop="48dp"/>
+        android:layout_gravity="center_vertical"
+        android:textColor="@color/white"
+        android:background="@android:color/transparent"
+        android:layout_marginStart="@dimen/global_window_padding"
+        android:layout_marginEnd="@dimen/global_window_padding"/>
 
-    <include layout="@layout/photo_item"
-        android:id="@+id/photo_item"/>
-
-</LinearLayout>
+</FrameLayout>

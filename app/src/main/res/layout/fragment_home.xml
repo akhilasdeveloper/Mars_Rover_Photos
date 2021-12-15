@@ -12,6 +12,8 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingBottom="@dimen/photo_date_item_height"
+        android:layout_marginStart="@dimen/stroke_strong"
+        android:layout_marginEnd="@dimen/stroke_strong"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
 
     <com.google.android.material.appbar.AppBarLayout
@@ -19,7 +21,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/appbar"
-        app:elevation="0dp"
         app:liftOnScroll="true">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -131,7 +132,7 @@
             app:tickColorActive="@android:color/transparent"
             app:tickColorInactive="@android:color/transparent"
             app:trackColorActive="@android:color/transparent"
-            app:thumbRadius="@dimen/corner_radius"
+            app:thumbRadius="@dimen/global_window_padding"
             app:trackColor="#20000000"
             android:hapticFeedbackEnabled="true"
             app:labelBehavior="gone"
@@ -150,16 +151,31 @@
         app:cardBackgroundColor="@color/accent"
         app:cardCornerRadius="20dp" />
 
+
+    <ProgressBar
+        android:id="@+id/progressTop"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/accent" />
+
+    <ProgressBar
+        android:id="@+id/progressCenter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/accent" />
+
     <ProgressBar
         android:id="@+id/progress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginTop="-4dp"
-        android:layout_marginBottom="-4dp"
         android:indeterminate="true"
-        android:indeterminateTint="@color/accent"
-        android:scaleY=".5" />
+        android:indeterminateTint="@color/accent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

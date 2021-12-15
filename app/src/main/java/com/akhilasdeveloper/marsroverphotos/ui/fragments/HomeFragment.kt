@@ -37,13 +37,14 @@ import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
 import android.animation.AnimatorListenerAdapter
+import android.annotation.SuppressLint
 
 import androidx.core.view.ViewCompat.animate
 import androidx.lifecycle.lifecycleScope
 import androidx.core.view.ViewCompat.animate
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_UP
 
-
-@ExperimentalPagingApi
 @AndroidEntryPoint
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
 
@@ -99,7 +100,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             photoRecycler.layoutManager = layoutManager
             photoRecycler.adapter = adapter
         }
-
+        hideFastScroller()
     }
 
     private fun setWindowInsets() {
@@ -140,22 +141,33 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             return@setOnApplyWindowInsetsListener insets
         }
 
+        val layoutParamsTop = (binding.progressTop.layoutParams as? ViewGroup.MarginLayoutParams)
+        val marginTop = layoutParamsTop?.topMargin ?: 0
+        ViewCompat.setOnApplyWindowInsetsListener(binding.progressTop) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            layoutParamsTop?.setMargins(0, marginTop + systemWindows.top, 0, 0)
+            binding.progressTop.layoutParams = layoutParamsTop
+            return@setOnApplyWindowInsetsListener insets
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.slideFrame) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars())
             resources.displayMetrics.let { matrics ->
                 val bottomAppBarHeight = 76 * matrics.density.toInt()
+                val topAppBarHeight = 200 * matrics.density.toInt()
 
                 val layoutParams2 =
                     (binding.solSlider.layoutParams as? ViewGroup.LayoutParams)
                 layoutParams2?.width =
-                    matrics.heightPixels - (bottomAppBarHeight + systemWindows.top + systemWindows.bottom)
+                    matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight)
                 binding.solSlider.layoutParams = layoutParams2
 
                 val layoutParams1 =
                     (binding.slideFrame.layoutParams as? ViewGroup.LayoutParams)
                 layoutParams1?.height =
-                    matrics.heightPixels - (bottomAppBarHeight + systemWindows.top + systemWindows.bottom)
+                    matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight)
                 binding.slideFrame.layoutParams = layoutParams1
 
                 val layoutParams3 =
@@ -390,6 +402,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setListeners() {
         binding.dateButtonText.setOnClickListener {
             binding.photoRecycler.stopScroll()
@@ -401,11 +414,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             showSolSelectorDialog()
         }
         adapter.addLoadStateListener { loadStates ->
-            viewModel.setLoading(
-                loadStates.source.prepend is LoadState.Loading ||
-                        loadStates.source.append is LoadState.Loading ||
-                        loadStates.source.refresh is LoadState.Loading
-            )
+
+            binding.progressTop.isVisible = loadStates.source.prepend is LoadState.Loading
+            binding.progress.isVisible = loadStates.source.append is LoadState.Loading
+            binding.progressCenter.isVisible = loadStates.source.refresh is LoadState.Loading
+
             binding.emptyMessage.isVisible = loadStates.source.refresh is LoadState.Error
 
             if (loadStates.source.refresh is LoadState.NotLoading &&
@@ -469,7 +482,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
             false
         }
-
     }
 
     private fun hideFastScrollerDate() {
@@ -494,13 +506,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun hideFastScroller() {
-        job = lifecycleScope.launch {
-            delay(2000L)
-            binding.slideFrame.apply {
-                if (alpha == 1f) {
+        binding.slideFrame.apply {
+            if (alpha == 1f) {
+                job?.cancel()
+                job = lifecycleScope.launch {
+                    delay(2000L)
                     animate()
                         .translationY(0f)
-                        .alpha(0.0f).duration = 800L
+                        .alpha(0.0f).duration = 400L
                 }
             }
         }
@@ -511,7 +524,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             if (alpha == 0f) {
                 animate()
                     .alpha(1.0f)
-                    .setListener(null).duration = 800L
+                    .setListener(null).duration = 400L
             }
         }
     }
@@ -563,6 +576,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        job?.cancel()
     }
 
     override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {

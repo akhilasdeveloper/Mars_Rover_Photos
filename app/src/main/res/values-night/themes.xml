@@ -17,6 +17,7 @@
         <!-- Window theme -->
         <item name="android:windowBackground">@drawable/splash</item>
         <item name="android:fontFamily">@font/nunito_sans</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
     </style>
 
     <style name="ThemeOverlay.App.DatePicker" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar">
