@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    app:cardBackgroundColor="@color/appbar"
-    android:layout_margin="@dimen/global_window_padding">
+    app:cardBackgroundColor="@color/appbar_inv"
+    android:layout_margin="@dimen/global_window_padding"
+    app:cardCornerRadius="@dimen/corner_radius">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,12 +19,15 @@
             android:layout_weight="1"
             android:id="@+id/message"
             android:textSize="@dimen/extra_small_text_size"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:textColor="@color/system_for_light"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/bottom_appbar_button_ring"
-            android:id="@+id/button"/>
+            android:id="@+id/button"
+            android:visibility="gone"
+            android:textColor="@color/system_for_light"/>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

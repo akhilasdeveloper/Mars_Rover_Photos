@@ -13,40 +13,46 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/home_collapsing_toolbar_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/home_collapsing_toolbar_top"
+            android:background="@color/appbar"
+            app:collapsedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"
+            app:contentScrim="@color/appbar"
+            app:expandedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Expanded"
             app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
             app:statusBarScrim="@color/appbar"
-            android:background="@color/appbar"
-            app:contentScrim="@color/appbar"
             app:title="@string/app_name"
-            app:titleCollapseMode="scale"
-            app:collapsedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"
-            app:expandedTitleTextAppearance="@style/TextAppearance.ToolBarTitle.Expanded">
+            app:titleCollapseMode="scale">
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/toolbar_top_image_height"/>
+                android:layout_height="@dimen/toolbar_top_image_height" />
 
             <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/home_toolbar_top"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="none"
                 android:elevation="0dp"
-                android:id="@+id/home_toolbar_top"
                 app:contentInsetStart="@dimen/global_window_padding"
-                app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"/>
+                app:layout_collapseMode="none"
+                app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed" />
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/rover_swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/bottom_sheet"
@@ -58,8 +64,9 @@
         app:behavior_peekHeight="0dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-        <include layout="@layout/layout_bottom_sheet"
-            android:id="@+id/bottom_sheet_view"/>
+        <include
+            android:id="@+id/bottom_sheet_view"
+            layout="@layout/layout_bottom_sheet" />
 
     </androidx.core.widget.NestedScrollView>
 
@@ -72,13 +79,5 @@
         android:visibility="gone"
         app:cardBackgroundColor="@color/accent"
         app:cardCornerRadius="20dp" />
-
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progress"
-        android:layout_gravity="center"
-        android:indeterminateTint="@color/accent" />
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

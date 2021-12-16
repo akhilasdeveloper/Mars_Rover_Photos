@@ -13,16 +13,17 @@
     <color name="first">#FFFFFF</color>
     <color name="second">#F3F3F3</color>
     <color name="appbar">#FFFFFF</color>
+    <color name="appbar_inv">#222222</color>
     <color name="third">#E3E3E3</color>
     <color name="system_border">#D0FFFFFF</color>
     <color name="system_border_inv">#CB616161</color>
     <color name="system_for">#616161</color>
-    <color name="system_for_light">#989898</color>
+    <color name="system_for_light">#E1E1E1</color>
     <color name="accent">#A3805A</color>
     <color name="light_for">#E1E1E1</color>
     <color name="date">#333333</color>
     <color name="splashbg">#222222</color>
-    <color name="system_status_bar_background">#9EFFFFFF</color>
-    <color name="system_navigation_bar_background">#9EFFFFFF</color>
+    <color name="system_status_bar_background">#CBFFFFFF</color>
+    <color name="system_navigation_bar_background">#CBFFFFFF</color>
 
 </resources>

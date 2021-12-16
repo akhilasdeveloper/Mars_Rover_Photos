@@ -22,13 +22,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.akhilasdeveloper.marsroverphotos.utilities.*
-import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
 import android.content.Intent
-import android.graphics.Color
-import android.widget.TextView
 import com.akhilasdeveloper.marsroverphotos.R
-import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 
 
 @AndroidEntryPoint
@@ -94,9 +90,10 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun setCurrentData() {
         currentPosition?.let {
-            currentData = adapter.snapshot()[it]
-            Timber.d("position : $it : ${currentData?.photo_id}")
-            getIsLiked()
+            if(adapter.snapshot().size > it) {
+                currentData =adapter.snapshot()[it]
+                    getIsLiked()
+            }
         }
     }
 
@@ -128,7 +125,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             image?.let {
                 savePhotoToExternalStorage(getDisplayName(), it).let { path ->
                     if (path != null) {
-                        showSnackBar("Image Saved to Gallery", "View Image"){
+                        uiCommunicationListener.showSnackBarMessage("Image Saved to Gallery", "View Image"){
                             val intent = Intent()
                             intent.action = Intent.ACTION_VIEW
                             intent.setDataAndType(
@@ -173,24 +170,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             Timber.e(exception.fillInStackTrace())
             return null
         }
-    }
-
-    fun showSnackBar(messageText: String, buttonText: String,onClick:() -> Unit){
-        val snackbar = Snackbar.make(binding.root, "", Snackbar.LENGTH_LONG)
-        val customSnackView: View = layoutInflater.inflate(com.akhilasdeveloper.marsroverphotos.R.layout.snack_bar_layout, null)
-        snackbar.view.setBackgroundColor(Color.TRANSPARENT)
-        val snackbarLayout = snackbar.view as SnackbarLayout
-        snackbarLayout.setPadding(0, 0, 0, 0)
-        val message: TextView = customSnackView.findViewById(com.akhilasdeveloper.marsroverphotos.R.id.message)
-        message.text = messageText
-        val button: TextView = customSnackView.findViewById(com.akhilasdeveloper.marsroverphotos.R.id.button)
-        button.text = buttonText
-        button.setOnClickListener(View.OnClickListener {
-            onClick()
-            snackbar.dismiss()
-        })
-        snackbarLayout.addView(customSnackView, 0)
-        snackbar.show()
     }
 
     private fun getIsLiked() {

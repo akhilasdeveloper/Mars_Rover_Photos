@@ -13,7 +13,6 @@ import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.PhotoDatesTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.RemoteKeysTable
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.STARTING_PAGE_INDEX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

@@ -19,50 +19,107 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
-class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClickListener{
+class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClickListener {
 
     private var _binding: FragmentRoversBinding? = null
     private val binding get() = _binding!!
-    private var adapter: MarsRoverAdapter =  MarsRoverAdapter(this)
+    private var adapter: MarsRoverAdapter = MarsRoverAdapter(this)
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        setBackPressCallBack()
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentRoversBinding.bind(view)
 
         init()
+        setWindowInsets()
+        setListeners()
         subscribeObservers()
         getData()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private fun init() {
 
-        val callback: OnBackPressedCallback =
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-
-                    if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
-                        hideSheet()
-                    else
-                        if (isEnabled) {
-                            isEnabled = false
-                            requireActivity().onBackPressed()
-                        }
-                }
-            }
-        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
-
-        super.onCreate(savedInstanceState)
-
+        setBottomSheet()
+        setRecyclerView()
+        binding.roverSwipeRefresh.setColorSchemeResources(R.color.accent)
+        viewModel.setEmptyPhotos()
     }
 
-    private fun init() {
+    private fun setListeners() {
+        binding.emptyMessage.setOnClickListener {
+            hideEmptyMessage()
+            refreshData()
+        }
+        binding.roverSwipeRefresh.setOnRefreshListener {
+            refreshData()
+        }
+    }
+
+    private fun refreshData() {
+        viewModel.getRoverData(isRefresh = true)
+    }
+
+    private fun subscribeObservers() {
+        viewModel.dataStateRover.observe(viewLifecycleOwner, { response ->
+            response?.data?.let {
+                Timber.d("RoverFragment response : $it")
+                if (it.isEmpty())
+                    setEmptyMessage("Tap to refresh")
+                else
+                    hideEmptyMessage()
+                adapter.submitList(it)
+            }
+
+            viewModel.setLoading(response?.isLoading == true)
+
+            response?.error?.let {
+                uiCommunicationListener.showSnackBarMessage(messageText = it, buttonText = "Refresh"){
+                    refreshData()
+                }
+                setEmptyMessage("$it\nTap to refresh")
+            }
+        })
+
+        viewModel.dataStateRoverMaster.value?.let {
+            it.peekContent?.let { rover ->
+                setSheetData(rover)
+            }
+        }
+
+        viewModel.dataStateLoading.observe(viewLifecycleOwner, {
+            binding.roverSwipeRefresh.isRefreshing = it
+        })
+    }
+
+    private fun getData() {
+        if (viewModel.dataStateRover.value == null) {
+            viewModel.getRoverData(isRefresh = false)
+        }
+    }
+
+    private fun setRecyclerView() {
+        binding.apply {
+            recycler.setHasFixedSize(true)
+            recycler.layoutManager = LinearLayoutManager(requireContext())
+            recycler.adapter = adapter
+        }
+    }
+
+    private fun setBottomSheet() {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.isGestureInsetBottomIgnored = true
-        bottomSheetBehavior.addBottomSheetCallback(object :BottomSheetBehavior.BottomSheetCallback(){
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED)
                     binding.homeAppbarTop.visibility = View.VISIBLE
@@ -74,101 +131,23 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             }
 
         })
-        ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            binding.recycler.updatePadding(bottom = systemWindows.bottom)
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams = (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
-            binding.homeToolbarTop.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomSheetView.sheetFrame) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams = (binding.bottomSheetView.sheetFrame.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
-            binding.bottomSheetView.sheetFrame.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        val layoutManager = LinearLayoutManager(requireContext())
-
-        binding.apply {
-            recycler.setHasFixedSize(true)
-            recycler.layoutManager = layoutManager
-            recycler.adapter = adapter
-        }
-
-        binding.emptyMessage.setOnClickListener {
-            hideEmptyMessage()
-            viewModel.getRoverData(isRefresh = false)
-        }
-        viewModel.setEmptyPhotos()
-
     }
 
-    private fun subscribeObservers() {
-        viewModel.dataStateRover.observe(viewLifecycleOwner, { response ->
-            response.data?.let {
-                if (it.isEmpty())
-                    setEmptyMessage("Tap to refresh")
-                else
-                    hideEmptyMessage()
-                adapter.submitList(it)
-            }
-            response.isLoading.let {
-                 if(!(it == null || !it)) {
-                     hideEmptyMessage()
-                     binding.progress.isVisible = true
-                 }
-            }
-            response.error?.let {
-                Toast.makeText(requireContext(),it,Toast.LENGTH_LONG).show()
-                setEmptyMessage("$it\nTap to refresh")
-            }
-        })
-
-    }
-
-    private fun hideEmptyMessage(){
+    private fun hideEmptyMessage() {
         binding.emptyMessage.isVisible = false
         binding.emptyMessage.text = ""
     }
 
-    private fun setEmptyMessage(message: String){
+    private fun setEmptyMessage(message: String) {
         binding.emptyMessage.isVisible = true
         binding.emptyMessage.text = message
-    }
-
-    private fun getData() {
-        if (viewModel.dataStateRover.value==null) {
-            viewModel.getRoverData(isRefresh = false)
-        }
-
-        viewModel.dataStateRoverMaster.value?.let {
-            it.peekContent?.let {rover->
-                setSheetData(rover)
-            }
-        }
-
-        viewModel.dataStateLoading.observe(viewLifecycleOwner, {
-            binding.progress.isVisible = it
-        })
     }
 
     override fun onItemSelected(master: RoverMaster, position: Int) {
         navigateToPhotos(master)
     }
 
-    private fun navigateToPhotos(master: RoverMaster){
+    private fun navigateToPhotos(master: RoverMaster) {
         viewModel.setRoverMaster(master)
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
     }
@@ -197,12 +176,58 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             roverDescription.text = master.description
             roverLandingDate.text = master.landing_date
             roverLaunchDate.text = master.launch_date
-            roverStatus.text = getString(R.string.rover_status,master.status)
+            roverStatus.text = getString(R.string.rover_status, master.status)
             roverPhotosCount.text = getString(R.string.view_photos, master.total_photos.toString())
         }
         binding.bottomSheetView.roverPhotosCount.setOnClickListener {
             navigateToPhotos(master)
         }
+    }
+
+    private fun setWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            binding.recycler.updatePadding(bottom = systemWindows.bottom)
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            val layoutParams =
+                (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
+            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
+            binding.homeToolbarTop.layoutParams = layoutParams
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomSheetView.sheetFrame) { _, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            val layoutParams =
+                (binding.bottomSheetView.sheetFrame.layoutParams as? ViewGroup.MarginLayoutParams)
+            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
+            binding.bottomSheetView.sheetFrame.layoutParams = layoutParams
+            return@setOnApplyWindowInsetsListener insets
+        }
+    }
+
+    private fun setBackPressCallBack() {
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+
+                    if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+                        hideSheet()
+                    else
+                        if (isEnabled) {
+                            isEnabled = false
+                            requireActivity().onBackPressed()
+                        }
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
     }
 
     override fun onDestroyView() {

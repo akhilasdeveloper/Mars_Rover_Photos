@@ -1,7 +1,10 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.core.view.*
@@ -9,11 +12,10 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.SnackBarLayoutBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
-import com.akhilasdeveloper.marsroverphotos.utilities.sdk29andUp
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
-import com.github.piasy.biv.BigImageViewer
-import com.github.piasy.biv.loader.glide.GlideImageLoader
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -113,6 +115,14 @@ class MainActivity : BaseActivity() {
         })
     }
 
+    override fun showSnackBarMessage(
+        messageText: String,
+        buttonText: String?,
+        onClick: (() -> Unit)?
+    ) {
+        showSnackBar(messageText = messageText, buttonText = buttonText, onClick = onClick)
+    }
+
     private fun setTransparentSystemBar() {
         if (binding.navigationBarBg.alpha == 1f) {
             binding.navigationBarBg.animate().alpha(0f).duration =
@@ -165,6 +175,25 @@ class MainActivity : BaseActivity() {
                 isAppearanceLightNavigationBars = !applicationContext.isDarkThemeOn()
             }
         })
+    }
+
+    private fun showSnackBar(messageText: String, buttonText: String? = null, onClick: (() -> Unit)? = null) {
+        val snackBar = Snackbar.make(binding.root, "", Snackbar.LENGTH_LONG)
+        val customSnackView = SnackBarLayoutBinding.inflate(LayoutInflater.from(this))
+        snackBar.view.setBackgroundColor(Color.TRANSPARENT)
+        val snackBarLayout = snackBar.view as Snackbar.SnackbarLayout
+        snackBarLayout.setPadding(0, 0, 0, 0)
+        customSnackView.message.text = messageText
+        buttonText?.let {
+            customSnackView.button.visibility = View.VISIBLE
+            customSnackView.button.text = buttonText
+            customSnackView.button.setOnClickListener {
+                onClick?.invoke()
+                snackBar.dismiss()
+            }
+        }
+        snackBarLayout.addView(customSnackView.root, 0)
+        snackBar.show()
     }
 
     override fun onDestroy() {

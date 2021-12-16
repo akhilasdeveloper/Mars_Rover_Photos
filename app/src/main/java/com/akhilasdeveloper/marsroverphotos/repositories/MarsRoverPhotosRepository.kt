@@ -20,14 +20,12 @@ import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
 import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class MarsRoverPhotosRepository @Inject constructor(
@@ -50,7 +48,6 @@ class MarsRoverPhotosRepository @Inject constructor(
         val response = mutableListOf<RoverMaster>()
         data.forEach { src ->
             withContext(Dispatchers.IO) {
-
                 getRoverManifestData(src.roverName, isCache)?.let { manifest ->
                     response.add(
                         RoverMaster(
@@ -127,23 +124,35 @@ class MarsRoverPhotosRepository @Inject constructor(
             emit(MarsRoverSrcResponse(isLoading = true))
 
             var dataSrc = marsRoverDao.getMarsRoverSrc()
-            emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, true)))
+            val isEmpty = dataSrc.isEmpty()
 
-            val case =
-                if (marsRoverDao.getInsertDate() == null) true else (System.currentTimeMillis() - marsRoverDao.getInsertDate()!!) > Constants.MILLIS_IN_A_DAY
+            if (!isEmpty)
+                emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, true)))
 
-            if (case || isRefresh) {
+            val insertedDate = marsRoverDao.getInsertDate()
+            val isExpired =
+                if (insertedDate == null) true else (System.currentTimeMillis() - insertedDate) > Constants.MILLIS_IN_A_DAY
+
+            if (isExpired || isRefresh || isEmpty) {
                 if (utilities.isConnectedToTheInternet()) {
                     emit(MarsRoverSrcResponse(isLoading = true))
-                    withContext(Dispatchers.IO) {
+                    val networkJob = withTimeoutOrNull(Constants.NETWORK_TIME_OUT) {
                         refreshRoverSrcDb()
+                    }
+                    if (networkJob == null) {
+                        emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
                     }
                 } else {
                     emit(MarsRoverSrcResponse(error = ERROR_NO_INTERNET))
                 }
 
                 dataSrc = marsRoverDao.getMarsRoverSrc()
-                emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, false)))
+                val networkJob = withTimeoutOrNull(Constants.NETWORK_TIME_OUT) {
+                    emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, false)))
+                }
+                if (networkJob == null) {
+                    emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                }
             }
 
         }.flowOn(Dispatchers.IO)
@@ -207,25 +216,6 @@ class MarsRoverPhotosRepository @Inject constructor(
     /**
      * Rover Photo START
      */
-
-    /*@ExperimentalPagingApi
-    fun getPhotos(
-        date: Long,
-        rover: RoverMaster
-    ) = Pager(
-        config = PagingConfig(
-            pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE,
-            enablePlaceholders = true
-        ),
-        remoteMediator = RoverRemoteMediator(
-            rover = rover,
-            marsRoverPhotosService = marsRoverPhotosService,
-            marsRoverDataBase = marsRoverDataBase
-        ),
-        pagingSourceFactory = {
-            marsPhotoDao.getPhotosByRoverIDAndDate(roverName = rover.name, date = date)
-        }
-    ).flow*/
 
     fun getPhotos(
         rover: RoverMaster,

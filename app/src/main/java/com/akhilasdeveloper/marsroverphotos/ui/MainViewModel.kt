@@ -13,6 +13,7 @@ import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -27,7 +28,8 @@ class MainViewModel
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
-    private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> = MutableLiveData()
+    private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> =
+        MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
@@ -36,7 +38,7 @@ class MainViewModel
     private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateDatePosition: MutableLiveData<Int> = MutableLiveData()
 
-    private var job : Job? = null
+    private var job: Job? = null
 
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
@@ -62,51 +64,53 @@ class MainViewModel
     val positionState: LiveData<Int>
         get() = _dataStatePosition
 
-    fun setRoverMaster(roverMaster: RoverMaster){
+    fun setRoverMaster(roverMaster: RoverMaster) {
         _dataStateRoverMaster.value = Event(roverMaster)
     }
 
-    fun setEmptyPhotos(){
+    fun setEmptyPhotos() {
         _dataStatePaging.value = Event(PagingData.empty())
     }
 
-    fun setPosition(position: Int){
+    fun setPosition(position: Int) {
         _dataStatePosition.value = position
     }
 
-    fun setLoading(isLoading: Boolean){
+    fun setLoading(isLoading: Boolean) {
         _dataStateLoading.value = isLoading
     }
 
-    fun getData(rover: RoverMaster, date: Long){
+    fun getData(rover: RoverMaster, date: Long) {
         setLoading(true)
         job?.cancel()
         job = viewModelScope.launch {
-            marsRoverPhotosRepository.getPhotos(rover = rover, date = date).cachedIn(viewModelScope)
-                .onEach { its->
+
+            marsRoverPhotosRepository.getPhotos(rover = rover, date = date)
+                .cachedIn(viewModelScope)
+                .onEach { its ->
                     _dataStatePaging.value = Event(its)
                     setLoading(false)
                 }
                 .launchIn(this)
+
         }
     }
 
-    fun setDate(date: Long){
+    fun setDate(date: Long) {
         _dataStateDate.value = date
     }
 
-    fun getRoverData(isRefresh: Boolean){
-        setLoading(true)
-        viewModelScope.launch {
+    fun getRoverData(isRefresh: Boolean) {
+        job?.cancel()
+        job = viewModelScope.launch {
             marsRoverPhotosRepository.getRoverData(isRefresh).collect {
-                setLoading(false)
                 _dataStateRover.value = it
                 setPosition(0)
             }
         }
     }
 
-    fun isLiked(id: Long){
+    fun isLiked(id: Long) {
         viewModelScope.launch {
             marsRoverPhotosRepository.isLiked(id).collect {
                 _dataStateIsLiked.value = it
@@ -114,7 +118,7 @@ class MainViewModel
         }
     }
 
-    fun updateLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable){
+    fun updateLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
         viewModelScope.launch {
             marsRoverPhotosRepository.updateLike(marsRoverPhotoLikedTable)
             isLiked(marsRoverPhotoLikedTable.id)
