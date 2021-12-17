@@ -24,9 +24,6 @@ interface MarsPhotoDao {
     @Query("SELECT count(*) FROM display_photos WHERE date = :date AND roverName = :roverName")
     fun getDisplayPhotosCountByRoverNameAndDate(roverName: String, date: Long): Int
 
-    /*@Query("SELECT * FROM mars_rover_photo_table WHERE photo_id in (SELECT dp.photoID FROM display_photos dp WHERE dp.date = :date AND dp.roverName = :roverName) ORDER BY earth_date DESC")
-    fun getDisplayPhotosByRoverNameAndDate(roverName: String, date: Long): List<MarsRoverPhotoTable>*/
-
     @Query("SELECT * FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName ORDER BY earth_date DESC")
     fun getDisplayPhotosByRoverNameAndDate(roverName: String, date: Long): List<MarsRoverPhotoTable>
 
@@ -53,5 +50,8 @@ interface MarsPhotoDao {
 
     @Query("DELETE FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
     suspend fun clearByRoverIDAndDate(date: Long, roverName:String)
+
+    @Query("SELECT * FROM mars_rover_photo_table WHERE photo_id IN (SELECT photo_id FROM mars_rover_photo_liked_table WHERE rover_id = :roverID) ORDER BY earth_date DESC")
+    fun getSavedPhotos(roverID: Int): PagingSource<Int, MarsRoverPhotoTable>
 
 }

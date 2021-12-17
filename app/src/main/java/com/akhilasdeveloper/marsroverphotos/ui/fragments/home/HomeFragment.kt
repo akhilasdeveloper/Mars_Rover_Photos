@@ -14,11 +14,6 @@ import com.google.android.material.datepicker.*
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
-import com.akhilasdeveloper.marsroverphotos.databinding.LayoutDateSelectBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.LayoutSolSelectBinding
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
@@ -29,7 +24,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 import android.annotation.SuppressLint
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.widget.addTextChangedListener
 
 import androidx.lifecycle.lifecycleScope
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
@@ -40,17 +34,16 @@ import com.google.android.gms.ads.AdRequest
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
 
     private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
+    internal val binding get() = _binding!!
 
     @Inject
     lateinit var utilities: Utilities
 
-    private lateinit var adapter: MarsRoverPhotoAdapter
-    private var master: RoverMaster? = null
-
-    private var currentDate: Long? = null
-
-    private var job: Job? = null
+    private val adapter = MarsRoverPhotoAdapter(this)
+    internal var master: RoverMaster? = null
+    internal var currentDate: Long? = null
+    private var hideFastScrollerJob: Job? = null
+    private var navigateToDate = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -72,8 +65,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             false
         )
 
-        adapter = MarsRoverPhotoAdapter(this)
-
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return if (adapter.snapshot().size > position)
@@ -92,113 +83,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             photoRecycler.adapter = adapter
         }
         hideFastScroller()
-        if (Constants.AD_ENABLED) {
+        if (AD_ENABLED) {
             binding.itemAdBanner.isVisible = true
             val adRequest: AdRequest = AdRequest.Builder().build()
             binding.adView.loadAd(adRequest)
         }
     }
 
-    private fun setWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val layoutParams = (binding.homeToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
-            binding.homeToolbar.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        if (Constants.AD_ENABLED) {
-            ViewCompat.setOnApplyWindowInsetsListener(binding.itemAdBanner) { _, insets ->
-                val systemWindows =
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                val layoutParams =
-                    (binding.itemAdBanner.layoutParams as? ViewGroup.MarginLayoutParams)
-
-                val bottomMargin =
-                    requireActivity().resources.getDimension(R.dimen.global_window_padding)
-                layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + bottomMargin.toInt())
-
-                binding.itemAdBanner.layoutParams = layoutParams
-                return@setOnApplyWindowInsetsListener insets
-            }
-        }
-
-        val recyclerBottomPadding = binding.photoRecycler.paddingBottom
-        ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.photoRecycler.updatePadding(bottom = systemWindows.bottom + recyclerBottomPadding)
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val layoutParams =
-                (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
-            binding.homeToolbarTop.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        val layoutParams = (binding.progress.layoutParams as? ViewGroup.MarginLayoutParams)
-        val marginBottom = layoutParams?.bottomMargin ?: 0
-        ViewCompat.setOnApplyWindowInsetsListener(binding.progress) { _, insets ->
-            val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + marginBottom)
-            binding.progress.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        val layoutParamsTop = (binding.progressTop.layoutParams as? ViewGroup.MarginLayoutParams)
-        val marginTop = layoutParamsTop?.topMargin ?: 0
-        ViewCompat.setOnApplyWindowInsetsListener(binding.progressTop) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            layoutParamsTop?.setMargins(0, marginTop + systemWindows.top, 0, 0)
-            binding.progressTop.layoutParams = layoutParamsTop
-            return@setOnApplyWindowInsetsListener insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.slideFrame) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            resources.displayMetrics.let { matrics ->
-                val bottomAppBarHeight = 76 * matrics.density.toInt()
-                val topAppBarHeight = 200 * matrics.density.toInt()
-
-                val layoutParams2 =
-                    (binding.solSlider.layoutParams as? ViewGroup.LayoutParams)
-                layoutParams2?.width =
-                    matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight)
-                binding.solSlider.layoutParams = layoutParams2
-
-                val layoutParams1 =
-                    (binding.slideFrame.layoutParams as? ViewGroup.LayoutParams)
-                layoutParams1?.height =
-                    matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight)
-                binding.slideFrame.layoutParams = layoutParams1
-
-                val layoutParams3 =
-                    (binding.slideFrame.layoutParams as? ViewGroup.MarginLayoutParams)
-                layoutParams3?.bottomMargin = bottomAppBarHeight + systemWindows.bottom
-                binding.slideFrame.layoutParams = layoutParams3
-            }
-            binding.progress.layoutParams = layoutParams
-            return@setOnApplyWindowInsetsListener insets
-        }
-    }
-
-    private fun showProgress() {
+    private fun showMainProgress() {
         binding.progress.apply {
             if (!isVisible)
                 isVisible = true
         }
     }
 
-    private fun hideProgress() {
+    private fun hideMainProgress() {
         binding.progress.apply {
             if (isVisible)
                 isVisible = false
@@ -215,29 +114,24 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 setData()
                 if (!isHandled) {
                     currentDate = rover.max_date_in_millis
+                    viewModel.setDate(currentDate!!)
                     getData()
-                    setDate()
                 }
             }
         })
 
         viewModel.dataStateDate.observe(viewLifecycleOwner, {
             currentDate = it
-            setSolButtonText()
+            setDateAndSolButtonText()
         })
 
         viewModel.dataStateLoading.observe(viewLifecycleOwner, {
-            if (it) showProgress()
+            if (it) showMainProgress()
             else
-                hideProgress()
-//            binding.progress.isVisible = it
+                hideMainProgress()
         })
 
         viewModel.positionState.observe(viewLifecycleOwner, {
-            scrollToPosition(it)
-        })
-
-        viewModel.dataStateDatePosition.observe(viewLifecycleOwner, {
             scrollToPosition(it)
         })
 
@@ -256,147 +150,63 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun setData() {
-        binding.apply {
-            master?.let {
-                homeToolbarTop.title = it.name
-                homeCollapsingToolbarTop.title = it.name
-
-                binding.solSlider.apply {
-
-                    val count =
-                        (master!!.max_date_in_millis - master!!.landing_date_in_millis) / MILLIS_IN_A_DAY
-
-                    this.valueFrom = 0f
-                    this.valueTo = count.toFloat()
-                    this.value = count.toFloat()
-                    this.stepSize = 1f
-
-                    hideFastScrollerDate()
-                }
-            }
+        master?.let {
+            setTitle()
+            initFastScroller()
         }
     }
 
-    private fun setDate() {
-        master?.max_date_in_millis?.let { date ->
-            viewModel.setDate(date)
+    private fun setTitle() {
+        binding.homeToolbarTop.title = master!!.name
+        binding.homeCollapsingToolbarTop.title = master!!.name
+    }
+
+    private fun initFastScroller() {
+        binding.solSlider.apply {
+            val count =
+                (master!!.max_date_in_millis - master!!.landing_date_in_millis) / MILLIS_IN_A_DAY
+            this.valueFrom = 0f
+            this.valueTo = count.toFloat()
+            this.value = count.toFloat()
+            this.stepSize = 1f
+        }
+    }
+
+    private fun setDateAndSolButtonText() {
+        setDateButtonText()
+        setSolButtonText()
+        setFastScrollerValue()
+    }
+
+    private fun setFastScrollerValue() {
+        master?.let {
+            binding.solSlider.apply {
+                val count = (currentDate!! - master!!.landing_date_in_millis) / MILLIS_IN_A_DAY
+                this.value = count.toFloat()
+                hideFastScrollerDate()
+            }
         }
     }
 
     private fun setSolButtonText() {
-        binding.apply {
-            dateButtonText.text = currentDate!!.formatMillisToDate()
-            master?.let {
-                binding.solButtonText.text = getString(
-                    R.string.sol,
-                    utilities.calculateDays(it.landing_date_in_millis, currentDate).toString()
-                )
-
-                binding.solSlider.apply {
-
-                    val count = (currentDate!! - master!!.landing_date_in_millis) / MILLIS_IN_A_DAY
-                    this.value = count.toFloat()
-
-                    hideFastScrollerDate()
-                }
-            }
+        master?.let {
+            binding.solButtonText.text = getString(
+                R.string.sol,
+                utilities.calculateDays(it.landing_date_in_millis, currentDate).toString()
+            )
         }
+    }
+
+
+    private fun setDateButtonText() {
+        binding.dateButtonText.text = currentDate!!.formatMillisToDate()
     }
 
     private fun scrollToPosition(position: Int) {
-        binding.photoRecycler.scrollToCenter(position)
+        binding.photoRecycler.scrollToPosition(position)
     }
 
-    private fun showSolSelectorDialog() {
-        master?.let { rover ->
-
-            val dialogView: LayoutSolSelectBinding =
-                LayoutSolSelectBinding.inflate(LayoutInflater.from(requireContext()))
-            val builder: AlertDialog.Builder =
-                AlertDialog.Builder(requireContext(), R.style.dialog_background)
-                    .setView(dialogView.root)
-            val alertDialog: AlertDialog = builder.create()
-
-            dialogView.apply {
-                solSlider.valueTo = rover.max_sol.toFloat()
-                utilities.calculateDays(rover.landing_date_in_millis, currentDate)?.let {
-                    solSlider.value = it.toFloat()
-                }
-                solSelectorCount.setText(dialogView.solSlider.value.toInt().toString())
-                solSlider.addOnChangeListener { _, value, _ ->
-                    solSelectorCount.setText("${value.toInt()}")
-                }
-                nextSolSelector.setOnClickListener {
-                    if (solSlider.value < solSlider.valueTo)
-                        solSlider.value += 1
-                }
-                prevSolSelector.setOnClickListener {
-                    if (solSlider.value > 0)
-                        solSlider.value -= 1
-                }
-                solSelectorCount.addTextChangedListener { edit ->
-                    edit?.let {
-                        val validatedText = validateSolText(it.toString())
-                        if (validatedText != edit.toString()) {
-                            solSelectorCount.setText(validatedText)
-                        }
-                        solSlider.value = validatedText.toInt().toFloat()
-                    }
-
-                }
-                okSolSelector.setOnClickListener {
-                    onSolSelected(solSlider.value.toLong())
-                    alertDialog.cancel()
-                }
-
-                cancelSolSelector.setOnClickListener {
-                    alertDialog.cancel()
-                }
-            }
-
-            alertDialog.show()
-        }
-    }
-
-    private fun validateSolText(it: String): String {
-        var validated = it.filter { str -> str.isDigit() }
-        if (validated.isNotEmpty()) {
-            val sol = validated.toInt()
-            master?.let { rover ->
-                if (rover.max_sol < sol)
-                    validated = rover.max_sol.toString()
-                if (sol < 0)
-                    validated = "0"
-            }
-        }
-        return validated
-    }
-
-    private fun showDateSelectorDialog() {
-        master?.let { rover ->
-
-            val dialogView: LayoutDateSelectBinding =
-                LayoutDateSelectBinding.inflate(LayoutInflater.from(requireContext()))
-            val builder: AlertDialog.Builder =
-                AlertDialog.Builder(requireContext()).setView(dialogView.root)
-            val alertDialog: AlertDialog = builder.create()
-
-            dialogView.apply {
-
-                okSolSelector.setOnClickListener {
-                    alertDialog.cancel()
-                }
-
-                cancelSolSelector.setOnClickListener {
-                    alertDialog.cancel()
-                }
-            }
-
-            alertDialog.show()
-        }
-    }
-
-    private fun onSolSelected(toLong: Long) {
+    internal fun onSolSelected(toLong: Long) {
         utilities.calculateDaysEarthDate(
             toLong,
             master!!.landing_date_in_millis
@@ -419,7 +229,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.dateButtonText.setOnClickListener {
             binding.photoRecycler.stopScroll()
             showDatePicker()
-//            showDateSelectorDialog()
         }
 
         binding.solButtonText.setOnClickListener {
@@ -430,6 +239,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             binding.progressTop.isVisible = loadStates.source.prepend is LoadState.Loading
             binding.progress.isVisible = loadStates.source.append is LoadState.Loading
             binding.progressCenter.isVisible = loadStates.source.refresh is LoadState.Loading
+
+            if (navigateToDate &&
+                loadStates.source.prepend !is LoadState.Loading &&
+                loadStates.source.append !is LoadState.Loading &&
+                loadStates.source.refresh !is LoadState.Loading){
+                    navigateToDate = false
+                onDateSelected(currentDate!!)
+            }
 
             binding.emptyMessage.isVisible = loadStates.source.refresh is LoadState.Error
 
@@ -538,7 +355,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun showFastScrollerDate() {
-        job?.cancel()
+        hideFastScrollerJob?.cancel()
         binding.scrollDateDisplayText.apply {
             if (!isVisible) {
                 this@apply.isVisible = true
@@ -552,8 +369,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun hideFastScroller() {
         binding.slideFrame.apply {
             if (alpha == 1f) {
-                job?.cancel()
-                job = lifecycleScope.launch {
+                hideFastScrollerJob?.cancel()
+                hideFastScrollerJob = lifecycleScope.launch {
                     delay(2000L)
                     animate()
                         .translationY(0f)
@@ -573,46 +390,20 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
     }
 
-    private fun showDatePicker() {
-        master?.let { master ->
 
-            val constraintsBuilder = CalendarConstraints.Builder()
-            val validators: ArrayList<CalendarConstraints.DateValidator> = ArrayList()
-            validators.add(DateValidatorPointForward.from(master.landing_date_in_millis))
-            validators.add(DateValidatorPointBackward.before(master.max_date_in_millis + MILLIS_IN_A_DAY))
-            constraintsBuilder.setValidator(CompositeDateValidator.allOf(validators))
 
-            val setDate = currentDate?.let { it + MILLIS_IN_A_DAY }
-            val datePicker =
-                MaterialDatePicker.Builder.datePicker()
-                    .setTitleText(getString(R.string.select_date))
-                    .setSelection(setDate)
-                    .setTheme(R.style.ThemeOverlay_App_DatePicker)
-                    .setCalendarConstraints(constraintsBuilder.build())
-                    .build()
-
-            datePicker.show(requireActivity().supportFragmentManager, "RoverDatePicker")
-
-            datePicker.addOnPositiveButtonClickListener {
-                datePicker.selection?.let {
-                    onDateSelected(it.formatMillisToDate().formatDateToMillis()!!, true)
-                }
-                binding.dateButtonText.text = currentDate!!.formatMillisToDate()
-            }
-        }
-    }
-
-    private fun onDateSelected(date: Long, fetch: Boolean = false) {
+    internal fun onDateSelected(date: Long, fetch: Boolean = false) {
         currentDate = date
         viewModel.setDate(date)
         val snapShot = adapter.snapshot()
         val search = snapShot.filter { photo ->
-            photo?.let { it.earth_date == date && it.is_placeholder } ?: false
+            photo?.earth_date == date && photo.is_placeholder
         }
         if (search.isNotEmpty()) {
             val pos = snapShot.indexOf(search[0])
-            binding.photoRecycler.scrollToPosition(pos)
+            scrollToPosition(pos)
         } else if (fetch) {
+            navigateToDate = true
             getData()
         }
     }
@@ -620,13 +411,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        job?.cancel()
+        hideFastScrollerJob?.cancel()
     }
 
     override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {
         findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         val pos = adapter.snapshot().indexOf(marsRoverPhoto)
-        Timber.d("position : $position : ${marsRoverPhoto.photo_id} : $pos")
         viewModel.setPosition(pos)
     }
 }

@@ -172,9 +172,19 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         navigateToPhotos(master)
     }
 
+    override fun onItemSaveSelected(master: RoverMaster, position: Int) {
+        navigateToSavedPhotos(master)
+    }
+
     private fun navigateToPhotos(master: RoverMaster) {
+        viewModel.setPosition(0)
         viewModel.setRoverMaster(master)
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
+    }
+
+    private fun navigateToSavedPhotos(master: RoverMaster) {
+        viewModel.setRoverMaster(master)
+        findNavController().navigate(R.id.action_roversFragment_to_savedFragment)
     }
 
     override fun onReadMoreSelected(master: RoverMaster, position: Int) {

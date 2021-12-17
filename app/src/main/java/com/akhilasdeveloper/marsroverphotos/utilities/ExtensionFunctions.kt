@@ -136,7 +136,6 @@ fun RecyclerView.scrollToCenter(position: Int) {
             oldRight: Int,
             oldBottom: Int
         ) {
-            removeOnLayoutChangeListener(this)
             val viewAtPosition = layoutManager?.findViewByPosition(position)
             if (viewAtPosition == null || layoutManager?.isViewPartiallyVisible(
                     viewAtPosition,
@@ -144,6 +143,7 @@ fun RecyclerView.scrollToCenter(position: Int) {
                     true
                 ) == true
             ) {
+
                 this@scrollToCenter.post {
                     layoutManager?.scrollToPosition(position)
 /*                    layoutManager?.startSmoothScroll(CenterSmoothScroller(context = context).apply {
@@ -151,6 +151,7 @@ fun RecyclerView.scrollToCenter(position: Int) {
                     })*/
                 }
             }
+            removeOnLayoutChangeListener(this)
         }
     })
 }

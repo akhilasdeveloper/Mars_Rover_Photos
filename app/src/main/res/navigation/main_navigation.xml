@@ -25,5 +25,12 @@
         <action
             android:id="@+id/action_roversFragment_to_homeFragment"
             app:destination="@id/homeFragment"/>
+        <action
+            android:id="@+id/action_roversFragment_to_savedFragment"
+            app:destination="@id/savedFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/savedFragment"
+        android:name="com.akhilasdeveloper.marsroverphotos.ui.saved.SavedFragment"
+        android:label="SavedFragment" />
 </navigation>

@@ -26,6 +26,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import timber.log.Timber
+import java.lang.Exception
 import javax.inject.Inject
 
 class MarsRoverPhotosRepository @Inject constructor(
@@ -137,18 +139,32 @@ class MarsRoverPhotosRepository @Inject constructor(
                 if (utilities.isConnectedToTheInternet()) {
                     emit(MarsRoverSrcResponse(isLoading = true))
                     val networkJob = withTimeoutOrNull(Constants.NETWORK_TIME_OUT) {
-                        refreshRoverSrcDb()
+                        try {
+                            refreshRoverSrcDb()
+                        } catch (exception: Exception) {
+                            emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                            Timber.e("refreshRoverSrcDb() : $exception")
+                            return@withTimeoutOrNull
+                        }
                     }
                     if (networkJob == null) {
                         emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                        return@flow
                     }
                 } else {
                     emit(MarsRoverSrcResponse(error = ERROR_NO_INTERNET))
+                    return@flow
                 }
 
                 dataSrc = marsRoverDao.getMarsRoverSrc()
                 val networkJob = withTimeoutOrNull(Constants.NETWORK_TIME_OUT) {
-                    emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, false)))
+                    try {
+                        emit(MarsRoverSrcResponse(data = getRoverManifest(dataSrc, false)))
+                    } catch (exception: Exception) {
+                        emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                        Timber.e("getRoverManifest : $exception")
+                        return@withTimeoutOrNull
+                    }
                 }
                 if (networkJob == null) {
                     emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
@@ -238,13 +254,17 @@ class MarsRoverPhotosRepository @Inject constructor(
         ).flow
     }
 
-    suspend fun getDatePosition(roverName: String, date: Long) = flow<Int> {
-        emit(withContext(Dispatchers.IO) {
-            marsPhotoDao.getDatePosition(
-                roverName,
-                date
-            )
-        })
+    fun getLikedPhotos(
+        rover: RoverMaster
+    ): Flow<PagingData<MarsRoverPhotoTable>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
+            ),
+            pagingSourceFactory = {
+                marsPhotoDao.getSavedPhotos(roverID = rover.id)
+            }
+        ).flow
     }
 
     /**

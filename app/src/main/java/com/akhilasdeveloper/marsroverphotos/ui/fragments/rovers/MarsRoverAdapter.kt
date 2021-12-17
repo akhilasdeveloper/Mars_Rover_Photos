@@ -55,6 +55,9 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
             binding.roverPhotosCount.setOnClickListener {
                 interaction?.onItemSelected(photo, position)
             }
+            binding.roverSavedPhotosCount.setOnClickListener {
+                interaction?.onItemSaveSelected(photo, position)
+            }
             binding.root.setOnClickListener {
                 interaction?.onReadMoreSelected(photo, position)
             }

@@ -32,12 +32,20 @@ android {
         }
     }
     compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+    /*compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
         jvmTarget = '1.8'
-    }
+    }*/
 }
 
 dependencies {
@@ -117,6 +125,8 @@ dependencies {
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
 
     implementation 'com.google.android.gms:play-services-ads:20.5.0'
+
+    implementation 'com.github.CanHub:Android-Image-Cropper:4.0.0'
 
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 }

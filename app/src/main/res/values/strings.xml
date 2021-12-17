@@ -14,6 +14,7 @@
     <string name="results_could_not_be_loaded">Results could not be loaded</string>
     <string name="retry">Retry</string>
     <string name="rover_captured_image">Rover Captured Image</string>
+    <string name="share_text">Take a look at this photo taken by %1$s Rover!.\n\n%2$s\n\nFound it on : https://play.google.com/store/apps/details?id=com.akhilasdeveloper.marsroverphotos</string>
     <string name="view_photos">View Photos %1$s</string>
     <string name="sol">Sol - %1$s</string>
     <string name="select_date">Select Date</string>

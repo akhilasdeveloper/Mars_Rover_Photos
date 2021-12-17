@@ -30,24 +30,26 @@ class MainViewModel
 
     private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> =
         MutableLiveData()
+    private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>?> =
+        MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
-    private val _dataStateDatePosition: MutableLiveData<Int> = MutableLiveData()
 
     private var job: Job? = null
 
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
+    val dataStateLikedPhotos: LiveData<PagingData<MarsRoverPhotoTable>?>
+        get() = _dataStateLikedPhotos
+
     val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>>
         get() = _dataStatePaging
 
-    val dataStateDatePosition: LiveData<Int>
-        get() = _dataStateDatePosition
 
     val dataStateIsLiked: LiveData<Boolean>
         get() = _dataStateIsLiked
@@ -81,7 +83,6 @@ class MainViewModel
     }
 
     fun getData(rover: RoverMaster, date: Long) {
-        setLoading(true)
         job?.cancel()
         job = viewModelScope.launch {
 
@@ -89,7 +90,20 @@ class MainViewModel
                 .cachedIn(viewModelScope)
                 .onEach { its ->
                     _dataStatePaging.value = Event(its)
-                    setLoading(false)
+                }
+                .launchIn(this)
+
+        }
+    }
+
+    fun getLikedPhotos(rover: RoverMaster) {
+        job?.cancel()
+        job = viewModelScope.launch {
+
+            marsRoverPhotosRepository.getLikedPhotos(rover = rover)
+                .cachedIn(viewModelScope)
+                .onEach { its ->
+                    _dataStateLikedPhotos.value = its
                 }
                 .launchIn(this)
 
@@ -105,7 +119,6 @@ class MainViewModel
         job = viewModelScope.launch {
             marsRoverPhotosRepository.getRoverData(isRefresh).collect {
                 _dataStateRover.value = it
-                setPosition(0)
             }
         }
     }

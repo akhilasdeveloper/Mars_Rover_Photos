@@ -25,6 +25,12 @@ import java.io.IOException
 import android.content.Intent
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageView
+import com.canhub.cropper.options
+import android.app.WallpaperManager
+import androidx.lifecycle.lifecycleScope
 
 
 @AndroidEntryPoint
@@ -41,6 +47,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
+    private lateinit var cropImage:  ActivityResultLauncher<CropImageContractOptions>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -90,9 +97,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun setCurrentData() {
         currentPosition?.let {
-            if(adapter.snapshot().size > it) {
-                currentData =adapter.snapshot()[it]
-                    getIsLiked()
+            if (adapter.snapshot().size > it) {
+                currentData = adapter.snapshot()[it]
+                getIsLiked()
             }
         }
     }
@@ -112,30 +119,50 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setWallpaper() {
-
+        currentData?.img_src?.downloadImageAsUri(requireContext()){uri->
+            uri?.let {
+                cropImage.launch(
+                    options(uri = it) {
+                        setGuidelines(CropImageView.Guidelines.ON)
+                        setOutputCompressFormat(Bitmap.CompressFormat.PNG)
+                    }
+                )
+            }
+        }
     }
 
     private fun setShare() {
-
+        currentData?.let {
+            val intent = Intent(Intent.ACTION_SEND)
+            val shareBody = resources.getString(R.string.share_text, currentData?.rover_name, currentData?.img_src)
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_TEXT, shareBody)
+            startActivity(Intent.createChooser(intent, getString(R.string.share_text)))
+        }
     }
 
     private fun setDownload() {
-
-        currentData?.img_src?.downloadImageAsBitmap(requireContext()) { image ->
-            image?.let {
-                savePhotoToExternalStorage(getDisplayName(), it).let { path ->
-                    if (path != null) {
-                        uiCommunicationListener.showSnackBarMessage("Image Saved to Gallery", "View Image"){
-                            val intent = Intent()
-                            intent.action = Intent.ACTION_VIEW
-                            intent.setDataAndType(
-                                path,
-                                "image/*"
-                            )
-                            startActivity(intent)
+        updateOrRequestPermission()
+        if (writePermissionGranted){
+            currentData?.img_src?.downloadImageAsBitmap(requireContext()) { image ->
+                image?.let {
+                    savePhotoToExternalStorage(getDisplayName(), it).let { uri ->
+                        if (uri != null) {
+                            uiCommunicationListener.showSnackBarMessage(
+                                "Image Saved to Gallery",
+                                "View Image"
+                            ) {
+                                val intent = Intent()
+                                intent.action = Intent.ACTION_VIEW
+                                intent.setDataAndType(
+                                    uri,
+                                    "image/*"
+                                )
+                                startActivity(intent)
+                            }
+                        } else {
+                            uiCommunicationListener.showSnackBarMessage("Failed to Save Image")
                         }
-                    } else {
-                        requireContext().showShortToast("Failed to Save Image")
                     }
                 }
             }
@@ -234,8 +261,21 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             registerForActivityResult(ActivityResultContracts.RequestPermission()) {
                 writePermissionGranted = it
             }
-
-        updateOrRequestPermission()
+        cropImage =  registerForActivityResult(CropImageContract()) { result ->
+            if (result.isSuccessful) {
+                result.getBitmap(requireContext())?.let { bitmap ->
+                    val wallpaperManager = WallpaperManager.getInstance(requireActivity().applicationContext)
+                    lifecycleScope.launch {
+                        wallpaperManager.setBitmap(bitmap)
+                        requireContext().showShortToast(message = "Wallpaper set")
+                    }
+                }
+            } else {
+                result.error?.let {
+                    requireContext().showShortToast(message = "Canceled")
+                }
+            }
+        }
     }
 
     private fun updateLikeIcon(liked: Boolean) {

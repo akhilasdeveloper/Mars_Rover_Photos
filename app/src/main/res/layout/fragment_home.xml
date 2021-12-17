@@ -188,7 +188,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:indeterminate="true"
-        android:indeterminateTint="@color/accent" />
+        android:indeterminateTint="@color/accent"
+        android:visibility="gone"/>
 
     <ProgressBar
         android:id="@+id/progressCenter"
@@ -196,7 +197,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:indeterminate="true"
-        android:indeterminateTint="@color/accent" />
+        android:indeterminateTint="@color/accent"
+        android:visibility="gone"/>
 
     <ProgressBar
         android:id="@+id/progress"
@@ -205,6 +207,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:indeterminate="true"
-        android:indeterminateTint="@color/accent" />
+        android:indeterminateTint="@color/accent"
+        android:visibility="gone"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
