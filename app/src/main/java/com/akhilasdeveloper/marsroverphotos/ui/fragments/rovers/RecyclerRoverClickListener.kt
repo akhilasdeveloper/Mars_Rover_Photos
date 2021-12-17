@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.ui.fragments
+package com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers
 
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 

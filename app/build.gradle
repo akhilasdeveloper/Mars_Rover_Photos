@@ -116,5 +116,7 @@ dependencies {
 
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
 
+    implementation 'com.google.android.gms:play-services-ads:20.5.0'
+
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 }

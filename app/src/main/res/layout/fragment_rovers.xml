@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/first"
-    tools:context=".ui.fragments.RoversFragment">
+    tools:context=".ui.fragments.rovers.RoversFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/home_appbar_top"
@@ -79,5 +79,32 @@
         android:visibility="gone"
         app:cardBackgroundColor="@color/accent"
         app:cardCornerRadius="20dp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/item_ad_banner"
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        android:alpha="0">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clipToPadding="true"
+            android:layout_gravity="center"
+            app:cardCornerRadius="@dimen/corner_radius">
+
+            <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/adView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                ads:adSize="BANNER"
+                ads:adUnitId="ca-app-pub-3940256099942544/6300978111">
+
+            </com.google.android.gms.ads.AdView>
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

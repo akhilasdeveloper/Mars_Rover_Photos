@@ -18,5 +18,7 @@ object Constants {
     const val SCROLL_DIRECTION_DOWN = 1
     const val ERROR_NO_INTERNET = "No Internet! Offline mode"
     const val ERROR_NETWORK_TIMEOUT = "Network timeout"
+    const val ADD_ITEM_TYPE = "ADD_ITEM_TYPE"
     const val NETWORK_TIME_OUT = (10 * 60 * 1000).toLong()
+    const val AD_ENABLED = false
 }

@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.ui.adapters
+package com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -9,25 +9,34 @@ import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.simplify
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerRoverClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
-class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null) : RecyclerView.Adapter<MarsRoverAdapter.PhotoViewHolder>(){
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val bindingPhoto =
             RoverItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto, interaction )
+        return PhotoViewHolder(bindingPhoto, interaction)
     }
 
-    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val currentItem = differ.currentList[position]
-        holder.bindPhoto(currentItem, position)
 
+        val photoItemViewHolder = holder as PhotoViewHolder
+        currentItem?.let {
+            photoItemViewHolder.bindPhoto(currentItem, position)
+        }
     }
 
-    class PhotoViewHolder(private val binding: RoverItemBinding, private val interaction: RecyclerRoverClickListener?) :
+
+    class PhotoViewHolder(
+        private val binding: RoverItemBinding,
+        private val interaction: RecyclerRoverClickListener?
+    ) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: RoverMaster, position: Int) {
@@ -52,12 +61,15 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
         }
 
     }
+
     fun submitList(list: List<RoverMaster>) {
         differ.submitList(list)
     }
+
     private val differ = AsyncListDiffer(
         RoverRecyclerChangeCallback(this),
-        AsyncDifferConfig.Builder(DataDiffUtil).build())
+        AsyncDifferConfig.Builder(DataDiffUtil).build()
+    )
 
     internal inner class RoverRecyclerChangeCallback(
         private val adapter: MarsRoverAdapter

@@ -1,34 +1,25 @@
-package com.akhilasdeveloper.marsroverphotos.ui.fragments
+package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 
-import android.animation.Animator
 import android.os.Bundle
 import android.view.*
 import androidx.core.view.*
 import androidx.navigation.fragment.findNavController
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPhotoAdapter
 import com.google.android.material.datepicker.*
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
-import android.widget.Button
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.widget.addTextChangedListener
 import com.akhilasdeveloper.marsroverphotos.databinding.LayoutDateSelectBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.LayoutSolSelectBinding
 import kotlinx.android.synthetic.main.layout_sol_select.view.*
-import com.akhilasdeveloper.marsroverphotos.paging.MarsRoverPhotoLoadStateAdapter
-import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverDateAdapter
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
@@ -36,14 +27,14 @@ import kotlinx.coroutines.*
 
 import java.util.*
 import kotlin.collections.ArrayList
-import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.widget.addTextChangedListener
 
-import androidx.core.view.ViewCompat.animate
 import androidx.lifecycle.lifecycleScope
-import androidx.core.view.ViewCompat.animate
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_UP
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
+import com.google.android.gms.ads.AdRequest
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
@@ -101,29 +92,50 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             photoRecycler.adapter = adapter
         }
         hideFastScroller()
+        if (Constants.AD_ENABLED) {
+            binding.itemAdBanner.isVisible = true
+            val adRequest: AdRequest = AdRequest.Builder().build()
+            binding.adView.loadAd(adRequest)
+        }
     }
 
     private fun setWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { _, insets ->
             val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+                insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val layoutParams = (binding.homeToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
             layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
             binding.homeToolbar.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
         }
 
+        if (Constants.AD_ENABLED) {
+            ViewCompat.setOnApplyWindowInsetsListener(binding.itemAdBanner) { _, insets ->
+                val systemWindows =
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                val layoutParams =
+                    (binding.itemAdBanner.layoutParams as? ViewGroup.MarginLayoutParams)
+
+                val bottomMargin =
+                    requireActivity().resources.getDimension(R.dimen.global_window_padding)
+                layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + bottomMargin.toInt())
+
+                binding.itemAdBanner.layoutParams = layoutParams
+                return@setOnApplyWindowInsetsListener insets
+            }
+        }
+
         val recyclerBottomPadding = binding.photoRecycler.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
             val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+                insets.getInsets(WindowInsetsCompat.Type.systemBars())
             binding.photoRecycler.updatePadding(bottom = systemWindows.bottom + recyclerBottomPadding)
             return@setOnApplyWindowInsetsListener insets
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
             val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+                insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val layoutParams =
                 (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
             layoutParams?.setMargins(0, systemWindows.top, 0, 0)
@@ -134,8 +146,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         val layoutParams = (binding.progress.layoutParams as? ViewGroup.MarginLayoutParams)
         val marginBottom = layoutParams?.bottomMargin ?: 0
         ViewCompat.setOnApplyWindowInsetsListener(binding.progress) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + marginBottom)
             binding.progress.layoutParams = layoutParams
             return@setOnApplyWindowInsetsListener insets
@@ -145,7 +156,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         val marginTop = layoutParamsTop?.topMargin ?: 0
         ViewCompat.setOnApplyWindowInsetsListener(binding.progressTop) { _, insets ->
             val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+                insets.getInsets(WindowInsetsCompat.Type.systemBars())
             layoutParamsTop?.setMargins(0, marginTop + systemWindows.top, 0, 0)
             binding.progressTop.layoutParams = layoutParamsTop
             return@setOnApplyWindowInsetsListener insets
@@ -331,6 +342,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         }
                         solSlider.value = validatedText.toInt().toFloat()
                     }
+
                 }
                 okSolSelector.setOnClickListener {
                     onSolSelected(solSlider.value.toLong())
@@ -482,7 +494,39 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
             false
         }
+
+        val params = binding.homeAppbar.layoutParams as CoordinatorLayout.LayoutParams
+        params.behavior = object : HideListenableBottomAppBarBehavior() {
+            override fun onSlideDown() {
+                showAd()
+            }
+
+            override fun onSlideUp() {
+                hideAd()
+            }
+        }
     }
+
+    private fun showAd() {
+        binding.itemAdBanner.apply {
+            if (AD_ENABLED) {
+                animate()
+                    .alpha(1.0f)
+                    .setListener(null).duration = 800L
+            }
+        }
+    }
+
+    private fun hideAd() {
+        binding.itemAdBanner.apply {
+            if (AD_ENABLED) {
+                animate()
+                    .alpha(0.0f)
+                    .setListener(null).duration = 800L
+            }
+        }
+    }
+
 
     private fun hideFastScrollerDate() {
         binding.scrollDateDisplayText.apply {

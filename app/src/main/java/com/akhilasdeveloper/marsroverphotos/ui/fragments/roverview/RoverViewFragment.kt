@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.ui.fragments
+package com.akhilasdeveloper.marsroverphotos.ui.fragments.roverview
 
 import android.Manifest
 import android.os.Bundle
@@ -7,7 +7,6 @@ import androidx.core.view.*
 import androidx.viewpager2.widget.ViewPager2
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.ui.adapters.MarsRoverPagerAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
@@ -25,6 +24,7 @@ import com.akhilasdeveloper.marsroverphotos.utilities.*
 import java.io.IOException
 import android.content.Intent
 import com.akhilasdeveloper.marsroverphotos.R
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 
 
 @AndroidEntryPoint

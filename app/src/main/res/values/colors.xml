@@ -7,7 +7,9 @@
     <color name="teal_700">#FFFFFF</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="transparent25">#44000000</color>
     <color name="transparent50">#77000000</color>
+    <color name="transparent75">#AA000000</color>
     <color name="transparent100">#dd000000</color>
 
     <color name="first">#FFFFFF</color>
@@ -15,9 +17,9 @@
     <color name="appbar">#FFFFFF</color>
     <color name="appbar_inv">#222222</color>
     <color name="third">#E3E3E3</color>
-    <color name="system_border">#D0FFFFFF</color>
+    <color name="system_border">#E4FFFFFF</color>
     <color name="system_border_inv">#CB616161</color>
-    <color name="system_for">#616161</color>
+    <color name="system_for">#2C2C2C</color>
     <color name="system_for_light">#E1E1E1</color>
     <color name="accent">#A3805A</color>
     <color name="light_for">#E1E1E1</color>

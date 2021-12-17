@@ -7,23 +7,19 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.HomeFragment"
+        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.home.HomeFragment"
         android:label="HomeFragment" >
         <action
             android:id="@+id/action_homeFragment_to_roverViewFragment"
-            app:destination="@id/roverViewFragment"
-            app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"
-            app:enterAnim="@anim/fade_in"
-            app:exitAnim="@anim/fade_out"/>
+            app:destination="@id/roverViewFragment"/>
     </fragment>
     <fragment
         android:id="@+id/roverViewFragment"
-        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.RoverViewFragment"
+        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.roverview.RoverViewFragment"
         android:label="RoverViewFragment" />
     <fragment
         android:id="@+id/roversFragment"
-        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.RoversFragment"
+        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers.RoversFragment"
         android:label="RoversFragment"
         tools:layout="@layout/fragment_rovers" >
         <action

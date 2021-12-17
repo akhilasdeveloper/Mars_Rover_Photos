@@ -82,7 +82,7 @@ fun RecyclerView.fastScrollListener(fastScrolled: (isFastScrolled: Boolean) -> U
     addOnScrollListener(object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
-            fastScrolled(dy > 30)
+            fastScrolled(abs(dy) > 30)
         }
     })
 }

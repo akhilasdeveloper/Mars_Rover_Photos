@@ -5,23 +5,27 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/global_window_padding"
     android:layout_marginEnd="@dimen/global_window_padding"
-    android:layout_marginBottom="@dimen/card_separation_margin_vertical"
+    android:layout_marginBottom="@dimen/global_window_padding"
     android:clipToPadding="true"
     app:cardCornerRadius="@dimen/corner_radius">
 
     <ImageView
         android:id="@+id/rover_image"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_sheet_image_height"
+        android:layout_height="@dimen/toolbar_top_image_height"
         android:scaleType="centerCrop"
         android:background="@drawable/imageview_placeholder"
         android:contentDescription="@string/rover_image" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_from_bl"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/second"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="@dimen/global_window_padding"
@@ -32,37 +36,28 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            style="@style/tool_bar_title"/>
-
-        <View
-            android:layout_width="@dimen/stroke_light"
-            android:layout_height="match_parent"
-            android:background="@color/system_for_light"/>
+            style="@style/tool_bar_title"
+            android:textColor="@color/white"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/rover_saved_photos_count"
             app:drawableStartCompat="@drawable/ic_heart_unfill"
-            app:drawableTint="@color/system_for"
+            app:drawableTint="@color/white"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
             android:padding="@dimen/global_window_padding"/>
 
-        <View
-            android:layout_width="@dimen/stroke_light"
-            android:layout_height="match_parent"
-            android:background="@color/system_for_light"/>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textColor="@color/system_for"
+            android:textColor="@color/white"
             android:id="@+id/rover_photos_count"
             app:drawableStartCompat="@drawable/ic_outline_image_24"
-            app:drawableTint="@color/system_for"
+            app:drawableTint="@color/white"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"

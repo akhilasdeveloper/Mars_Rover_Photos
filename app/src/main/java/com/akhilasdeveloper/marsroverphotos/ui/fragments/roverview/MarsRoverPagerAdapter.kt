@@ -1,4 +1,4 @@
-package com.akhilasdeveloper.marsroverphotos.ui.adapters
+package com.akhilasdeveloper.marsroverphotos.ui.fragments.roverview
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.PagerClickListener
 import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsUri
 import com.davemorrissey.labs.subscaleview.ImageSource
 

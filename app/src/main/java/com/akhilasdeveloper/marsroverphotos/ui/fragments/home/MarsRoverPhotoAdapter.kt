@@ -1,16 +1,13 @@
-package com.akhilasdeveloper.marsroverphotos.ui.adapters
+package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.bumptech.glide.Glide

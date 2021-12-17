@@ -15,6 +15,7 @@ import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.SnackBarLayoutBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
+import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,6 +30,8 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        MobileAds.initialize(this)
 
         sdkAndUp(Build.VERSION_CODES.R, onSdkAndAbove = {
             window.setDecorFitsSystemWindows(false)
