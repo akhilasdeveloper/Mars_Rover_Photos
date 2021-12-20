@@ -95,6 +95,10 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                 }
             }
 
+            response?.message?.let {
+                uiCommunicationListener.showSnackBarMessage(messageText = it)
+            }
+
             viewModel.setLoading(response?.isLoading == true)
 
             response?.error?.let {

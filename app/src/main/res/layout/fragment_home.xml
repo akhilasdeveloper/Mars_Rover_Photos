@@ -142,32 +142,27 @@
         android:background="@color/system_border"
         android:visibility="gone"/>
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="48dp"
         android:layout_height="600dp"
         android:layout_gravity="bottom|end"
-        android:id="@+id/slideFrame">
-        <com.google.android.material.slider.Slider
+        android:id="@+id/slideFrame"
+        android:gravity="center">
+        <SeekBar
             android:id="@+id/sol_slider"
-            android:layout_width="600dp"
-            android:layout_height="48dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:rotation="270"
             android:stepSize="1"
             android:value="50"
             android:valueFrom="0"
             android:valueTo="100"
-            app:thumbColor="@color/system_border"
-            app:tickColorActive="@android:color/transparent"
-            app:tickColorInactive="@android:color/transparent"
-            app:trackColorActive="@android:color/transparent"
-            app:thumbRadius="@dimen/global_window_padding"
-            app:trackColor="#4fffffff"
-            android:hapticFeedbackEnabled="true"
-            app:labelBehavior="gone"
-            app:thumbStrokeColor="@color/accent"
-            app:thumbStrokeWidth="@dimen/stroke_strong"/>
-    </FrameLayout>
+            android:thumb="@drawable/fast_scroller"
+            android:thumbOffset="16dp"
+            android:progressBackgroundTint="@android:color/transparent"
+            android:progressTint="@android:color/transparent"/>
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/empty_message"
@@ -186,8 +181,10 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
         android:indeterminate="true"
+        app:layout_anchor="@id/photo_recycler"
+        app:layout_anchorGravity="top|center_horizontal"
+        android:layout_gravity="center|bottom"
         android:indeterminateTint="@color/accent"
         android:visibility="gone"/>
 
@@ -205,7 +202,9 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        app:layout_anchor="@id/photo_recycler"
+        app:layout_anchorGravity="bottom|center_horizontal"
+        android:layout_gravity="center|bottom"
         android:indeterminate="true"
         android:indeterminateTint="@color/accent"
         android:visibility="gone"/>

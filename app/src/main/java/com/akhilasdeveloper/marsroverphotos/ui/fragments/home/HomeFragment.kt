@@ -23,9 +23,12 @@ import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
 import android.annotation.SuppressLint
+import android.widget.ImageView
+import android.widget.SeekBar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.google.android.gms.ads.AdRequest
@@ -165,10 +168,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.solSlider.apply {
             val count =
                 (master!!.max_date_in_millis - master!!.landing_date_in_millis) / MILLIS_IN_A_DAY
-            this.valueFrom = 0f
-            this.valueTo = count.toFloat()
-            this.value = count.toFloat()
-            this.stepSize = 1f
+            this.max = count.toInt()
+            this.progress = count.toInt()
         }
     }
 
@@ -182,7 +183,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         master?.let {
             binding.solSlider.apply {
                 val count = (currentDate!! - master!!.landing_date_in_millis) / MILLIS_IN_A_DAY
-                this.value = count.toFloat()
+                this.progress = count.toInt()
                 hideFastScrollerDate()
             }
         }
@@ -203,7 +204,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun scrollToPosition(position: Int) {
-        binding.photoRecycler.scrollToPosition(position)
+        binding.photoRecycler.scrollToCenter(position)
     }
 
     internal fun onSolSelected(toLong: Long) {
@@ -211,7 +212,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             toLong,
             master!!.landing_date_in_millis
         ).let {
-            currentDate = it
+            currentDate = it.formatMillisToDate().formatDateToMillis()
             onDateSelected(currentDate!!, true)
         }
     }
@@ -289,28 +290,33 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 hideFastScroller()
         }
 
-        binding.solSlider.addOnChangeListener { slider, value, fromUser ->
-            master?.let { rover ->
-                val date = ((value.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
-                binding.scrollDateDisplayText.text = date.formatMillisToDisplayDate()
-                showFastScrollerDate()
-            }
-        }
 
-        binding.solSlider.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_UP) {
+        binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                master?.let { rover ->
+                    val date = ((progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
+                    binding.scrollDateDisplayText.text = date.formatMillisToDisplayDate()
+                    showFastScrollerDate()
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                showFastScroller()
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 hideFastScrollerDate()
                 master?.let { rover ->
                     val date =
-                        ((binding.solSlider.value.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
-                    onDateSelected(date, true)
+                        ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis).formatMillisToDate().formatDateToMillis()
+                    onDateSelected(date!!, true)
                 }
-                hideFastScroller()
-            } else {
-                showFastScroller()
+                hideFastScrollerDate()
             }
-            false
-        }
+
+        })
+
+
 
         val params = binding.homeAppbar.layoutParams as CoordinatorLayout.LayoutParams
         params.behavior = object : HideListenableBottomAppBarBehavior() {
@@ -415,8 +421,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {
-        findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         val pos = adapter.snapshot().indexOf(marsRoverPhoto)
+        findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         viewModel.setPosition(pos)
     }
 }

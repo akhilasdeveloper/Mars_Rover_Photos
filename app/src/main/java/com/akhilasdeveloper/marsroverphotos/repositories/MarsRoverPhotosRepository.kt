@@ -135,6 +135,9 @@ class MarsRoverPhotosRepository @Inject constructor(
             val isExpired =
                 if (insertedDate == null) true else (System.currentTimeMillis() - insertedDate) > Constants.MILLIS_IN_A_DAY
 
+            if(isExpired || isRefresh)
+                emit(MarsRoverSrcResponse(message = "Syncing Database"))
+
             if (isExpired || isRefresh || isEmpty) {
                 if (utilities.isConnectedToTheInternet()) {
                     emit(MarsRoverSrcResponse(isLoading = true))

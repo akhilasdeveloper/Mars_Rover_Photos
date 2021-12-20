@@ -1,25 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ImageView
+    android:id="@+id/image_description"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:contentDescription="@string/rover_captured_image"
+    android:background="@drawable/imageview_placeholder"
+    android:transitionName="testTransition"
     android:layout_margin="@dimen/stroke_strong"
-    android:gravity="center">
-
-    <com.akhilasdeveloper.marsroverphotos.ui.views.SquareImageView
-        android:id="@+id/image_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/rover_captured_image"
-        android:background="@drawable/imageview_placeholder"/>
-    <TextView
-        android:id="@+id/camera_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
-        style="@style/photo_item_description"
-        app:drawableStartCompat="@drawable/ic_round_camera_alt_24"
-        android:visibility="gone"/>
-
-</FrameLayout>
+    xmlns:android="http://schemas.android.com/apk/res/android" />

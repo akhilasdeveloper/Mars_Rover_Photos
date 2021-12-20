@@ -3,9 +3,7 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
+import androidx.core.view.*
 import androidx.core.widget.addTextChangedListener
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.LayoutSolSelectBinding
@@ -85,24 +83,16 @@ internal fun HomeFragment.setWindowInsets() {
             val bottomAppBarHeight = 76 * matrics.density.toInt()
             val topAppBarHeight = 200 * matrics.density.toInt()
 
-            val layoutParams2 =
-                (binding.solSlider.layoutParams as? ViewGroup.LayoutParams)
-            layoutParams2?.width =
-                matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight)
-            binding.solSlider.layoutParams = layoutParams2
+            binding.solSlider.updateLayoutParams { width = matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight) }
 
-            val layoutParams1 =
-                (binding.slideFrame.layoutParams as? ViewGroup.LayoutParams)
-            layoutParams1?.height =
-                matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight)
-            binding.slideFrame.layoutParams = layoutParams1
+            binding.slideFrame.updateLayoutParams { height = matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight) }
 
             val layoutParams3 =
                 (binding.slideFrame.layoutParams as? ViewGroup.MarginLayoutParams)
             layoutParams3?.bottomMargin = bottomAppBarHeight + systemWindows.bottom
             binding.slideFrame.layoutParams = layoutParams3
         }
-        binding.progress.layoutParams = layoutParams
+
         return@setOnApplyWindowInsetsListener insets
     }
 }

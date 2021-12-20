@@ -7,12 +7,14 @@
         <entry key="app/src/main/res/drawable/button_background_ring.xml" value="0.37538461538461537" />
         <entry key="app/src/main/res/drawable/button_bg.xml" value="0.2861111111111111" />
         <entry key="app/src/main/res/drawable/dialog_background.xml" value="0.38125" />
+        <entry key="app/src/main/res/drawable/fast_scroller.xml" value="0.2109375" />
         <entry key="app/src/main/res/drawable/gradient_from_bl.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/gradient_from_br.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/gradient_from_center.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/gradient_from_edges.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/gradient_to_top.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_baseline_cloud_download_24.xml" value="0.36875" />
+        <entry key="app/src/main/res/drawable/ic_fast_scroller.xml" value="0.2109375" />
         <entry key="app/src/main/res/drawable/ic_heart_fill.xml" value="0.22239583333333332" />
         <entry key="app/src/main/res/drawable/ic_heart_unfill.xml" value="0.22239583333333332" />
         <entry key="app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.36875" />
@@ -24,6 +26,7 @@
         <entry key="app/src/main/res/drawable/image_viewer_bottom_background_gradient.xml" value="0.275" />
         <entry key="app/src/main/res/drawable/image_viewer_top_background_gradient.xml" value="0.275" />
         <entry key="app/src/main/res/drawable/imageview_placeholder.xml" value="0.36875" />
+        <entry key="app/src/main/res/drawable/imageview_placeholder_black.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/round_trans.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/splash.xml" value="0.2861111111111111" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.12998522895125553" />

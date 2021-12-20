@@ -25,6 +25,7 @@ class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null)
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 photo.let {
+                    viewPageImage.transitionName = it.photo_id.toString()
                     it.img_src.downloadImageAsUri(root.context){ resource->
                         resource?.let {
                             viewPageImage.setImage(ImageSource.uri(resource))

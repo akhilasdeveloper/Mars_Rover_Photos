@@ -31,6 +31,6 @@
     </fragment>
     <fragment
         android:id="@+id/savedFragment"
-        android:name="com.akhilasdeveloper.marsroverphotos.ui.saved.SavedFragment"
+        android:name="com.akhilasdeveloper.marsroverphotos.ui.fragments.saved.SavedFragment"
         android:label="SavedFragment" />
 </navigation>

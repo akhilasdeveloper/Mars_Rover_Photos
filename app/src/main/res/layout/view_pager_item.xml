@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+    android:id="@+id/view_page_image"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <!--<com.github.piasy.biv.view.BigImageView
-        android:id="@+id/view_page_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:failureImageInitScaleType="center" />-->
-
-    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-        android:id="@+id/view_page_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-</FrameLayout>
+    android:background="@drawable/imageview_placeholder_black"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

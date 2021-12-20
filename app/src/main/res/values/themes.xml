@@ -54,7 +54,6 @@
     <style name="photo_item_description" parent="Theme.MarsRoverPhotos">
         <item name="android:textSize">@dimen/extra_small_text_size</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:background">@color/transparent50</item>
         <item name="android:padding">@dimen/drawable_button_background_ring_icon_padding</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/white</item>

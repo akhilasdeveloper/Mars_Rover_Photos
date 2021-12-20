@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="bottom"
     android:orientation="vertical"
     android:background="@color/first">
 
-    <com.akhilasdeveloper.marsroverphotos.ui.views.SpanImageView
+    <ImageView
         android:id="@+id/image_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:contentDescription="@string/rover_captured_image"
         android:background="@drawable/imageview_placeholder"
-        android:layout_margin="@dimen/stroke_strong"/>
+        android:layout_margin="@dimen/stroke_strong"
+        android:transitionName="testTransition"/>
 
     <View
         android:layout_width="match_parent"
@@ -23,12 +25,28 @@
     <TextView
         android:id="@+id/date"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_top_title_text_height"
+        android:layout_height="wrap_content"
         style="@style/photo_item_date"
-        android:layout_gravity="center_vertical"
+        android:layout_gravity="top|start"
         android:textColor="@color/white"
         android:background="@android:color/transparent"
         android:layout_marginStart="@dimen/global_window_padding"
-        android:layout_marginEnd="@dimen/global_window_padding"/>
+        android:layout_marginEnd="@dimen/global_window_padding"
+        android:layout_marginTop="@dimen/global_window_padding"/>
+
+    <TextView
+        android:id="@+id/sol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/photo_item_description"
+        android:layout_gravity="bottom|end"
+        android:textColor="@color/white"
+        android:background="@android:color/transparent"
+        android:layout_marginStart="@dimen/global_window_padding"
+        android:layout_marginEnd="@dimen/global_window_padding"
+        android:layout_marginBottom="@dimen/global_window_padding"
+        app:drawableStartCompat="@drawable/ic_mars_icon"
+        app:drawableTint="@color/white"
+        android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"/>
 
 </FrameLayout>

@@ -12,6 +12,7 @@ import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestOptions
 
 class MarsRoverPhotoAdapter(
     private val interaction: RecyclerClickListener? = null
@@ -62,17 +63,13 @@ class MarsRoverPhotoAdapter(
 
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
-//                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
                 photo.let {
+                    imageDescription.transitionName = it.photo_id.toString()
                     Glide.with(itemView)
                         .load(it.img_src)
                         .centerCrop()
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
-                    cameraName.text = it.camera_name
-                    cameraName.setOnClickListener { _ ->
-                        binding.root.context.showShortToast(it.camera_full_name)
-                    }
                 }
             }
             binding.root.setOnClickListener {
@@ -90,9 +87,8 @@ class MarsRoverPhotoAdapter(
 
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
-//                root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
                 photo.let {
-
+                    imageDescription.transitionName = it.photo_id.toString()
                     Glide.with(itemView)
                         .load(it.img_src)
                         .centerCrop()
@@ -100,6 +96,7 @@ class MarsRoverPhotoAdapter(
                         .into(imageDescription)
 
 
+                    binding.sol.text = it.sol.toString()
                     binding.date.text = it.earth_date.formatMillisToDisplayDate()
                 }
             }
