@@ -1,0 +1,49 @@
+<com.google.android.material.bottomappbar.BottomAppBar
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home_appbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    app:backgroundTint="@color/appbar"
+    app:contentInsetStart="0dp"
+    app:hideOnScroll="true"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:ignore="BottomAppBar">
+
+
+        <LinearLayout
+            android:id="@+id/home_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/appbar"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/toolbar_bottom_vertical_padding"
+            android:paddingBottom="@dimen/toolbar_bottom_vertical_padding">
+
+            <TextView
+                android:id="@+id/sol_button_text"
+                style="@style/bottom_appbar_button_ring"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/toolbar_bottom_horizontal_padding"
+                android:layout_marginEnd="@dimen/toolbar_bottom_horizontal_padding"
+                android:layout_weight="1"
+                app:drawableStartCompat="@drawable/ic_mars_icon"
+                app:drawableTint="@color/system_for" />
+
+            <TextView
+                android:id="@+id/date_button_text"
+                style="@style/bottom_appbar_button_ring"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/toolbar_bottom_horizontal_padding"
+                android:layout_weight="1"
+                app:drawableStartCompat="@drawable/ic_round_date_range_24"
+                app:drawableTint="@color/system_for" />
+
+        </LinearLayout>
+
+
+</com.google.android.material.bottomappbar.BottomAppBar>

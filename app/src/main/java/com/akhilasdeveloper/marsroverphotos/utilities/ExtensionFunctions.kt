@@ -3,6 +3,7 @@ package com.akhilasdeveloper.marsroverphotos.utilities
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.drawable.Drawable
@@ -10,8 +11,13 @@ import android.net.Uri
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.net.toUri
+import androidx.core.view.marginBottom
+import androidx.core.view.marginEnd
+import androidx.core.view.marginStart
+import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -83,15 +89,6 @@ fun RecyclerView.fastScrollListener(fastScrolled: (isFastScrolled: Boolean) -> U
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
             fastScrolled(abs(dy) > 30)
-        }
-    })
-}
-
-fun RecyclerView.scrollDirectionListener(scrolled: (scrollDirection: Int) -> Unit) {
-    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-            super.onScrolled(recyclerView, dx, dy)
-            scrolled(if (dy>0) Constants.SCROLL_DIRECTION_UP else SCROLL_DIRECTION_DOWN)
         }
     })
 }
@@ -168,8 +165,11 @@ fun Long.formatMillisToDate(): String =
 fun String.formatDateToMillis(): Long? =
     SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).parse(this)?.time
 
-fun Long.nextDate(): Long = (this + Constants.MILLIS_IN_A_DAY).formatMillisToDate().formatDateToMillis()!!
-fun Long.prevDate(): Long = (this - Constants.MILLIS_IN_A_DAY).formatMillisToDate().formatDateToMillis()!!
+fun Long.nextDate(): Long =
+    (this + Constants.MILLIS_IN_A_DAY).formatMillisToDate().formatDateToMillis()!!
+
+fun Long.prevDate(): Long =
+    (this - Constants.MILLIS_IN_A_DAY).formatMillisToDate().formatDateToMillis()!!
 
 fun String.downloadImageAsBitmap(context: Context, callback: (Bitmap?) -> (Unit)) {
     Glide.with(context).asBitmap().load(this)
@@ -200,20 +200,30 @@ inline fun <T> sdk29andUp(onSdk29: () -> T): T? {
     else null
 }
 
-inline fun sdkAndUp(version : Int, onSdkAndAbove: () -> Unit, belowSdk: () -> Unit) {
+inline fun sdkAndUp(version: Int, onSdkAndAbove: () -> Unit, belowSdk: () -> Unit) {
     if (Build.VERSION.SDK_INT >= version)
         onSdkAndAbove()
     else belowSdk()
 }
 
-val Context.screenSizeInDp: Point
-    get() {
-        val point = Point()
-        resources.displayMetrics.apply {
-            point.x = (widthPixels / density).roundToInt()
-            point.y = (heightPixels / density).roundToInt()
-        }
-
-        return point
+fun View.updateMarginAndHeight(
+    top: Int? = null,
+    bottom: Int? = null,
+    start: Int? = null,
+    end: Int? = null,
+    height: Int? = null,
+    width: Int? = null
+) {
+    (layoutParams as? ViewGroup.MarginLayoutParams)?.apply {
+        start?.let { this.marginStart = it }
+        end?.let { this.marginEnd = it }
+        top?.let { this.topMargin = it }
+        bottom?.let { this.bottomMargin = it }
+        height?.let { this.height = it }
+        width?.let { this.width = it }
     }
+}
+
+fun Fragment.toDpi(int: Int) : Int = (this.resources.displayMetrics.density * int).toInt()
+val Fragment.displayHeightPx : Int get() = this.resources.displayMetrics.heightPixels
 

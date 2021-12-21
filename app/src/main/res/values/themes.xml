@@ -35,13 +35,13 @@
     <style name="TextAppearance.ToolBarTitle.Collapsed" parent="TextAppearance.MaterialComponents.Headline6">
         <item name="android:textColor">@color/system_for</item>
         <item name="android:textSize">@dimen/medium_text_size</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <style name="TextAppearance.ToolBarTitle.Expanded" parent="TextAppearance.MaterialComponents.Headline6">
         <item name="android:textColor">@color/system_for</item>
         <item name="android:textSize">@dimen/extra_large_text_size</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <style name="tool_bar_title" parent="Theme.MarsRoverPhotos">
@@ -52,9 +52,8 @@
     </style>
 
     <style name="photo_item_description" parent="Theme.MarsRoverPhotos">
-        <item name="android:textSize">@dimen/extra_small_text_size</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:padding">@dimen/drawable_button_background_ring_icon_padding</item>
+        <item name="android:textSize">@dimen/small_text_size</item>
+        <item name="android:padding">@dimen/global_window_padding</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/white</item>
     </style>
@@ -62,6 +61,7 @@
     <style name="photo_item_date" parent="TextAppearance.ToolBarTitle.Collapsed">
         <item name="android:background">@color/system_border</item>
         <item name="android:gravity">center_vertical</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:padding">@dimen/drawable_button_background_ring_icon_padding</item>
     </style>
 

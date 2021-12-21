@@ -15,10 +15,13 @@ import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoversBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
+import com.akhilasdeveloper.marsroverphotos.utilities.toDpi
+import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -56,9 +59,9 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         binding.roverSwipeRefresh.setColorSchemeResources(R.color.accent)
         viewModel.setEmptyPhotos()
         if (AD_ENABLED) {
-            binding.itemAdBanner.isVisible = true
+            binding.adView.root.isVisible = true
             val adRequest: AdRequest = AdRequest.Builder().build()
-            binding.adView.loadAd(adRequest)
+            binding.adView.adView.loadAd(adRequest)
         }
     }
 
@@ -71,10 +74,36 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             refreshData()
         }
 
-        binding.adView.adListener = object : AdListener(){
+        binding.adView.adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
                 super.onAdLoaded()
                 showAd()
+                Timber.d("onAdLoaded")
+            }
+
+            override fun onAdClosed() {
+                super.onAdClosed()
+                Timber.d("onAdClosed")
+            }
+
+            override fun onAdFailedToLoad(p0: LoadAdError) {
+                super.onAdFailedToLoad(p0)
+                Timber.d("onAdFailedToLoad")
+            }
+
+            override fun onAdOpened() {
+                super.onAdOpened()
+                Timber.d("onAdOpened")
+            }
+
+            override fun onAdClicked() {
+                super.onAdClicked()
+                Timber.d("onAdClicked")
+            }
+
+            override fun onAdImpression() {
+                super.onAdImpression()
+                Timber.d("onAdImpression")
             }
         }
     }
@@ -122,7 +151,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             binding.roverSwipeRefresh.isRefreshing = it
         })
 
-        binding.adView.adListener = object : AdListener(){
+        binding.adView.adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
                 super.onAdLoaded()
                 showAd()
@@ -151,9 +180,9 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED)
-                    binding.homeAppbarTop.visibility = View.VISIBLE
+                    binding.topAppbar.homeAppbarTop.visibility = View.VISIBLE
                 else
-                    binding.homeAppbarTop.visibility = View.GONE
+                    binding.topAppbar.homeAppbarTop.visibility = View.GONE
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -227,45 +256,36 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            resources.displayMetrics.let { matrics ->
-                val bottomAd = 60 * matrics.density.toInt()
-                val bottomMargin = requireActivity().resources.getDimension(R.dimen.global_window_padding)
-                binding.recycler.updatePadding(bottom = systemWindows.bottom + bottomAd + bottomMargin.toInt())
-            }
+            val bottomAd = toDpi(60)
+            val bottomMargin =
+                requireActivity().resources.getDimension(R.dimen.global_window_padding)
+            binding.recycler.updatePadding(bottom = systemWindows.bottom + bottomAd + bottomMargin.toInt())
+
             return@setOnApplyWindowInsetsListener insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.topAppbar.homeCollapsingToolbarTop) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams =
-                (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, systemWindows.top, 0, 0)
-            binding.homeToolbarTop.layoutParams = layoutParams
+            binding.topAppbar.homeToolbarTop.updateMarginAndHeight(top = systemWindows.top)
             return@setOnApplyWindowInsetsListener insets
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.bottomSheetView.sheetFrame) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            val layoutParams =
-                (binding.bottomSheetView.sheetFrame.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams?.setMargins(0, systemWindows.top, 0, systemWindows.bottom)
-            binding.bottomSheetView.sheetFrame.layoutParams = layoutParams
+            val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.bottomSheetView.sheetFrame.updateMarginAndHeight(
+                top = systemWindows.top,
+                bottom = systemWindows.bottom + toDpi(60)
+            )
             return@setOnApplyWindowInsetsListener insets
         }
 
         if (AD_ENABLED) {
-            ViewCompat.setOnApplyWindowInsetsListener(binding.itemAdBanner) { _, insets ->
-                val systemWindows =
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                val layoutParams =
-                    (binding.itemAdBanner.layoutParams as? ViewGroup.MarginLayoutParams)
-
-                    val bottomMargin = requireActivity().resources.getDimension(R.dimen.global_window_padding)
-                    layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + bottomMargin.toInt())
-
-                binding.itemAdBanner.layoutParams = layoutParams
+            ViewCompat.setOnApplyWindowInsetsListener(binding.adView.itemAdBanner) { _, insets ->
+                val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                val bottomMargin =
+                    requireActivity().resources.getDimension(R.dimen.global_window_padding)
+                binding.adView.itemAdBanner.updateMarginAndHeight(bottom = systemWindows.bottom + bottomMargin.toInt())
                 return@setOnApplyWindowInsetsListener insets
             }
         }
@@ -288,8 +308,8 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         requireActivity().onBackPressedDispatcher.addCallback(this, callback)
     }
 
-    private fun showAd(){
-        binding.itemAdBanner.apply {
+    private fun showAd() {
+        binding.adView.itemAdBanner.apply {
             if (AD_ENABLED) {
                 animate()
                     .alpha(1.0f)

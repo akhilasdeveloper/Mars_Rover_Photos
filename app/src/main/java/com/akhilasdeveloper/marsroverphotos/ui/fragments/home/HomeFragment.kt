@@ -87,9 +87,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
         hideFastScroller()
         if (AD_ENABLED) {
-            binding.itemAdBanner.isVisible = true
+            binding.adView.root.isVisible = true
             val adRequest: AdRequest = AdRequest.Builder().build()
-            binding.adView.loadAd(adRequest)
+            binding.adView.adView.loadAd(adRequest)
         }
     }
 
@@ -160,8 +160,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun setTitle() {
-        binding.homeToolbarTop.title = master!!.name
-        binding.homeCollapsingToolbarTop.title = master!!.name
+        binding.topAppbar.homeToolbarTop.title = master!!.name
+        binding.topAppbar.homeCollapsingToolbarTop.title = master!!.name
     }
 
     private fun initFastScroller() {
@@ -191,7 +191,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun setSolButtonText() {
         master?.let {
-            binding.solButtonText.text = getString(
+            binding.bottomAppbar.solButtonText.text = getString(
                 R.string.sol,
                 utilities.calculateDays(it.landing_date_in_millis, currentDate).toString()
             )
@@ -200,7 +200,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
 
     private fun setDateButtonText() {
-        binding.dateButtonText.text = currentDate!!.formatMillisToDate()
+        binding.bottomAppbar.dateButtonText.text = currentDate!!.formatMillisToDate()
     }
 
     private fun scrollToPosition(position: Int) {
@@ -227,12 +227,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setListeners() {
-        binding.dateButtonText.setOnClickListener {
+        binding.bottomAppbar.dateButtonText.setOnClickListener {
             binding.photoRecycler.stopScroll()
             showDatePicker()
         }
 
-        binding.solButtonText.setOnClickListener {
+        binding.bottomAppbar.solButtonText.setOnClickListener {
             showSolSelectorDialog()
         }
         adapter.addLoadStateListener { loadStates ->
@@ -318,7 +318,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
 
 
-        val params = binding.homeAppbar.layoutParams as CoordinatorLayout.LayoutParams
+        val params = binding.bottomAppbar.homeAppbar.layoutParams as CoordinatorLayout.LayoutParams
         params.behavior = object : HideListenableBottomAppBarBehavior() {
             override fun onSlideDown() {
                 showAd()
@@ -331,7 +331,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun showAd() {
-        binding.itemAdBanner.apply {
+        binding.adView.itemAdBanner.apply {
             if (AD_ENABLED) {
                 animate()
                     .alpha(1.0f)
@@ -341,7 +341,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun hideAd() {
-        binding.itemAdBanner.apply {
+        binding.adView.itemAdBanner.apply {
             if (AD_ENABLED) {
                 animate()
                     .alpha(0.0f)

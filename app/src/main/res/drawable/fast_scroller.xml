@@ -6,21 +6,19 @@
                 android:color="@color/accent"
                 android:width="@dimen/stroke_medium"/>
             <size
-                android:width="48dp"
-                android:height="48dp"/>
+                android:width="36dp"
+                android:height="36dp"/>
             <solid
-                android:color="@color/system_border"/>
+                android:color="@color/first"/>
             <corners
-                android:bottomRightRadius="5dp"
-                android:bottomLeftRadius="5dp"
+                android:bottomRightRadius="@dimen/corner_radius"
+                android:bottomLeftRadius="@dimen/corner_radius"
                 android:topLeftRadius="@dimen/corner_radius"
                 android:topRightRadius="@dimen/corner_radius"/>
 
             <padding
                 android:right="5dp"
-                android:left="5dp"
-                android:top="5dp"
-                android:bottom="5dp"/>
+                android:left="5dp"/>
         </shape>
     </item>
     <item android:drawable="@drawable/ic_fast_scroller"/>

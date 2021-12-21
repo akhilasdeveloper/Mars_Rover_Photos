@@ -7,91 +7,62 @@ import androidx.core.view.*
 import androidx.core.widget.addTextChangedListener
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.LayoutSolSelectBinding
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants
+import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
-import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
-import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDate
 import com.google.android.material.datepicker.*
 
 internal fun HomeFragment.setWindowInsets() {
-    ViewCompat.setOnApplyWindowInsetsListener(binding.homeAppbar) { _, insets ->
-        val systemWindows =
-            insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        val layoutParams = (binding.homeToolbar.layoutParams as? ViewGroup.MarginLayoutParams)
-        layoutParams?.setMargins(0, 0, 0, systemWindows.bottom)
-        binding.homeToolbar.layoutParams = layoutParams
+    ViewCompat.setOnApplyWindowInsetsListener(binding.bottomAppbar.homeAppbar) { _, insets ->
+        val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        binding.bottomAppbar.homeToolbar.updateMarginAndHeight(bottom = systemWindows.bottom)
         return@setOnApplyWindowInsetsListener insets
     }
 
     if (Constants.AD_ENABLED) {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.itemAdBanner) { _, insets ->
-            val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val layoutParams =
-                (binding.itemAdBanner.layoutParams as? ViewGroup.MarginLayoutParams)
-
-            val bottomMargin =
-                requireActivity().resources.getDimension(R.dimen.global_window_padding)
-            layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + bottomMargin.toInt())
-
-            binding.itemAdBanner.layoutParams = layoutParams
+        ViewCompat.setOnApplyWindowInsetsListener(binding.adView.itemAdBanner) { _, insets ->
+            val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val bottomMargin = requireActivity().resources.getDimension(R.dimen.global_window_padding)
+            binding.adView.itemAdBanner.updateMarginAndHeight(bottom = systemWindows.bottom + bottomMargin.toInt())
             return@setOnApplyWindowInsetsListener insets
         }
     }
 
     val recyclerBottomPadding = binding.photoRecycler.paddingBottom
     ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
-        val systemWindows =
-            insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         binding.photoRecycler.updatePadding(bottom = systemWindows.bottom + recyclerBottomPadding)
         return@setOnApplyWindowInsetsListener insets
     }
 
-    ViewCompat.setOnApplyWindowInsetsListener(binding.homeCollapsingToolbarTop) { _, insets ->
-        val systemWindows =
-            insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        val layoutParams =
-            (binding.homeToolbarTop.layoutParams as? ViewGroup.MarginLayoutParams)
-        layoutParams?.setMargins(0, systemWindows.top, 0, 0)
-        binding.homeToolbarTop.layoutParams = layoutParams
+    ViewCompat.setOnApplyWindowInsetsListener(binding.topAppbar.homeCollapsingToolbarTop) { _, insets ->
+        val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        binding.topAppbar.homeToolbarTop.updateMarginAndHeight(top = systemWindows.top)
         return@setOnApplyWindowInsetsListener insets
     }
 
-    val layoutParams = (binding.progress.layoutParams as? ViewGroup.MarginLayoutParams)
-    val marginBottom = layoutParams?.bottomMargin ?: 0
+    val marginBottom = binding.progress.marginBottom
     ViewCompat.setOnApplyWindowInsetsListener(binding.progress) { _, insets ->
         val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        layoutParams?.setMargins(0, 0, 0, systemWindows.bottom + marginBottom)
-        binding.progress.layoutParams = layoutParams
+        binding.progress.updateMarginAndHeight(bottom = systemWindows.bottom + marginBottom)
         return@setOnApplyWindowInsetsListener insets
     }
 
-    val layoutParamsTop = (binding.progressTop.layoutParams as? ViewGroup.MarginLayoutParams)
-    val marginTop = layoutParamsTop?.topMargin ?: 0
+    val marginTop = binding.progressTop.marginTop
     ViewCompat.setOnApplyWindowInsetsListener(binding.progressTop) { _, insets ->
-        val systemWindows =
-            insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        layoutParamsTop?.setMargins(0, marginTop + systemWindows.top, 0, 0)
-        binding.progressTop.layoutParams = layoutParamsTop
+        val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        binding.progressTop.updateMarginAndHeight(top = marginTop + systemWindows.top)
         return@setOnApplyWindowInsetsListener insets
     }
 
     ViewCompat.setOnApplyWindowInsetsListener(binding.slideFrame) { _, insets ->
-        val systemWindows =
-            insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        resources.displayMetrics.let { matrics ->
-            val bottomAppBarHeight = 76 * matrics.density.toInt()
-            val topAppBarHeight = 200 * matrics.density.toInt()
+        val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
-            binding.solSlider.updateLayoutParams { width = matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight) }
+        val bottomAppBarHeight = toDpi(76)
+        val topAppBarHeight = toDpi(200)
 
-            binding.slideFrame.updateLayoutParams { height = matrics.heightPixels - (bottomAppBarHeight + topAppBarHeight) }
-
-            val layoutParams3 =
-                (binding.slideFrame.layoutParams as? ViewGroup.MarginLayoutParams)
-            layoutParams3?.bottomMargin = bottomAppBarHeight + systemWindows.bottom
-            binding.slideFrame.layoutParams = layoutParams3
-        }
+        binding.solSlider.updateLayoutParams { width = displayHeightPx - (bottomAppBarHeight + topAppBarHeight) }
+        binding.slideFrame.updateLayoutParams { height = displayHeightPx - (bottomAppBarHeight + topAppBarHeight) }
+        binding.slideFrame.updateMarginAndHeight(bottom = bottomAppBarHeight + systemWindows.bottom)
 
         return@setOnApplyWindowInsetsListener insets
     }
