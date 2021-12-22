@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="extra_large_text_size">28sp</dimen>
-    <dimen name="large_text_size">24sp</dimen>
-    <dimen name="medium_text_size">22sp</dimen>
+    <dimen name="extra_large_text_size">22sp</dimen>
+    <dimen name="large_text_size">20sp</dimen>
+    <dimen name="medium_text_size">18sp</dimen>
     <dimen name="small_text_size">16sp</dimen>
     <dimen name="extra_small_text_size">14sp</dimen>
-    <dimen name="stroke_light">1dp</dimen>
-    <dimen name="stroke_medium">2dp</dimen>
-    <dimen name="stroke_strong">3dp</dimen>
+    <dimen name="stroke_light">.5dp</dimen>
+    <dimen name="stroke_medium">1dp</dimen>
+    <dimen name="stroke_strong">2dp</dimen>
     <dimen name="corner_radius">10dp</dimen>
     <dimen name="global_window_padding">16dp</dimen>
     <dimen name="popup_window_padding">32dp</dimen>
     <dimen name="popup_window_width">400dp</dimen>
     <dimen name="card_separation_margin_vertical">10dp</dimen>
     <dimen name="toolbar_top_title_text_height">64dp</dimen>
+    <dimen name="toolbar_top_title_text_bottom_margin">36dp</dimen>
     <dimen name="toolbar_bottom_vertical_padding">16dp</dimen>
     <dimen name="toolbar_bottom_horizontal_padding">16dp</dimen>
     <dimen name="drawable_button_background_ring_vertical_padding">10dp</dimen>

@@ -62,7 +62,8 @@
             android:padding="@dimen/global_window_padding"
             android:textColor="@color/white"
             app:drawableStartCompat="@drawable/ic_outline_image_24"
-            app:drawableTint="@color/white" />
+            app:drawableTint="@color/white"
+            android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"/>
 
     </LinearLayout>
 

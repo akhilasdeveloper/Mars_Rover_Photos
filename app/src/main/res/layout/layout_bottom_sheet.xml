@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sheet_frame"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/system_border"
-    android:orientation="vertical"
-    android:id="@+id/sheet_frame">
+    android:orientation="vertical">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/global_window_padding">
+
         <ImageView
             android:id="@+id/rover_image"
             android:layout_width="match_parent"
@@ -21,124 +22,117 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/transparent50"/>
+            android:background="@color/transparent50" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/rover_name"
+            style="@style/TextAppearance.ToolBarTitle.Expanded"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/global_window_padding"
+            android:background="@android:color/transparent"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="@dimen/global_window_padding"
-            android:paddingEnd="@dimen/global_window_padding"
-            android:paddingBottom="@dimen/global_window_padding"
             android:layout_gravity="bottom"
-            android:layout_marginBottom="@dimen/global_window_padding">
-
-            <TextView
-                android:id="@+id/rover_name"
-                style="@style/TextAppearance.ToolBarTitle.Expanded"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@color/white"
-                android:background="@android:color/transparent"/>
-
-            <TextView
-                android:id="@+id/rover_photos_count"
-                style="@style/bottom_appbar_button_ring"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
-                app:drawableStartCompat="@drawable/ic_outline_image_24"
-                app:drawableTint="@color/white"
-                android:textColor="@color/white"/>
-
-        </LinearLayout>
+            android:textColor="@color/white"
+            android:paddingEnd="@dimen/global_window_padding"
+            android:paddingStart="@dimen/global_window_padding"
+            android:paddingBottom="@dimen/global_window_padding"/>
     </FrameLayout>
 
+    <TextView
+        android:id="@+id/rover_photos_count"
+        style="@style/bottom_appbar_button_ring"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+        app:drawableStartCompat="@drawable/ic_outline_image_24"
+        android:layout_marginBottom="@dimen/global_window_padding"
+        android:layout_marginStart="@dimen/global_window_padding"
+        android:layout_marginEnd="@dimen/global_window_padding"
+        app:drawableTint="@color/system_for" />
 
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            android:paddingStart="@dimen/global_window_padding"
-            android:paddingEnd="@dimen/global_window_padding"
-            android:layout_marginTop="@dimen/global_window_padding">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/launch_date"
-                android:textColor="@color/system_for"
-                android:textSize="@dimen/small_text_size"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:layout_weight="1"
-                android:text="@string/landing_date"
-                android:textColor="@color/system_for"
-                android:textSize="@dimen/small_text_size"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            android:paddingStart="@dimen/global_window_padding"
-            android:paddingEnd="@dimen/global_window_padding"
-            android:layout_marginBottom="@dimen/global_window_padding"
-            android:layout_marginTop="@dimen/global_window_padding">
-
-            <TextView
-                android:id="@+id/rover_launch_date"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/launch_date"
-                android:textColor="@color/system_for"
-                android:textSize="@dimen/small_text_size" />
-
-            <TextView
-                android:id="@+id/rover_landing_date"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end"
-                android:text="@string/landing_date"
-                android:textColor="@color/system_for"
-                android:textSize="@dimen/small_text_size" />
-        </LinearLayout>
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_window_padding"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/global_window_padding"
+        android:paddingEnd="@dimen/global_window_padding">
 
         <TextView
-            android:id="@+id/rover_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/launch_date"
             android:textColor="@color/system_for"
             android:textSize="@dimen/small_text_size"
-            android:textStyle="bold"
-            android:layout_marginStart="@dimen/global_window_padding"
-            android:layout_marginEnd="@dimen/global_window_padding"
-            android:layout_marginBottom="@dimen/global_window_padding"
-            android:layout_marginTop="@dimen/global_window_padding" />
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/rover_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="@string/landing_date"
             android:textColor="@color/system_for"
             android:textSize="@dimen/small_text_size"
-            android:layout_marginStart="@dimen/global_window_padding"
-            android:layout_marginEnd="@dimen/global_window_padding"
-            android:layout_marginBottom="@dimen/global_window_padding"
-            android:layout_marginTop="@dimen/global_window_padding" />
+            android:textStyle="bold" />
+
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_window_padding"
+        android:layout_marginBottom="@dimen/global_window_padding"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/global_window_padding"
+        android:paddingEnd="@dimen/global_window_padding">
+
+        <TextView
+            android:id="@+id/rover_launch_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/launch_date"
+            android:textColor="@color/system_for"
+            android:textSize="@dimen/small_text_size" />
+
+        <TextView
+            android:id="@+id/rover_landing_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="@string/landing_date"
+            android:textColor="@color/system_for"
+            android:textSize="@dimen/small_text_size" />
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/rover_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/global_window_padding"
+        android:layout_marginTop="@dimen/global_window_padding"
+        android:layout_marginEnd="@dimen/global_window_padding"
+        android:layout_marginBottom="@dimen/global_window_padding"
+        android:textColor="@color/system_for"
+        android:textSize="@dimen/small_text_size"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/rover_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/global_window_padding"
+        android:layout_marginTop="@dimen/global_window_padding"
+        android:layout_marginEnd="@dimen/global_window_padding"
+        android:layout_marginBottom="@dimen/global_window_padding"
+        android:textColor="@color/system_for"
+        android:textSize="@dimen/small_text_size" />
+</LinearLayout>

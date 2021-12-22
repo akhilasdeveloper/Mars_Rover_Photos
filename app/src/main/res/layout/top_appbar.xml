@@ -19,7 +19,8 @@
         app:statusBarScrim="@color/appbar"
         app:title="@string/app_name"
         app:titleCollapseMode="scale"
-        app:titleEnabled="true">
+        app:titleEnabled="true"
+        app:expandedTitleMarginBottom="@dimen/toolbar_top_title_text_bottom_margin">
 
         <View
             android:layout_width="match_parent"
