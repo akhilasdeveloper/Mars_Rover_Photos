@@ -102,7 +102,7 @@ class MarsPagingSource(
         val size = response.size
         if (size > 0) {
             marsPhotoDao.insertAllMarsRoverPhotos(response.apply {
-                set(0, first().copy(is_placeholder = true))
+                set(0, first().copy(is_placeholder = true, total_count = size))
             }.toList())
         }
         return response.toList()

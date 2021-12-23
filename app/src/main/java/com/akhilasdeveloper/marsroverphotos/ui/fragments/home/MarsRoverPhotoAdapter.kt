@@ -3,21 +3,23 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.selection.ItemDetailsLookup
+import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
-import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.bumptech.glide.request.RequestOptions
 
 class MarsRoverPhotoAdapter(
     private val interaction: RecyclerClickListener? = null
 ) :
     PagingDataAdapter<MarsRoverPhotoTable, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
+
+    var selectionChecker: SelectionChecker? = null
 
     enum class ViewType {
         SMALL,
@@ -46,12 +48,16 @@ class MarsRoverPhotoAdapter(
             }
             ViewType.SMALL.ordinal -> {
                 val photoViewHolder = holder as PhotoViewHolder
-                currentItem?.let {
-                    photoViewHolder.bindPhoto(currentItem, position)
+                currentItem?.let { photo ->
+                    photoViewHolder.bindPhoto(
+                        photo,
+                        position,
+                        selectionChecker?.isSelected(currentItem) == true
+                    )
+
                 }
             }
         }
-
 
     }
 
@@ -61,7 +67,12 @@ class MarsRoverPhotoAdapter(
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
+        var positionSel = 0
+        var photo: MarsRoverPhotoTable? = null
+
+        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int, selected: Boolean) {
+            positionSel = position
+            this.photo = photo
             binding.apply {
                 photo.let {
                     imageDescription.transitionName = it.photo_id.toString()
@@ -72,11 +83,20 @@ class MarsRoverPhotoAdapter(
                         .into(imageDescription)
                 }
             }
+
+            if (selected && position == positionSel)
+                binding.root.alpha = .5f
+
             binding.root.setOnClickListener {
                 interaction?.onItemSelected(photo, position)
             }
         }
 
+        fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> =
+            object : ItemDetailsLookup.ItemDetails<Long>() {
+                override fun getPosition(): Int = positionSel
+                override fun getSelectionKey(): Long? = photo?.photo_id
+            }
     }
 
     class PhotoDateViewHolder(
@@ -85,7 +105,12 @@ class MarsRoverPhotoAdapter(
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
+        var positionSel = 0
+        var photo: MarsRoverPhotoTable? = null
+
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
+            positionSel = position
+            this.photo = photo
             binding.apply {
                 photo.let {
                     imageDescription.transitionName = it.photo_id.toString()
@@ -96,6 +121,7 @@ class MarsRoverPhotoAdapter(
                         .into(imageDescription)
 
 
+                    binding.count.text = it.total_count.toString() + " photos"
                     binding.sol.text = it.sol.toString()
                     binding.date.text = it.earth_date.formatMillisToDisplayDate()
                 }
@@ -105,6 +131,12 @@ class MarsRoverPhotoAdapter(
                 interaction?.onItemSelected(photo, position)
             }
         }
+
+        fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> =
+            object : ItemDetailsLookup.ItemDetails<Long>() {
+                override fun getPosition(): Int = positionSel
+                override fun getSelectionKey(): Long? = photo?.photo_id
+            }
 
     }
 

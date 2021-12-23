@@ -22,27 +22,44 @@
         android:background="@color/transparent50"
         android:layout_margin="@dimen/stroke_strong" />
 
-    <TextView
-        android:id="@+id/date"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/photo_item_date"
-        android:layout_gravity="top|start"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_marginStart="@dimen/global_window_padding"
         android:layout_marginEnd="@dimen/global_window_padding"
-        android:layout_marginTop="@dimen/global_window_padding"/>
+        android:layout_marginTop="@dimen/global_window_padding">
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            style="@style/photo_item_date"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/sol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/photo_item_sol"
+            app:drawableStartCompat="@drawable/ic_mars_icon"
+            app:drawableTint="@color/white"
+            android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"/>
+
+
+    </LinearLayout>
+
 
     <TextView
-        android:id="@+id/sol"
+        android:id="@+id/count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/photo_item_sol"
-        android:layout_gravity="bottom|end"
+        android:layout_gravity="bottom|start"
         android:layout_marginStart="@dimen/global_window_padding"
         android:layout_marginEnd="@dimen/global_window_padding"
         android:layout_marginBottom="@dimen/global_window_padding"
-        app:drawableStartCompat="@drawable/ic_mars_icon"
-        app:drawableTint="@color/white"
-        android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"/>
+        android:padding="@dimen/drawable_button_background_ring_icon_padding"/>
 
 </FrameLayout>

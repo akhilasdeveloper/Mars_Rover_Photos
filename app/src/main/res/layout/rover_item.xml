@@ -15,7 +15,7 @@
         android:layout_height="@dimen/toolbar_top_image_height"
         android:background="@drawable/imageview_placeholder"
         android:contentDescription="@string/rover_image"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"/>
 
     <View
         android:layout_width="match_parent"

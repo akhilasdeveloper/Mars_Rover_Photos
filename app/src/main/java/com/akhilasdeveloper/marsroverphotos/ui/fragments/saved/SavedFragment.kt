@@ -3,7 +3,9 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.saved
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
+import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
+import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -22,8 +24,9 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
 
     @Inject
     lateinit var utilities: Utilities
+    internal var master: RoverMaster? = null
 
-    private val adapter = MarsRoverPhotoAdapter(this)
+    private val adapter = MarsRoverSavedPhotoAdapter(this)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,11 +37,54 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     }
 
     private fun init() {
-
+        val layoutManager = GridLayoutManager(
+            requireContext(),
+            Constants.GALLERY_SPAN,
+            GridLayoutManager.VERTICAL,
+            false
+        )
+        binding.apply {
+            photoRecycler.setHasFixedSize(true)
+            photoRecycler.layoutManager = layoutManager
+            photoRecycler.adapter = adapter
+        }
     }
 
     private fun subscribeObservers() {
+        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, {
+            val isHandled = it.hasBeenHandled()
+            it.peekContent?.let { rover ->
+                it.setAsHandled()
+                master = rover
+                setData()
+                if (!isHandled) {
+                    getData()
+                }
+            }
+        })
 
+        viewModel.dataStateLikedPhotos.observe(viewLifecycleOwner, {
+            it?.let {
+                adapter.submitData(viewLifecycleOwner.lifecycle, it)
+            }
+        })
+    }
+
+    private fun getData() {
+        master?.let { master ->
+            viewModel.getLikedPhotos(master)
+        }
+    }
+
+    private fun setData() {
+        master?.let {
+            setTitle()
+        }
+    }
+
+    private fun setTitle() {
+        binding.topAppbar.homeToolbarTop.title = master!!.name + " Rover (Liked Photos)"
+        binding.topAppbar.homeCollapsingToolbarTop.title = master!!.name + " Rover (Liked Photos)"
     }
 
     override fun onItemSelected(
@@ -46,6 +92,14 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
         position: Int
     ) {
 
+    }
+
+    override fun onItemLongClick(
+        marsRoverPhoto: MarsRoverPhotoTable,
+        position: Int,
+        view: ImageView
+    ): Boolean {
+        return true
     }
 
 }

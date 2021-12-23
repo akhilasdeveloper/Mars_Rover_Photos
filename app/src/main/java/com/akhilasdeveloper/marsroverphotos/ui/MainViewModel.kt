@@ -99,14 +99,12 @@ class MainViewModel
     fun getLikedPhotos(rover: RoverMaster) {
         job?.cancel()
         job = viewModelScope.launch {
-
             marsRoverPhotosRepository.getLikedPhotos(rover = rover)
                 .cachedIn(viewModelScope)
                 .onEach { its ->
                     _dataStateLikedPhotos.value = its
                 }
                 .launchIn(this)
-
         }
     }
 

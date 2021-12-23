@@ -21,14 +21,14 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
 import kotlinx.coroutines.*
 
 import java.util.*
-import kotlin.collections.ArrayList
 import android.annotation.SuppressLint
 import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.FragmentNavigatorExtras
+import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.StorageStrategy
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.google.android.gms.ads.AdRequest
@@ -41,12 +41,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     @Inject
     lateinit var utilities: Utilities
-
     private val adapter = MarsRoverPhotoAdapter(this)
     internal var master: RoverMaster? = null
     internal var currentDate: Long? = null
     private var hideFastScrollerJob: Job? = null
     private var navigateToDate = false
+
+    var tracker: SelectionTracker<Long>? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -91,6 +92,22 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             val adRequest: AdRequest = AdRequest.Builder().build()
             binding.adView.adView.loadAd(adRequest)
         }
+
+        tracker = SelectionTracker.Builder<Long>(
+            "mySelection",
+            binding.photoRecycler,
+            MarsPhotoKeyProvider(adapter),
+            MarsPhotoItemLookup(binding.photoRecycler,adapter),
+            StorageStrategy.createLongStorage()
+        ).withOnItemActivatedListener { item, e ->
+            Timber.d("Selected ${item.position}")
+            return@withOnItemActivatedListener false
+        }.build()
+
+        adapter.selectionChecker = object : SelectionChecker {
+            override fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
+                tracker?.isSelected(marsRoverPhotoTable.photo_id) ?: false
+        }
     }
 
     private fun showMainProgress() {
@@ -106,6 +123,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 isVisible = false
         }
     }
+
 
     private fun subscribeObservers() {
 
@@ -424,5 +442,16 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         val pos = adapter.snapshot().indexOf(marsRoverPhoto)
         findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         viewModel.setPosition(pos)
+    }
+
+    override fun onItemLongClick(
+        marsRoverPhoto: MarsRoverPhotoTable,
+        position: Int,
+        view: ImageView
+    ): Boolean {
+        val pos = adapter.snapshot().indexOf(marsRoverPhoto)
+        val viewI = binding.photoRecycler.layoutManager?.findViewByPosition(pos) as? ImageView
+        viewI?.alpha = .5f
+        return true
     }
 }

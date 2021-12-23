@@ -51,7 +51,7 @@ interface MarsPhotoDao {
     @Query("DELETE FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName")
     suspend fun clearByRoverIDAndDate(date: Long, roverName:String)
 
-    @Query("SELECT * FROM mars_rover_photo_table WHERE photo_id IN (SELECT photo_id FROM mars_rover_photo_liked_table WHERE rover_id = :roverID) ORDER BY earth_date DESC")
+    @Query("SELECT * FROM mars_rover_photo_table WHERE photo_id IN (SELECT id FROM mars_rover_photo_liked_table WHERE rover_id = :roverID) ORDER BY earth_date DESC")
     fun getSavedPhotos(roverID: Int): PagingSource<Int, MarsRoverPhotoTable>
 
 }
