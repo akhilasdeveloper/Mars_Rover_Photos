@@ -24,18 +24,18 @@ import java.util.*
 import android.annotation.SuppressLint
 import android.widget.ImageView
 import android.widget.SeekBar
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.selection.SelectionTracker
-import androidx.recyclerview.selection.StorageStrategy
+import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.google.android.gms.ads.AdRequest
-import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlin.collections.ArrayList
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
@@ -52,6 +52,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var navigateToDate = false
 
     var tracker: SelectionTracker<Long>? = null
+    var selectedList:ArrayList<MarsRoverPhotoTable> = arrayListOf()
+    var selectedPositions:ArrayList<Int> = arrayListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -64,9 +66,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
 
-                    if (tracker?.hasSelection() == true)
-                        tracker?.clearSelection()
-                    else
+                    if (selectedList.isNotEmpty()) {
+                        hideSelectMenu()
+                        selectedList.clear()
+                        selectedPositions.forEach {
+                            adapter.notifyItemChanged(it)
+                        }
+                        selectedPositions.clear()
+                    }else
                         if (isEnabled) {
                             isEnabled = false
                             requireActivity().onBackPressed()
@@ -120,7 +127,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             binding.adView.adView.loadAd(adRequest)
         }
 
-        tracker = SelectionTracker.Builder<Long>(
+        /*tracker = SelectionTracker.Builder<Long>(
             "MarsPhotoSelection",
             binding.photoRecycler,
             MarsPhotoKeyProvider(adapter),
@@ -139,10 +146,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     hideSelectMenu()
                 }
             }
-        })
+        })*/
 
         binding.topAppbar.homeToolbarTop.setNavigationOnClickListener {
-            tracker?.clearSelection()
+            hideSelectMenu()
+            selectedList.clear()
+            selectedPositions.forEach {
+                adapter.notifyItemChanged(it)
+            }
+            selectedPositions.clear()
         }
 
         binding.topAppbar.homeToolbarTop.setOnMenuItemClickListener {
@@ -167,7 +179,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         adapter.selectionChecker = object : SelectionChecker {
             override fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
-                tracker?.isSelected(marsRoverPhotoTable.photo_id) ?: false
+                selectedList.contains(marsRoverPhotoTable)
         }
     }
 
@@ -175,8 +187,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty()) {
             binding.topAppbar.homeToolbarTop.menu.clear()
             binding.topAppbar.homeToolbarTop.navigationIcon = null
-            binding.slideFrame.isVisible = true
-            binding.bottomAppbar.root.isVisible = true
+
         }
     }
 
@@ -185,8 +196,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             binding.topAppbar.homeToolbarTop.inflateMenu(R.menu.top_appbar_select_menu)
             binding.topAppbar.homeToolbarTop.navigationIcon = ResourcesCompat.getDrawable(resources,R.drawable.ic_x,null)
             binding.topAppbar.homeToolbarTop.setNavigationIconTint(ResourcesCompat.getColor(resources,R.color.system_for,null))
-            binding.slideFrame.isVisible = false
-            binding.bottomAppbar.root.isVisible = false
         }
     }
 
@@ -518,19 +527,66 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {
-        val pos = adapter.snapshot().indexOf(marsRoverPhoto)
-        findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
-        viewModel.setPosition(pos)
+        if (selectedList.isEmpty()) {
+            val pos = adapter.snapshot().indexOf(marsRoverPhoto)
+            findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
+            viewModel.setPosition(pos)
+            hideSelectMenu()
+        }else{
+            val pos = adapter.snapshot().indexOf(marsRoverPhoto)
+            if (selectedList.contains(marsRoverPhoto)) {
+                selectedList.remove(marsRoverPhoto)
+                selectedPositions.remove(pos)
+            }
+            else {
+                selectedList.add(marsRoverPhoto)
+                selectedPositions.add(pos)
+            }
+            if (selectedList.isEmpty())
+                hideSelectMenu()
+            adapter.notifyItemChanged(pos)
+        }
     }
 
     override fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
         position: Int,
-        view: ImageView
+        view: PhotoItemBinding
     ): Boolean {
+        showSelectMenu()
         val pos = adapter.snapshot().indexOf(marsRoverPhoto)
-        val viewI = binding.photoRecycler.layoutManager?.findViewByPosition(pos) as? ImageView
-        viewI?.alpha = .5f
+        if (selectedList.contains(marsRoverPhoto)) {
+            selectedList.remove(marsRoverPhoto)
+            selectedPositions.remove(pos)
+        }
+        else {
+            selectedList.add(marsRoverPhoto)
+            selectedPositions.add(pos)
+        }
+        if (selectedList.isEmpty())
+            hideSelectMenu()
+        adapter.notifyItemChanged(pos)
+        return true
+    }
+
+    override fun onDateItemLongClick(
+        photo: MarsRoverPhotoTable,
+        position: Int,
+        binding: PhotoDateItemBinding
+    ): Boolean {
+        showSelectMenu()
+        val pos = adapter.snapshot().indexOf(photo)
+        if (selectedList.contains(photo)) {
+            selectedList.remove(photo)
+            selectedPositions.remove(pos)
+        }
+        else {
+            selectedList.add(photo)
+            selectedPositions.add(pos)
+        }
+        if (selectedList.isEmpty())
+            hideSelectMenu()
+        adapter.notifyItemChanged(pos)
         return true
     }
 }

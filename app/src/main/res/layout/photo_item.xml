@@ -1,31 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout android:layout_height="wrap_content"
-    android:layout_width="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <com.akhilasdeveloper.marsroverphotos.ui.views.SquareImageView
-        android:id="@+id/image_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/rover_captured_image"
-        android:background="@drawable/imageview_placeholder"
-        android:transitionName="testTransition"
-        android:layout_margin="@dimen/stroke_strong"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/system_border"
-        android:visibility="gone"
-        android:id="@+id/overlay"/>
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checked="true"
-        android:visibility="gone"
-        android:buttonTint="@color/accent"
-        android:id="@+id/selection"/>
-
-
-</FrameLayout>
+<com.akhilasdeveloper.marsroverphotos.ui.views.SquareImageView android:id="@+id/image_description"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:contentDescription="@string/rover_captured_image"
+    android:background="@drawable/imageview_placeholder"
+    android:transitionName="testTransition"
+    android:layout_margin="@dimen/stroke_strong"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

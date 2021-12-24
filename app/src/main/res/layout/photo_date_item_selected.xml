@@ -14,7 +14,8 @@
         android:contentDescription="@string/rover_captured_image"
         android:background="@drawable/imageview_placeholder"
         android:layout_margin="@dimen/stroke_strong"
-        android:transitionName="testTransition"/>
+        android:transitionName="testTransition"
+        android:alpha=".2"/>
 
     <View
         android:layout_width="match_parent"
@@ -61,5 +62,12 @@
         android:layout_marginEnd="@dimen/global_window_padding"
         android:layout_marginBottom="@dimen/global_window_padding"
         android:padding="@dimen/drawable_button_background_ring_icon_padding"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:buttonTint="@color/accent"
+        android:id="@+id/selection"/>
 
 </FrameLayout>

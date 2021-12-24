@@ -12,6 +12,8 @@ import javax.inject.Inject
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentSavedBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.MarsRoverPhotoAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.RecyclerClickListener
@@ -97,9 +99,18 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     override fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
         position: Int,
-        view: ImageView
+        view: PhotoItemBinding
     ): Boolean {
         return true
     }
+
+    override fun onDateItemLongClick(
+        photo: MarsRoverPhotoTable,
+        position: Int,
+        binding: PhotoDateItemBinding
+    ): Boolean {
+        return true
+    }
+
 
 }

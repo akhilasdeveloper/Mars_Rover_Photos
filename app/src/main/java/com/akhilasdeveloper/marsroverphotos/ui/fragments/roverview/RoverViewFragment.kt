@@ -31,11 +31,9 @@ import com.canhub.cropper.CropImageView
 import com.canhub.cropper.options
 import android.app.WallpaperManager
 import androidx.core.content.FileProvider
-import androidx.core.net.toFile
 import androidx.lifecycle.lifecycleScope
-import androidx.transition.TransitionInflater
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import java.io.File
+import java.io.FileOutputStream
 
 
 @AndroidEntryPoint
@@ -52,7 +50,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
-    private lateinit var cropImage:  ActivityResultLauncher<CropImageContractOptions>
+    private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -92,7 +90,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             }
             share.setOnClickListener {
                 uiCommunicationListener.showShareSelectorDialog(onImageSelect = {
-                    shareImageAndText()
+                    shareAsImage()
                 }, onLinkSelect = {
                     setShare()
                 })
@@ -128,7 +126,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setWallpaper() {
-        currentData?.img_src?.downloadImageAsUri(requireContext()){uri->
+        currentData?.img_src?.downloadImageAsUri(requireContext()) { uri ->
             uri?.let {
                 cropImage.launch(
                     options(uri = it) {
@@ -143,33 +141,39 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private fun setShare() {
         currentData?.let {
             val intent = Intent(Intent.ACTION_SEND)
-            val shareBody = resources.getString(R.string.share_text, currentData?.rover_name, currentData?.img_src)
+            val shareBody = resources.getString(
+                R.string.share_text,
+                currentData?.rover_name,
+                currentData?.img_src
+            )
             intent.type = "text/plain"
             intent.putExtra(Intent.EXTRA_TEXT, shareBody)
             startActivity(Intent.createChooser(intent, getString(R.string.share_text)))
         }
     }
 
-    private fun shareImageAndText() {
-        currentData?.img_src?.downloadImageAsFile(requireContext()) {uri->
-            uri?.let {
-                val uriFile = FileProvider.getUriForFile(
-                    requireContext(),
-                    "com.akhilasdeveloper.marsroverphotos.provider", //(use your app signature + ".provider" )
-                    uri)
-                val intent = Intent(Intent.ACTION_SEND)
-                intent.putExtra(Intent.EXTRA_STREAM, uriFile)
-                intent.putExtra(Intent.EXTRA_TEXT, "Sharing Image")
-                intent.putExtra(Intent.EXTRA_SUBJECT, "Subject Here")
-                intent.type = "image/png"
-                startActivity(Intent.createChooser(intent, "Share Via"))
+    private fun shareAsImage() {
+        currentData?.img_src?.downloadImageAsBitmap(requireContext()) { bmp ->
+            bmp?.let {
+                lifecycleScope.launch {
+                    val uriFile = withContext(Dispatchers.IO) {
+                        toImageURI(
+                            bitmap = bmp,
+                            displayName = getDisplayName()
+                        )
+                    }
+                    val intent = Intent(Intent.ACTION_SEND)
+                    intent.putExtra(Intent.EXTRA_STREAM, uriFile)
+                    intent.type = "image/png"
+                    startActivity(Intent.createChooser(intent, "Share Via"))
+                }
             }
         }
     }
 
     private fun setDownload() {
         updateOrRequestPermission()
-        if (writePermissionGranted){
+        if (writePermissionGranted) {
             currentData?.img_src?.downloadImageAsBitmap(requireContext()) { image ->
                 image?.let {
                     savePhotoToExternalStorage(getDisplayName(), it).let { uri ->
@@ -223,6 +227,41 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             Timber.e(exception.fillInStackTrace())
             return null
         }
+    }
+
+    private fun toImageURI(bitmap: Bitmap?, displayName: String): Uri? {
+        bitmap?.let {
+            var file: File? = null
+            var fos1: FileOutputStream? = null
+            var imageUri: Uri? = null
+            try {
+                val folder = File(
+                    requireContext().cacheDir.toString() + File.separator + "MarsRoverPhotos Temp Files"
+                )
+                if (!folder.exists()) {
+                    folder.mkdir()
+                }
+                val filename = "$displayName.png"
+                file = File(folder.path, filename)
+                fos1 = FileOutputStream(file)
+
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
+                imageUri = FileProvider.getUriForFile(
+                    requireContext().applicationContext,
+                    requireContext().applicationContext.packageName.toString() + ".provider",
+                    file
+                )
+            } catch (ex: java.lang.Exception) {
+            } finally {
+                try {
+                    fos1?.close()
+                } catch (e: IOException) {
+                    Timber.d("Unable to close connection Utilities toImageURI : ${e.toString()}")
+                }
+            }
+            return imageUri
+        }
+        return null
     }
 
     private fun getIsLiked() {
@@ -287,10 +326,11 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             registerForActivityResult(ActivityResultContracts.RequestPermission()) {
                 writePermissionGranted = it
             }
-        cropImage =  registerForActivityResult(CropImageContract()) { result ->
+        cropImage = registerForActivityResult(CropImageContract()) { result ->
             if (result.isSuccessful) {
                 result.getBitmap(requireContext())?.let { bitmap ->
-                    val wallpaperManager = WallpaperManager.getInstance(requireActivity().applicationContext)
+                    val wallpaperManager =
+                        WallpaperManager.getInstance(requireActivity().applicationContext)
                     lifecycleScope.launch {
                         wallpaperManager.setBitmap(bitmap)
                         requireContext().showShortToast(message = "Wallpaper set")

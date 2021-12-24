@@ -197,7 +197,7 @@ fun String.downloadImageAsUri(context: Context, callback: (Uri?) -> (Unit)) {
 
 fun String.downloadImageAsFile(context: Context, callback: (File?) -> (Unit)) {
     CoroutineScope(Dispatchers.IO).launch {
-        val data = Glide.with(context).asFile().load(this).submit().get()
+        val data = Glide.with(context).asFile().load(this@downloadImageAsFile).submit().get()
         withContext(Dispatchers.Main) {
             callback(data)
         }

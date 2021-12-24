@@ -11,7 +11,7 @@
     <dimen name="corner_radius">5dp</dimen>
     <dimen name="global_window_padding">16dp</dimen>
     <dimen name="popup_window_padding">32dp</dimen>
-    <dimen name="popup_window_width">400dp</dimen>
+    <dimen name="popup_window_width">300dp</dimen>
     <dimen name="card_separation_margin_vertical">10dp</dimen>
     <dimen name="toolbar_top_title_text_height">64dp</dimen>
     <dimen name="toolbar_top_title_text_bottom_margin">36dp</dimen>

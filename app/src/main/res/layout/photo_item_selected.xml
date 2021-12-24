@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/accent">
+
+    <com.akhilasdeveloper.marsroverphotos.ui.views.SquareImageView
+        android:id="@+id/image_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/rover_captured_image"
+        android:background="@drawable/imageview_placeholder"
+        android:transitionName="testTransition"
+        android:alpha=".5"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:buttonTint="@color/white"
+        android:id="@+id/selection"/>
+
+
+</FrameLayout>
