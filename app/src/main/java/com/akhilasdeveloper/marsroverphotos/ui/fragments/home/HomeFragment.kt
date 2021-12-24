@@ -24,7 +24,10 @@ import java.util.*
 import android.annotation.SuppressLint
 import android.widget.ImageView
 import android.widget.SeekBar
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.res.ResourcesCompat
 
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.selection.SelectionTracker
@@ -32,6 +35,7 @@ import androidx.recyclerview.selection.StorageStrategy
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.google.android.gms.ads.AdRequest
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
@@ -48,6 +52,29 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var navigateToDate = false
 
     var tracker: SelectionTracker<Long>? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        setBackPressCallBack()
+        super.onCreate(savedInstanceState)
+    }
+
+    private fun setBackPressCallBack() {
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+
+                    if (tracker?.hasSelection() == true)
+                        tracker?.clearSelection()
+                    else
+                        if (isEnabled) {
+                            isEnabled = false
+                            requireActivity().onBackPressed()
+                        }
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -94,7 +121,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
 
         tracker = SelectionTracker.Builder<Long>(
-            "mySelection",
+            "MarsPhotoSelection",
             binding.photoRecycler,
             MarsPhotoKeyProvider(adapter),
             MarsPhotoItemLookup(binding.photoRecycler,adapter),
@@ -104,9 +131,62 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             return@withOnItemActivatedListener false
         }.build()
 
+        tracker?.addObserver(object : SelectionTracker.SelectionObserver<Long>(){
+            override fun onSelectionChanged() {
+                if ( tracker?.hasSelection() == true) {
+                    showSelectMenu()
+                }else {
+                    hideSelectMenu()
+                }
+            }
+        })
+
+        binding.topAppbar.homeToolbarTop.setNavigationOnClickListener {
+            tracker?.clearSelection()
+        }
+
+        binding.topAppbar.homeToolbarTop.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.share -> {
+                    uiCommunicationListener.showShareSelectorDialog(onImageSelect = {
+
+                    }, onLinkSelect = {
+
+                    })
+                    true
+                }
+                R.id.like -> {
+                    true
+                }
+                R.id.download -> {
+                    true
+                }
+                else -> false
+            }
+        }
+
         adapter.selectionChecker = object : SelectionChecker {
             override fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
                 tracker?.isSelected(marsRoverPhotoTable.photo_id) ?: false
+        }
+    }
+
+    private fun hideSelectMenu() {
+        if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty()) {
+            binding.topAppbar.homeToolbarTop.menu.clear()
+            binding.topAppbar.homeToolbarTop.navigationIcon = null
+            binding.slideFrame.isVisible = true
+            binding.bottomAppbar.root.isVisible = true
+        }
+    }
+
+    private fun showSelectMenu() {
+        if (binding.topAppbar.homeToolbarTop.menu.isEmpty()) {
+            binding.topAppbar.homeToolbarTop.inflateMenu(R.menu.top_appbar_select_menu)
+            binding.topAppbar.homeToolbarTop.navigationIcon = ResourcesCompat.getDrawable(resources,R.drawable.ic_x,null)
+            binding.topAppbar.homeToolbarTop.setNavigationIconTint(ResourcesCompat.getColor(resources,R.color.system_for,null))
+            binding.slideFrame.isVisible = false
+            binding.bottomAppbar.root.isVisible = false
         }
     }
 
@@ -397,7 +477,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 hideFastScrollerJob = lifecycleScope.launch {
                     delay(2000L)
                     animate()
-                        .translationY(0f)
+                        .translationX(toDpi(48).toFloat())
                         .alpha(0.0f).duration = 400L
                 }
             }
@@ -409,12 +489,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             if (alpha == 0f) {
                 animate()
                     .alpha(1.0f)
+                    .translationX(0f)
                     .setListener(null).duration = 400L
             }
         }
     }
-
-
 
     internal fun onDateSelected(date: Long, fetch: Boolean = false) {
         currentDate = date

@@ -30,9 +30,8 @@
             android:id="@+id/home_toolbar_top"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:elevation="0dp"
             app:contentInsetStart="@dimen/global_window_padding"
-            app:layout_collapseMode="none"
+            app:layout_collapseMode="pin"
             app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed" />
     </com.google.android.material.appbar.CollapsingToolbarLayout>
 

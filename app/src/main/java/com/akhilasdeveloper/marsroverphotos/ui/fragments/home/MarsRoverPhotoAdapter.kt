@@ -2,9 +2,9 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.selection.ItemDetailsLookup
-import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
@@ -43,7 +43,7 @@ class MarsRoverPhotoAdapter(
             ViewType.DETAILED.ordinal -> {
                 val photoItemViewHolder = holder as PhotoDateViewHolder
                 currentItem?.let {
-                    photoItemViewHolder.bindPhoto(currentItem, position)
+                    photoItemViewHolder.bindPhoto(currentItem, position,selectionChecker?.isSelected(currentItem) == true)
                 }
             }
             ViewType.SMALL.ordinal -> {
@@ -84,8 +84,9 @@ class MarsRoverPhotoAdapter(
                 }
             }
 
-            if (selected && position == positionSel)
-                binding.root.alpha = .5f
+            binding.selection.isChecked = selected
+            binding.selection.isVisible = selected
+            binding.overlay.isVisible = selected
 
             binding.root.setOnClickListener {
                 interaction?.onItemSelected(photo, position)
@@ -108,7 +109,7 @@ class MarsRoverPhotoAdapter(
         var positionSel = 0
         var photo: MarsRoverPhotoTable? = null
 
-        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
+        fun bindPhoto(photo: MarsRoverPhotoTable, position: Int, selected: Boolean) {
             positionSel = position
             this.photo = photo
             binding.apply {
@@ -126,6 +127,10 @@ class MarsRoverPhotoAdapter(
                     binding.date.text = it.earth_date.formatMillisToDisplayDate()
                 }
             }
+
+            binding.selection.isChecked = selected
+            binding.selection.isVisible = selected
+            binding.overlay.isVisible = selected
 
             binding.root.setOnClickListener {
                 interaction?.onItemSelected(photo, position)

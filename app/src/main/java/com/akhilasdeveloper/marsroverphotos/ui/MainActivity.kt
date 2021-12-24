@@ -7,11 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.*
+import androidx.core.widget.addTextChangedListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.LayoutShareSelectBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.LayoutSolSelectBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.SnackBarLayoutBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
@@ -207,4 +211,32 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    override fun showShareSelectorDialog(onImageSelect: () -> Unit, onLinkSelect: () -> Unit) {
+            val dialogView: LayoutShareSelectBinding =
+                LayoutShareSelectBinding.inflate(LayoutInflater.from(this))
+            val builder: AlertDialog.Builder =
+                AlertDialog.Builder(this, R.style.dialog_background)
+                    .setView(dialogView.root)
+            val alertDialog: AlertDialog = builder.create()
+
+            dialogView.apply {
+
+                linkSelect.setOnClickListener {
+                    onLinkSelect()
+                    alertDialog.cancel()
+                }
+
+                imageSelect.setOnClickListener {
+                    onImageSelect()
+                    alertDialog.cancel()
+                }
+
+                cancelSolSelector.setOnClickListener {
+                    alertDialog.cancel()
+                }
+            }
+
+            alertDialog.show()
+
+    }
 }

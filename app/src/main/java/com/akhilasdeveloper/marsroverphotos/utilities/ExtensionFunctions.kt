@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -190,6 +191,15 @@ fun String.downloadImageAsUri(context: Context, callback: (Uri?) -> (Unit)) {
         val data = Glide.with(context).asFile().load(this@downloadImageAsUri).submit().get()
         withContext(Dispatchers.Main) {
             callback(data.toUri())
+        }
+    }
+}
+
+fun String.downloadImageAsFile(context: Context, callback: (File?) -> (Unit)) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val data = Glide.with(context).asFile().load(this).submit().get()
+        withContext(Dispatchers.Main) {
+            callback(data)
         }
     }
 }

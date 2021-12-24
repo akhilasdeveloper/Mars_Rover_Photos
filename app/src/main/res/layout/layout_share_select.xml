@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/appbar"
+    app:cardCornerRadius="@dimen/corner_radius"
+    android:minWidth="@dimen/popup_window_width">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/tool_bar_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/global_window_padding"
+            android:labelFor="@id/solSelectorCount"
+            android:text="@string/share_as"
+            android:textColor="@color/system_for"
+            app:drawableStartCompat="@drawable/ic_twotone_share_24"
+            app:drawableTint="@color/system_for"
+            android:layout_margin="@dimen/global_window_padding"/>
+
+        <TextView
+            style="@style/photo_item_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/global_window_padding"
+            android:labelFor="@id/solSelectorCount"
+            android:text="@string/share_as_link_s"
+            android:textColor="@color/system_for"
+            android:id="@+id/link_select"
+            app:drawableStartCompat="@drawable/ic_link"
+            app:drawableTint="@color/system_for"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"/>
+        <TextView
+            style="@style/photo_item_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/global_window_padding"
+            android:labelFor="@id/solSelectorCount"
+            android:text="@string/share_as_image_s"
+            android:textColor="@color/system_for"
+            android:id="@+id/image_select"
+            app:drawableStartCompat="@drawable/ic_outline_image_24"
+            app:drawableTint="@color/system_for"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/cancel_sol_selector"
+                style="@style/bottom_appbar_button_ring"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

@@ -20,6 +20,7 @@
         <entry key="app/src/main/res/drawable/ic_heart_fill.xml" value="0.22239583333333332" />
         <entry key="app/src/main/res/drawable/ic_heart_unfill.xml" value="0.22239583333333332" />
         <entry key="app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.36875" />
+        <entry key="app/src/main/res/drawable/ic_link.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/ic_mars_icon.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/ic_marsrover.xml" value="0.36875" />
         <entry key="app/src/main/res/drawable/ic_outline_camera_alt_24.xml" value="0.36875" />
@@ -32,6 +33,7 @@
         <entry key="app/src/main/res/drawable/ic_twotone_arrow_circle_down_24.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/ic_twotone_share_24.xml" value="0.38125" />
         <entry key="app/src/main/res/drawable/ic_twotone_wallpaper_24.xml" value="0.38125" />
+        <entry key="app/src/main/res/drawable/ic_x.xml" value="0.17083333333333334" />
         <entry key="app/src/main/res/drawable/image_viewer_bottom_background_gradient.xml" value="0.275" />
         <entry key="app/src/main/res/drawable/image_viewer_top_background_gradient.xml" value="0.275" />
         <entry key="app/src/main/res/drawable/imageview_placeholder.xml" value="0.36875" />
@@ -52,6 +54,7 @@
         <entry key="app/src/main/res/layout/item_ad_banner.xml" value="0.33" />
         <entry key="app/src/main/res/layout/layout_bottom_sheet.xml" value="0.32971014492753625" />
         <entry key="app/src/main/res/layout/layout_date_select.xml" value="0.3651041666666667" />
+        <entry key="app/src/main/res/layout/layout_share_select.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/layout_sol_select.xml" value="0.5" />
         <entry key="app/src/main/res/layout/marsrover_photo_load_state_footer.xml" value="0.25" />
         <entry key="app/src/main/res/layout/photo_date_item.xml" value="0.3651041666666667" />
@@ -61,9 +64,11 @@
         <entry key="app/src/main/res/layout/rover_item.xml" value="0.391304347826087" />
         <entry key="app/src/main/res/layout/snack_bar_layout.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/top_appbar.xml" value="0.3651041666666667" />
+        <entry key="app/src/main/res/layout/top_appbar_selection.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/view_pager_date_item.xml" value="0.1" />
         <entry key="app/src/main/res/layout/view_pager_item.xml" value="0.2" />
         <entry key="app/src/main/res/menu/menu_home.xml" value="0.1953125" />
+        <entry key="app/src/main/res/menu/top_appbar_select_menu.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.36875" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.36875" />
       </map>

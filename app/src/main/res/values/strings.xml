@@ -23,4 +23,7 @@
     <string name="download">Download</string>
     <string name="share">Share</string>
     <string name="like">Like</string>
+    <string name="share_as">Share As</string>
+    <string name="share_as_link_s">Share as link(s)</string>
+    <string name="share_as_image_s">Share as image(s)</string>
 </resources>

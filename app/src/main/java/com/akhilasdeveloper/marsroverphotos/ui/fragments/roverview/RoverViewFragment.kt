@@ -30,6 +30,8 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageView
 import com.canhub.cropper.options
 import android.app.WallpaperManager
+import androidx.core.content.FileProvider
+import androidx.core.net.toFile
 import androidx.lifecycle.lifecycleScope
 import androidx.transition.TransitionInflater
 import com.bumptech.glide.Glide
@@ -89,7 +91,11 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                 setDownload()
             }
             share.setOnClickListener {
-                setShare()
+                uiCommunicationListener.showShareSelectorDialog(onImageSelect = {
+                    shareImageAndText()
+                }, onLinkSelect = {
+                    setShare()
+                })
             }
             setWallpaper.setOnClickListener {
                 setWallpaper()
@@ -141,6 +147,23 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             intent.type = "text/plain"
             intent.putExtra(Intent.EXTRA_TEXT, shareBody)
             startActivity(Intent.createChooser(intent, getString(R.string.share_text)))
+        }
+    }
+
+    private fun shareImageAndText() {
+        currentData?.img_src?.downloadImageAsFile(requireContext()) {uri->
+            uri?.let {
+                val uriFile = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.akhilasdeveloper.marsroverphotos.provider", //(use your app signature + ".provider" )
+                    uri)
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.putExtra(Intent.EXTRA_STREAM, uriFile)
+                intent.putExtra(Intent.EXTRA_TEXT, "Sharing Image")
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Subject Here")
+                intent.type = "image/png"
+                startActivity(Intent.createChooser(intent, "Share Via"))
+            }
         }
     }
 

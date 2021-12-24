@@ -62,4 +62,19 @@
         android:layout_marginBottom="@dimen/global_window_padding"
         android:padding="@dimen/drawable_button_background_ring_icon_padding"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/system_border"
+        android:visibility="gone"
+        android:id="@+id/overlay"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:visibility="gone"
+        android:buttonTint="@color/accent"
+        android:id="@+id/selection"/>
+
 </FrameLayout>
