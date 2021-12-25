@@ -31,15 +31,25 @@ class MarsRoverPhotoAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val bindingPhoto = PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        val bindingPhotoSelected = PhotoItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        val bindingDatePhoto = PhotoDateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        val bindingDatePhotoSelected = PhotoDateItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val bindingPhoto =
+            PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val bindingPhotoSelected =
+            PhotoItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val bindingDatePhoto =
+            PhotoDateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val bindingDatePhotoSelected =
+            PhotoDateItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return when (viewType) {
             ViewType.DETAILED.ordinal -> PhotoDateViewHolder(bindingDatePhoto, interaction)
-            ViewType.DETAILED_SELECTED.ordinal -> PhotoDateSelectedViewHolder(bindingDatePhotoSelected, interaction)
+            ViewType.DETAILED_SELECTED.ordinal -> PhotoDateSelectedViewHolder(
+                bindingDatePhotoSelected,
+                interaction
+            )
             ViewType.SMALL.ordinal -> PhotoViewHolder(bindingPhoto, interaction)
-            ViewType.SMALL_SELECTED.ordinal -> PhotoSelectedViewHolder(bindingPhotoSelected, interaction)
+            ViewType.SMALL_SELECTED.ordinal -> PhotoSelectedViewHolder(
+                bindingPhotoSelected,
+                interaction
+            )
             else -> PhotoViewHolder(bindingPhoto, interaction)
         }
     }
@@ -58,7 +68,8 @@ class MarsRoverPhotoAdapter(
                 currentItem?.let { photo ->
                     photoViewHolder.bindPhoto(
                         photo,
-                        position)
+                        position
+                    )
 
                 }
             }
@@ -67,7 +78,8 @@ class MarsRoverPhotoAdapter(
                 currentItem?.let { photo ->
                     photoViewHolder.bindPhoto(
                         photo,
-                        position)
+                        position
+                    )
 
                 }
             }
@@ -76,7 +88,8 @@ class MarsRoverPhotoAdapter(
                 currentItem?.let { photo ->
                     photoViewHolder.bindPhoto(
                         photo,
-                        position)
+                        position
+                    )
 
                 }
             }
@@ -108,11 +121,11 @@ class MarsRoverPhotoAdapter(
             }
 
             binding.root.setOnClickListener {
-                interaction?.onItemSelected(photo, position)
+                interaction?.onItemSelected(photo, absoluteAdapterPosition)
             }
 
             binding.root.setOnLongClickListener {
-                interaction?.onItemLongClick(photo, position, binding) ?: false
+                interaction?.onItemLongClick(photo, absoluteAdapterPosition) ?: false
             }
         }
 
@@ -136,13 +149,12 @@ class MarsRoverPhotoAdapter(
                     Glide.with(itemView)
                         .load(it.img_src)
                         .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
                 }
             }
 
             binding.root.setOnClickListener {
-                interaction?.onItemSelected(photo, position)
+                interaction?.onItemSelected(photo, absoluteAdapterPosition)
             }
 
             /*binding.root.setOnLongClickListener {
@@ -181,11 +193,11 @@ class MarsRoverPhotoAdapter(
             }
 
             binding.root.setOnClickListener {
-                interaction?.onItemSelected(photo, position)
+                interaction?.onItemSelected(photo, absoluteAdapterPosition)
             }
 
             binding.root.setOnLongClickListener {
-                interaction?.onDateItemLongClick(photo, position, binding) ?: false
+                interaction?.onItemLongClick(photo, absoluteAdapterPosition) ?: false
             }
         }
 
@@ -209,7 +221,6 @@ class MarsRoverPhotoAdapter(
                     Glide.with(itemView)
                         .load(it.img_src)
                         .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imageDescription)
 
 
@@ -220,7 +231,7 @@ class MarsRoverPhotoAdapter(
             }
 
             binding.root.setOnClickListener {
-                interaction?.onItemSelected(photo, position)
+                interaction?.onItemSelected(photo, absoluteAdapterPosition)
             }
 
             /*binding.root.setOnLongClickListener {
@@ -234,14 +245,14 @@ class MarsRoverPhotoAdapter(
         val curr = getItem(position)
         return if (curr?.is_placeholder == true)
             curr.let {
-                if (selectionChecker?.isSelected(it)==true)
+                if (selectionChecker?.isSelected(it) == true)
                     ViewType.DETAILED_SELECTED.ordinal
                 else
                     ViewType.DETAILED.ordinal
             }
         else
             curr?.let {
-                if (selectionChecker?.isSelected(it)==true)
+                if (selectionChecker?.isSelected(it) == true)
                     ViewType.SMALL_SELECTED.ordinal
                 else
                     ViewType.SMALL.ordinal

@@ -98,16 +98,7 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
 
     override fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
-        position: Int,
-        view: PhotoItemBinding
-    ): Boolean {
-        return true
-    }
-
-    override fun onDateItemLongClick(
-        photo: MarsRoverPhotoTable,
-        position: Int,
-        binding: PhotoDateItemBinding
+        position: Int
     ): Boolean {
         return true
     }

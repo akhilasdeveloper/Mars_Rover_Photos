@@ -528,65 +528,34 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {
         if (selectedList.isEmpty()) {
-            val pos = adapter.snapshot().indexOf(marsRoverPhoto)
             findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
-            viewModel.setPosition(pos)
+            viewModel.setPosition(position)
             hideSelectMenu()
         }else{
-            val pos = adapter.snapshot().indexOf(marsRoverPhoto)
-            if (selectedList.contains(marsRoverPhoto)) {
-                selectedList.remove(marsRoverPhoto)
-                selectedPositions.remove(pos)
-            }
-            else {
-                selectedList.add(marsRoverPhoto)
-                selectedPositions.add(pos)
-            }
-            if (selectedList.isEmpty())
-                hideSelectMenu()
-            adapter.notifyItemChanged(pos)
+            setSelection(marsRoverPhoto, position)
         }
     }
 
     override fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
-        position: Int,
-        view: PhotoItemBinding
+        position: Int
     ): Boolean {
         showSelectMenu()
-        val pos = adapter.snapshot().indexOf(marsRoverPhoto)
-        if (selectedList.contains(marsRoverPhoto)) {
-            selectedList.remove(marsRoverPhoto)
-            selectedPositions.remove(pos)
-        }
-        else {
-            selectedList.add(marsRoverPhoto)
-            selectedPositions.add(pos)
-        }
-        if (selectedList.isEmpty())
-            hideSelectMenu()
-        adapter.notifyItemChanged(pos)
+        setSelection(marsRoverPhoto, position)
         return true
     }
 
-    override fun onDateItemLongClick(
-        photo: MarsRoverPhotoTable,
-        position: Int,
-        binding: PhotoDateItemBinding
-    ): Boolean {
-        showSelectMenu()
-        val pos = adapter.snapshot().indexOf(photo)
+    private fun setSelection(photo: MarsRoverPhotoTable, position: Int) {
         if (selectedList.contains(photo)) {
             selectedList.remove(photo)
-            selectedPositions.remove(pos)
+            selectedPositions.remove(position)
         }
         else {
             selectedList.add(photo)
-            selectedPositions.add(pos)
+            selectedPositions.add(position)
         }
         if (selectedList.isEmpty())
             hideSelectMenu()
-        adapter.notifyItemChanged(pos)
-        return true
+        adapter.notifyItemChanged(position)
     }
 }

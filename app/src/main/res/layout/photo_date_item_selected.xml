@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:gravity="bottom"
     android:orientation="vertical"
-    android:background="@color/first">
+    android:background="@color/accent"
+    android:layout_margin="@dimen/stroke_strong">
 
     <ImageView
         android:id="@+id/image_description"
@@ -13,15 +14,7 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/rover_captured_image"
         android:background="@drawable/imageview_placeholder"
-        android:layout_margin="@dimen/stroke_strong"
-        android:transitionName="testTransition"
         android:alpha=".2"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/transparent50"
-        android:layout_margin="@dimen/stroke_strong" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -67,7 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checked="true"
-        android:buttonTint="@color/accent"
+        android:buttonTint="@color/white"
         android:id="@+id/selection"/>
 
 </FrameLayout>

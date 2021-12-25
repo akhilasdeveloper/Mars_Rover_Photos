@@ -4,6 +4,5 @@
     android:layout_height="wrap_content"
     android:contentDescription="@string/rover_captured_image"
     android:background="@drawable/imageview_placeholder"
-    android:transitionName="testTransition"
     android:layout_margin="@dimen/stroke_strong"
     xmlns:android="http://schemas.android.com/apk/res/android" />

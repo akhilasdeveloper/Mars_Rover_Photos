@@ -6,10 +6,5 @@ import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 
 interface RecyclerClickListener {
     fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int)
-    fun onItemLongClick(marsRoverPhoto: MarsRoverPhotoTable, position: Int, view: PhotoItemBinding): Boolean
-    fun onDateItemLongClick(
-        photo: MarsRoverPhotoTable,
-        position: Int,
-        binding: PhotoDateItemBinding
-    ): Boolean
+    fun onItemLongClick(marsRoverPhoto: MarsRoverPhotoTable, position: Int): Boolean
 }
