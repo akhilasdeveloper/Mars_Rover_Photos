@@ -34,6 +34,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import java.io.File
 import java.io.FileOutputStream
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -51,6 +52,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
+
+    @Inject
+    lateinit var utilities: Utilities
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -157,7 +161,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             bmp?.let {
                 lifecycleScope.launch {
                     val uriFile = withContext(Dispatchers.IO) {
-                        toImageURI(
+                        utilities.toImageURI(
                             bitmap = bmp,
                             displayName = getDisplayName()
                         )
@@ -227,41 +231,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             Timber.e(exception.fillInStackTrace())
             return null
         }
-    }
-
-    private fun toImageURI(bitmap: Bitmap?, displayName: String): Uri? {
-        bitmap?.let {
-            var file: File? = null
-            var fos1: FileOutputStream? = null
-            var imageUri: Uri? = null
-            try {
-                val folder = File(
-                    requireContext().cacheDir.toString() + File.separator + "MarsRoverPhotos Temp Files"
-                )
-                if (!folder.exists()) {
-                    folder.mkdir()
-                }
-                val filename = "$displayName.png"
-                file = File(folder.path, filename)
-                fos1 = FileOutputStream(file)
-
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
-                imageUri = FileProvider.getUriForFile(
-                    requireContext().applicationContext,
-                    requireContext().applicationContext.packageName.toString() + ".provider",
-                    file
-                )
-            } catch (ex: java.lang.Exception) {
-            } finally {
-                try {
-                    fos1?.close()
-                } catch (e: IOException) {
-                    Timber.d("Unable to close connection Utilities toImageURI : ${e.toString()}")
-                }
-            }
-            return imageUri
-        }
-        return null
     }
 
     private fun getIsLiked() {

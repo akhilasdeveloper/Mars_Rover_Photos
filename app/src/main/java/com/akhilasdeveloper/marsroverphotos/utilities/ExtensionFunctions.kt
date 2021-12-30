@@ -186,6 +186,8 @@ fun String.downloadImageAsBitmap(context: Context, callback: (Bitmap?) -> (Unit)
         })
 }
 
+fun String.downloadImageAsBitmap2(context: Context): Bitmap? = Glide.with(context).asBitmap().load(this).submit().get()
+
 fun String.downloadImageAsUri(context: Context, callback: (Uri?) -> (Unit)) {
     CoroutineScope(Dispatchers.IO).launch {
         val data = Glide.with(context).asFile().load(this@downloadImageAsUri).submit().get()
@@ -234,6 +236,6 @@ fun View.updateMarginAndHeight(
     }
 }
 
-fun Fragment.toDpi(int: Int) : Int = (this.resources.displayMetrics.density * int).toInt()
-val Fragment.displayHeightPx : Int get() = this.resources.displayMetrics.heightPixels
+fun Fragment.toDpi(int: Int): Int = (this.resources.displayMetrics.density * int).toInt()
+val Fragment.displayHeightPx: Int get() = this.resources.displayMetrics.heightPixels
 

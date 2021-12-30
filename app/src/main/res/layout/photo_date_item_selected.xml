@@ -3,64 +3,73 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="@dimen/stroke_strong"
+    android:background="@color/appbar"
     android:gravity="bottom"
-    android:orientation="vertical"
-    android:background="@color/accent"
-    android:layout_margin="@dimen/stroke_strong">
+    android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/image_description"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/rover_captured_image"
-        android:background="@drawable/imageview_placeholder"
-        android:alpha=".2"/>
+        android:clipToPadding="true"
+        app:cardBackgroundColor="@color/accent"
+        app:cardCornerRadius="@dimen/corner_radius">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginStart="@dimen/global_window_padding"
-        android:layout_marginEnd="@dimen/global_window_padding"
-        android:layout_marginTop="@dimen/global_window_padding">
-
-        <TextView
-            android:id="@+id/date"
-            android:layout_width="0dp"
+        <ImageView
+            android:id="@+id/image_description"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/photo_item_date"
-            android:layout_weight="1"/>
+            android:alpha=".2"
+            android:background="@drawable/imageview_placeholder"
+            android:contentDescription="@string/rover_captured_image" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginTop="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/date"
+                style="@style/photo_item_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/sol"
+                style="@style/photo_item_sol"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+                app:drawableStartCompat="@drawable/ic_mars_icon"
+                app:drawableTint="@color/white" />
+
+
+        </LinearLayout>
+
 
         <TextView
-            android:id="@+id/sol"
+            android:id="@+id/count"
+            style="@style/photo_item_sol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/photo_item_sol"
-            app:drawableStartCompat="@drawable/ic_mars_icon"
-            app:drawableTint="@color/white"
-            android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"/>
-
-
-    </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@style/photo_item_sol"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="@dimen/global_window_padding"
-        android:layout_marginEnd="@dimen/global_window_padding"
-        android:layout_marginBottom="@dimen/global_window_padding"
-        android:padding="@dimen/drawable_button_background_ring_icon_padding"/>
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"
+            android:padding="@dimen/drawable_button_background_ring_icon_padding" />
+    </com.google.android.material.card.MaterialCardView>
 
     <CheckBox
+        android:id="@+id/selection"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:checked="true"
         android:buttonTint="@color/white"
-        android:id="@+id/selection"/>
+        android:checked="true"
+        android:translationZ="1dp"/>
 
 </FrameLayout>

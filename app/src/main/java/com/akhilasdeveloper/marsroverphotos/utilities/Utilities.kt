@@ -1,11 +1,17 @@
 package com.akhilasdeveloper.marsroverphotos.utilities
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
+import androidx.core.content.FileProvider
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import timber.log.Timber
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import javax.inject.Inject
 
 
@@ -46,6 +52,41 @@ class Utilities @Inject constructor(
             Timber.d("isConnectedToTheInternet: ${e.message}")
         }
         return false
+    }
+
+    fun toImageURI(bitmap: Bitmap?, displayName: String): Uri? {
+        bitmap?.let {
+            var file: File? = null
+            var fos1: FileOutputStream? = null
+            var imageUri: Uri? = null
+            try {
+                val folder = File(
+                    context.cacheDir.toString() + File.separator + "MarsRoverPhotos Temp Files"
+                )
+                if (!folder.exists()) {
+                    folder.mkdir()
+                }
+                val filename = "$displayName.png"
+                file = File(folder.path, filename)
+                fos1 = FileOutputStream(file)
+
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
+                imageUri = FileProvider.getUriForFile(
+                    context.applicationContext,
+                    context.applicationContext.packageName.toString() + ".provider",
+                    file
+                )
+            } catch (ex: java.lang.Exception) {
+            } finally {
+                try {
+                    fos1?.close()
+                } catch (e: IOException) {
+                    Timber.d("Unable to close connection Utilities toImageURI : ${e.toString()}")
+                }
+            }
+            return imageUri
+        }
+        return null
     }
 
     fun calculateDays(landingDate: Long, currentDate: Long?): Long? =

@@ -1,8 +1,16 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.SeekBar
+import androidx.activity.OnBackPressedCallback
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.*
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
@@ -10,32 +18,17 @@ import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.google.android.material.datepicker.*
-import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
-import javax.inject.Inject
-import kotlinx.android.synthetic.main.layout_sol_select.view.*
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.*
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
-import kotlinx.coroutines.*
-
-import java.util.*
-import android.annotation.SuppressLint
-import android.widget.ImageView
-import android.widget.SeekBar
-import androidx.activity.OnBackPressedCallback
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.res.ResourcesCompat
-
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.selection.SelectionTracker
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.google.android.gms.ads.AdRequest
-import kotlin.collections.ArrayList
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
@@ -43,17 +36,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var _binding: FragmentHomeBinding? = null
     internal val binding get() = _binding!!
 
-    @Inject
-    lateinit var utilities: Utilities
     private val adapter = MarsRoverPhotoAdapter(this)
     internal var master: RoverMaster? = null
     internal var currentDate: Long? = null
     private var hideFastScrollerJob: Job? = null
     private var navigateToDate = false
 
-    var tracker: SelectionTracker<Long>? = null
-    var selectedList:ArrayList<MarsRoverPhotoTable> = arrayListOf()
-    var selectedPositions:ArrayList<Int> = arrayListOf()
+    var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
+
+    //    var selectedUriList: MutableMap<Long,Uri> = hashMapOf()
+    var selectedPositions: ArrayList<Int> = arrayListOf()
+
+    @Inject
+    lateinit var utilities: Utilities
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -73,7 +68,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                             adapter.notifyItemChanged(it)
                         }
                         selectedPositions.clear()
-                    }else
+                    } else
                         if (isEnabled) {
                             isEnabled = false
                             requireActivity().onBackPressed()
@@ -127,27 +122,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             binding.adView.adView.loadAd(adRequest)
         }
 
-        /*tracker = SelectionTracker.Builder<Long>(
-            "MarsPhotoSelection",
-            binding.photoRecycler,
-            MarsPhotoKeyProvider(adapter),
-            MarsPhotoItemLookup(binding.photoRecycler,adapter),
-            StorageStrategy.createLongStorage()
-        ).withOnItemActivatedListener { item, e ->
-            Timber.d("Selected ${item.position}")
-            return@withOnItemActivatedListener false
-        }.build()
-
-        tracker?.addObserver(object : SelectionTracker.SelectionObserver<Long>(){
-            override fun onSelectionChanged() {
-                if ( tracker?.hasSelection() == true) {
-                    showSelectMenu()
-                }else {
-                    hideSelectMenu()
-                }
-            }
-        })*/
-
         binding.topAppbar.homeToolbarTop.setNavigationOnClickListener {
             hideSelectMenu()
             selectedList.clear()
@@ -161,9 +135,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             when (it.itemId) {
                 R.id.share -> {
                     uiCommunicationListener.showShareSelectorDialog(onImageSelect = {
-
+                        shareAllAsImage()
                     }, onLinkSelect = {
-
+                        shareAllAsLinks()
                     })
                     true
                 }
@@ -179,9 +153,35 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         adapter.selectionChecker = object : SelectionChecker {
             override fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
-                selectedList.contains(marsRoverPhotoTable)
+                if (selectedList.isNotEmpty()) selectedList.contains(marsRoverPhotoTable) else false
         }
     }
+
+    private fun shareAllAsLinks() {
+
+    }
+
+    private fun shareAllAsImage() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                viewModel.setLoading(true)
+            }
+            downloadImage().let {
+                withContext(Dispatchers.Main) {
+                    viewModel.setLoading(false)
+                }
+                if (it.isNotEmpty()) {
+                    val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
+                    intent.type = "image/png"
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, downloadImage())
+                    startActivity(Intent.createChooser(intent, "Share Via"))
+                }
+            }
+        }
+    }
+
+    private fun getDisplayName(rover: MarsRoverPhotoTable) =
+        "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}"
 
     private fun hideSelectMenu() {
         if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty()) {
@@ -194,20 +194,27 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun showSelectMenu() {
         if (binding.topAppbar.homeToolbarTop.menu.isEmpty()) {
             binding.topAppbar.homeToolbarTop.inflateMenu(R.menu.top_appbar_select_menu)
-            binding.topAppbar.homeToolbarTop.navigationIcon = ResourcesCompat.getDrawable(resources,R.drawable.ic_x,null)
-            binding.topAppbar.homeToolbarTop.setNavigationIconTint(ResourcesCompat.getColor(resources,R.color.system_for,null))
+            binding.topAppbar.homeToolbarTop.navigationIcon =
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_x, null)
+            binding.topAppbar.homeToolbarTop.setNavigationIconTint(
+                ResourcesCompat.getColor(
+                    resources,
+                    R.color.system_for,
+                    null
+                )
+            )
         }
     }
 
     private fun showMainProgress() {
-        binding.progress.apply {
+        binding.progressCenter.apply {
             if (!isVisible)
                 isVisible = true
         }
     }
 
     private fun hideMainProgress() {
-        binding.progress.apply {
+        binding.progressCenter.apply {
             if (isVisible)
                 isVisible = false
         }
@@ -351,8 +358,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             if (navigateToDate &&
                 loadStates.source.prepend !is LoadState.Loading &&
                 loadStates.source.append !is LoadState.Loading &&
-                loadStates.source.refresh !is LoadState.Loading){
-                    navigateToDate = false
+                loadStates.source.refresh !is LoadState.Loading
+            ) {
+                navigateToDate = false
                 onDateSelected(currentDate!!)
             }
 
@@ -380,12 +388,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
         })
 
-        binding.photoRecycler.observeVisibleItemPositions() { firstVisibleItemPosition, secondVisibleItemPosition ->
-            if (firstVisibleItemPosition != -1 && secondVisibleItemPosition != -1) {
-                Timber.d("Scroll position : $firstVisibleItemPosition : $secondVisibleItemPosition")
-            }
-        }
-
         binding.photoRecycler.fastScrollListener {
             Timber.d("isFast :$it")
             if (it)
@@ -398,31 +400,30 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
 
 
-        binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+        binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 master?.let { rover ->
-                    val date = ((progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
+                    val date =
+                        ((progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
                     binding.scrollDateDisplayText.text = date.formatMillisToDisplayDate()
-                    showFastScrollerDate()
                 }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                showFastScroller()
+                showFastScrollerDate()
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                hideFastScrollerDate()
                 master?.let { rover ->
                     val date =
-                        ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis).formatMillisToDate().formatDateToMillis()
+                        ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis).formatMillisToDate()
+                            .formatDateToMillis()
                     onDateSelected(date!!, true)
                 }
                 hideFastScrollerDate()
             }
 
         })
-
 
 
         val params = binding.bottomAppbar.homeAppbar.layoutParams as CoordinatorLayout.LayoutParams
@@ -460,22 +461,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun hideFastScrollerDate() {
         binding.scrollDateDisplayText.apply {
-            if (isVisible) {
-                alpha = 0f
-                this@apply.isVisible = false
-            }
+
+            animate()
+                .alpha(0f)
+                .setListener(null).duration = 400L
         }
     }
 
     private fun showFastScrollerDate() {
         hideFastScrollerJob?.cancel()
         binding.scrollDateDisplayText.apply {
-            if (!isVisible) {
-                this@apply.isVisible = true
-                animate()
-                    .alpha(1.0f)
-                    .setListener(null).duration = 800L
-            }
+
+            animate()
+                .alpha(1.0f)
+                .setListener(null).duration = 400L
+
         }
     }
 
@@ -531,7 +531,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
             viewModel.setPosition(position)
             hideSelectMenu()
-        }else{
+        } else {
             setSelection(marsRoverPhoto, position)
         }
     }
@@ -549,13 +549,26 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         if (selectedList.contains(photo)) {
             selectedList.remove(photo)
             selectedPositions.remove(position)
-        }
-        else {
+        } else {
             selectedList.add(photo)
             selectedPositions.add(position)
         }
         if (selectedList.isEmpty())
             hideSelectMenu()
         adapter.notifyItemChanged(position)
+    }
+
+    private suspend fun downloadImage(): ArrayList<Uri> {
+        val list: ArrayList<Uri> = arrayListOf()
+        selectedList.forEach { photo ->
+            withContext(Dispatchers.Default) {
+                photo.img_src.downloadImageAsBitmap2(requireContext())
+            }?.let {
+                utilities.toImageURI(it, getDisplayName(photo))?.let { uri ->
+                    list.add(uri)
+                }
+            }
+        }
+        return list
     }
 }

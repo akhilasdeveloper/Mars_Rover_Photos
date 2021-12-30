@@ -13,7 +13,7 @@
     <dimen name="popup_window_padding">32dp</dimen>
     <dimen name="popup_window_width">300dp</dimen>
     <dimen name="card_separation_margin_vertical">10dp</dimen>
-    <dimen name="toolbar_top_title_text_height">64dp</dimen>
+    <dimen name="toolbar_top_title_text_height">39dp</dimen>
     <dimen name="toolbar_top_title_text_bottom_margin">36dp</dimen>
     <dimen name="toolbar_bottom_vertical_padding">16dp</dimen>
     <dimen name="toolbar_bottom_horizontal_padding">16dp</dimen>
