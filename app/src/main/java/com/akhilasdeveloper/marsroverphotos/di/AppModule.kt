@@ -1,13 +1,19 @@
 package com.akhilasdeveloper.marsroverphotos.di
 
+import android.app.Application
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
 import androidx.room.Room
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MARS_ROVER_DATABASE_NAME
 import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.db.MarsRoverDatabase
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestOptions
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -69,6 +75,22 @@ object AppModule {
         MarsRoverDatabase::class.java,
         MARS_ROVER_DATABASE_NAME
     ).fallbackToDestructiveMigration().build()
+
+    @Singleton
+    @Provides
+    fun provideRequestOptions(): RequestOptions {
+        return RequestOptions()
+    }
+
+    @Singleton
+    @Provides
+    fun provideGlideInstance(
+        application: Application,
+        requestOptions: RequestOptions
+    ): RequestManager {
+        return Glide.with(application)
+            .setDefaultRequestOptions(requestOptions)
+    }
 
     @Singleton
     @Provides

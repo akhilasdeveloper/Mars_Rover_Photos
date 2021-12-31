@@ -66,11 +66,12 @@ class Utilities @Inject constructor(
                 if (!folder.exists()) {
                     folder.mkdir()
                 }
-                val filename = "$displayName.png"
-                file = File(folder.path, filename)
-                fos1 = FileOutputStream(file)
+                file = File(folder.path, displayName)
 
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
+                if (!file.exists()) {
+                    fos1 = FileOutputStream(file)
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
+                }
                 imageUri = FileProvider.getUriForFile(
                     context.applicationContext,
                     context.applicationContext.packageName.toString() + ".provider",
@@ -88,6 +89,30 @@ class Utilities @Inject constructor(
         }
         return null
     }
+
+    fun toImageUriFromName(displayName: String): Uri? {
+        var file: File? = null
+        var imageUri: Uri? = null
+        try {
+            val folder = File(getCacheFolder())
+            if (!folder.exists()) {
+                folder.mkdir()
+            }
+            file = File(folder.path, displayName)
+            imageUri = FileProvider.getUriForFile(
+                context.applicationContext,
+                context.applicationContext.packageName.toString() + ".provider",
+                file
+            )
+
+        } catch (ex: java.lang.Exception) {
+        }
+        return imageUri
+    }
+
+    fun isFileExistInCache(displayName: String) = File(getCacheFolder(), displayName).exists()
+
+    private fun getCacheFolder() = context.cacheDir.toString() + File.separator + "MarsRoverPhotos Temp Files"
 
     fun calculateDays(landingDate: Long, currentDate: Long?): Long? =
         currentDate?.let {

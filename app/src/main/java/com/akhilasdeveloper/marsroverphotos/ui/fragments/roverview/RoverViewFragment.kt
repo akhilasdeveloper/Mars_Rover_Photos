@@ -32,6 +32,7 @@ import com.canhub.cropper.options
 import android.app.WallpaperManager
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.RequestManager
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -42,8 +43,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private var _binding: FragmentRoverviewBinding? = null
     private val binding get() = _binding!!
-
-    private val adapter = MarsRoverPagerAdapter(this)
+    @Inject
+    lateinit var requestManager: RequestManager
+    private var adapter:MarsRoverPagerAdapter? =  null
     private var isShow = true
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     private var currentData: MarsRoverPhotoTable? = null
@@ -108,9 +110,11 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun setCurrentData() {
         currentPosition?.let {
-            if (adapter.snapshot().size > it) {
-                currentData = adapter.snapshot()[it]
-                getIsLiked()
+            adapter?.let { adapter->
+                if (adapter.snapshot().size > it) {
+                    currentData = adapter.snapshot()[it]
+                    getIsLiked()
+                }
             }
         }
     }
@@ -130,7 +134,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setWallpaper() {
-        currentData?.img_src?.downloadImageAsUri(requireContext()) { uri ->
+        currentData?.img_src?.downloadImageAsUri(requestManager) { uri ->
             uri?.let {
                 cropImage.launch(
                     options(uri = it) {
@@ -204,7 +208,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun getDisplayName() =
-        "${currentData!!.rover_name}_${currentData!!.camera_name}_${currentData!!.earth_date.formatMillisToFileDate()}_${currentData!!.photo_id}"
+        "${currentData!!.rover_name}_${currentData!!.camera_name}_${currentData!!.earth_date.formatMillisToFileDate()}_${currentData!!.photo_id}$${Constants.CACHE_IMAGE_EXTENSION}"
 
     private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap): Uri? {
         val imageCollection = sdk29andUp {
@@ -259,7 +263,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             it?.let {
                 Timber.d("dataStatePaging : $it")
                 it.peekContent?.let { photos ->
-                    adapter.submitData(viewLifecycleOwner.lifecycle, photos)
+                    adapter?.submitData(viewLifecycleOwner.lifecycle, photos)
                     setCurrentData()
                 }
             }
@@ -278,7 +282,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private fun init() {
 
         var isSet = true
-
+        adapter = MarsRoverPagerAdapter(this, requestManager)
         ViewCompat.setOnApplyWindowInsetsListener(binding.menus) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
@@ -304,10 +308,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                         wallpaperManager.setBitmap(bitmap)
                         requireContext().showShortToast(message = "Wallpaper set")
                     }
-                }
-            } else {
-                result.error?.let {
-                    requireContext().showShortToast(message = "Canceled")
                 }
             }
         }

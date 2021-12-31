@@ -2,7 +2,6 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
@@ -18,6 +17,7 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.akhilasdeveloper.marsroverphotos.utilities.toDpi
 import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -25,6 +25,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
@@ -32,7 +33,9 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private var _binding: FragmentRoversBinding? = null
     private val binding get() = _binding!!
-    private var adapter: MarsRoverAdapter = MarsRoverAdapter(this)
+    @Inject
+    lateinit var requestManager: RequestManager
+    private var adapter: MarsRoverAdapter? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +56,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     private fun init() {
-
+        adapter = MarsRoverAdapter(this, requestManager)
         setBottomSheet()
         setRecyclerView()
         binding.roverSwipeRefresh.setColorSchemeResources(R.color.accent)
@@ -120,7 +123,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                     setEmptyMessage("Tap to refresh")
                 else {
                     hideEmptyMessage()
-                    adapter.submitList(it)
+                    adapter?.submitList(it)
                 }
             }
 

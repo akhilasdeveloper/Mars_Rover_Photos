@@ -16,7 +16,7 @@
         <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
         <!-- Window theme -->
         <item name="android:windowBackground">@drawable/splash</item>
-        <item name="android:fontFamily">@font/open_sans</item>
+        <item name="android:fontFamily">@font/nunito_sans_bold</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
     </style>
 
@@ -51,7 +51,7 @@
     </style>
 
     <style name="photo_item_description" parent="Theme.MarsRoverPhotos">
-        <item name="android:textSize">@dimen/extra_small_text_size</item>
+        <item name="android:textSize">@dimen/small_text_size</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/system_for</item>
     </style>

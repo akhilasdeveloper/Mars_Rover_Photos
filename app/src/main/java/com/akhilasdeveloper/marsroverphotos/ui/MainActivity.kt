@@ -13,10 +13,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.databinding.ActivityMainBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.LayoutShareSelectBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.LayoutSolSelectBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.SnackBarLayoutBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
 import com.google.android.gms.ads.MobileAds
@@ -29,6 +26,8 @@ class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
     private var destinationChangedListener: NavController.OnDestinationChangedListener? = null
     private var navController: NavController? = null
+    private var alertDialog: AlertDialog? = null
+    private var dialogView: LayoutProgressBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -184,7 +183,11 @@ class MainActivity : BaseActivity() {
         })
     }
 
-    private fun showSnackBar(messageText: String, buttonText: String? = null, onClick: (() -> Unit)? = null) {
+    private fun showSnackBar(
+        messageText: String,
+        buttonText: String? = null,
+        onClick: (() -> Unit)? = null
+    ) {
         val snackBar = Snackbar.make(binding.root, "", Snackbar.LENGTH_LONG)
         val customSnackView = SnackBarLayoutBinding.inflate(LayoutInflater.from(this))
         snackBar.view.setBackgroundColor(Color.TRANSPARENT)
@@ -212,31 +215,60 @@ class MainActivity : BaseActivity() {
     }
 
     override fun showShareSelectorDialog(onImageSelect: () -> Unit, onLinkSelect: () -> Unit) {
-            val dialogView: LayoutShareSelectBinding =
-                LayoutShareSelectBinding.inflate(LayoutInflater.from(this))
-            val builder: AlertDialog.Builder =
-                AlertDialog.Builder(this, R.style.dialog_background)
-                    .setView(dialogView.root)
-            val alertDialog: AlertDialog = builder.create()
+        val dialogView: LayoutShareSelectBinding =
+            LayoutShareSelectBinding.inflate(LayoutInflater.from(this))
+        val builder: AlertDialog.Builder =
+            AlertDialog.Builder(this, R.style.dialog_background)
+                .setView(dialogView.root)
+        val alertDialog: AlertDialog = builder.create()
 
-            dialogView.apply {
+        dialogView.apply {
 
-                linkSelect.setOnClickListener {
-                    onLinkSelect()
-                    alertDialog.cancel()
-                }
-
-                imageSelect.setOnClickListener {
-                    onImageSelect()
-                    alertDialog.cancel()
-                }
-
-                cancelSolSelector.setOnClickListener {
-                    alertDialog.cancel()
-                }
+            linkSelect.setOnClickListener {
+                onLinkSelect()
+                alertDialog.cancel()
             }
 
-            alertDialog.show()
+            imageSelect.setOnClickListener {
+                onImageSelect()
+                alertDialog.cancel()
+            }
 
+            cancelSolSelector.setOnClickListener {
+                alertDialog.cancel()
+            }
+        }
+
+        alertDialog.show()
+
+    }
+
+    private fun showDownloadDialog(onCancelClicked: () -> Unit) {
+        dialogView = LayoutProgressBinding.inflate(LayoutInflater.from(this))
+        val builder: AlertDialog.Builder =
+            AlertDialog.Builder(this, R.style.dialog_background)
+                .setView(dialogView?.root)
+        alertDialog = builder.create()
+        alertDialog?.setCanceledOnTouchOutside(false)
+        dialogView?.apply {
+            cancelSolSelector.setOnClickListener {
+                onCancelClicked()
+            }
+        }
+        alertDialog?.show()
+    }
+
+    override fun showDownloadProgressDialog(progress: Int, onCancelClicked: () -> Unit) {
+        if (alertDialog?.isShowing != true){
+            showDownloadDialog {
+                onCancelClicked()
+            }
+        }
+        dialogView?.progress?.progress = progress
+        dialogView?.progressCount?.text = "$progress%"
+    }
+
+    override fun hideDownloadProgressDialog() {
+        alertDialog?.cancel()
     }
 }

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minWidth="@dimen/popup_window_width"
+    app:cardBackgroundColor="@color/appbar"
+    app:cardCornerRadius="@dimen/corner_radius">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/global_window_padding"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/tool_bar_title"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/toolbar_top_title_text_height"
+                android:layout_weight="1"
+                android:drawablePadding="@dimen/global_window_padding"
+                android:labelFor="@id/solSelectorCount"
+                android:text="@string/downloading"
+                android:textColor="@color/system_for"
+                app:drawableStartCompat="@drawable/ic_twotone_arrow_circle_down_24"
+                app:drawableTint="@color/system_for" />
+
+            <TextView
+                android:id="@+id/progressCount"
+                style="@style/tool_bar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no" />
+
+
+        </LinearLayout>
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"
+            android:indeterminate="false"
+            android:paddingStart="@dimen/global_window_padding"
+            android:paddingEnd="@dimen/global_window_padding"
+            android:progress="50"
+            android:progressTint="@color/accent"
+            android:id="@+id/progress"/>
+
+
+        <TextView
+            android:id="@+id/cancel_sol_selector"
+            style="@style/bottom_appbar_button_ring"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"
+            android:text="@string/cancel" />
+
+    </LinearLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

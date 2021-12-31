@@ -9,6 +9,7 @@
     <dimen name="stroke_medium">1dp</dimen>
     <dimen name="stroke_strong">2dp</dimen>
     <dimen name="corner_radius">5dp</dimen>
+    <dimen name="icon_scale">18dp</dimen>
     <dimen name="global_window_padding">16dp</dimen>
     <dimen name="popup_window_padding">32dp</dimen>
     <dimen name="popup_window_width">300dp</dimen>

@@ -2,7 +2,6 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.saved
 
 import android.os.Bundle
 import android.view.*
-import android.widget.ImageView
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
@@ -12,11 +11,9 @@ import javax.inject.Inject
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentSavedBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.MarsRoverPhotoAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.RecyclerClickListener
+import com.bumptech.glide.RequestManager
 
 @AndroidEntryPoint
 class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListener {
@@ -27,8 +24,9 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     @Inject
     lateinit var utilities: Utilities
     internal var master: RoverMaster? = null
-
-    private val adapter = MarsRoverSavedPhotoAdapter(this)
+    @Inject
+    lateinit var requestManager: RequestManager
+    private var adapter:MarsRoverSavedPhotoAdapter? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,6 +37,7 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     }
 
     private fun init() {
+        adapter = MarsRoverSavedPhotoAdapter(this, requestManager, utilities = utilities)
         val layoutManager = GridLayoutManager(
             requireContext(),
             Constants.GALLERY_SPAN,
@@ -67,7 +66,7 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
 
         viewModel.dataStateLikedPhotos.observe(viewLifecycleOwner, {
             it?.let {
-                adapter.submitData(viewLifecycleOwner.lifecycle, it)
+                adapter?.submitData(viewLifecycleOwner.lifecycle, it)
             }
         })
     }

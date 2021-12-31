@@ -10,17 +10,21 @@ import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.simplify
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 
-class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = null) :
+class MarsRoverAdapter(
+    private val interaction: RecyclerRoverClickListener? = null,
+    private val requestManager: RequestManager
+) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val bindingPhoto =
             RoverItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto, interaction)
+        return PhotoViewHolder(bindingPhoto, interaction, requestManager)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -35,7 +39,8 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
 
     class PhotoViewHolder(
         private val binding: RoverItemBinding,
-        private val interaction: RecyclerRoverClickListener?
+        private val interaction: RecyclerRoverClickListener?,
+        private val requestManager: RequestManager
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -43,7 +48,7 @@ class MarsRoverAdapter(private val interaction: RecyclerRoverClickListener? = nu
             binding.apply {
 
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
-                Glide.with(itemView)
+                requestManager
                     .load(Constants.URL_DATA + photo.image)
                     .centerCrop()
                     .transition(DrawableTransitionOptions.withCrossFade())

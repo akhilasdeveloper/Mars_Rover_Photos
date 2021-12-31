@@ -27,6 +27,8 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FILE_DATE_FORMAT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_DOWN
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_UP
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.CoroutineScope
@@ -85,11 +87,14 @@ fun RecyclerView.observeFirstItemPosition(firstItemPosition: (position: Int) -> 
     })
 }
 
-fun RecyclerView.fastScrollListener(fastScrolled: (isFastScrolled: Boolean) -> Unit) {
+fun RecyclerView.fastScrollListener(fastScrolled: () -> Unit,extraFastScrolled: () -> Unit) {
     addOnScrollListener(object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
-            fastScrolled(abs(dy) > 30)
+            if (abs(dy) > 30)
+                fastScrolled()
+            if (abs(dy) > 500)
+                extraFastScrolled()
         }
     })
 }
@@ -186,11 +191,11 @@ fun String.downloadImageAsBitmap(context: Context, callback: (Bitmap?) -> (Unit)
         })
 }
 
-fun String.downloadImageAsBitmap2(context: Context): Bitmap? = Glide.with(context).asBitmap().load(this).submit().get()
+fun String.downloadImageAsBitmap2(requestManager: RequestManager): Bitmap? = requestManager.asBitmap().load(this).submit().get()
 
-fun String.downloadImageAsUri(context: Context, callback: (Uri?) -> (Unit)) {
+fun String.downloadImageAsUri(requestManager : RequestManager, callback: (Uri?) -> (Unit)) {
     CoroutineScope(Dispatchers.IO).launch {
-        val data = Glide.with(context).asFile().load(this@downloadImageAsUri).submit().get()
+        val data = requestManager.asFile().load(this@downloadImageAsUri).submit().get()
         withContext(Dispatchers.Main) {
             callback(data.toUri())
         }

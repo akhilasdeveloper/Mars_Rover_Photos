@@ -2,22 +2,30 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemSelectedBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemSelectedBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
+import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsBitmap2
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
+import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToFileDate
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MarsRoverPhotoAdapter(
-    private val interaction: RecyclerClickListener? = null
+    private val interaction: RecyclerClickListener? = null,
+    private val requestManager: RequestManager
 ) :
     PagingDataAdapter<MarsRoverPhotoTable, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
 
@@ -40,17 +48,31 @@ class MarsRoverPhotoAdapter(
         val bindingDatePhotoSelected =
             PhotoDateItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return when (viewType) {
-            ViewType.DETAILED.ordinal -> PhotoDateViewHolder(bindingDatePhoto, interaction)
+            ViewType.DETAILED.ordinal -> PhotoDateViewHolder(
+                bindingDatePhoto,
+                interaction,
+                requestManager
+            )
             ViewType.DETAILED_SELECTED.ordinal -> PhotoDateSelectedViewHolder(
                 bindingDatePhotoSelected,
-                interaction
+                interaction,
+                requestManager
             )
-            ViewType.SMALL.ordinal -> PhotoViewHolder(bindingPhoto, interaction)
+            ViewType.SMALL.ordinal -> PhotoViewHolder(
+                bindingPhoto,
+                interaction,
+                requestManager
+            )
             ViewType.SMALL_SELECTED.ordinal -> PhotoSelectedViewHolder(
                 bindingPhotoSelected,
-                interaction
+                interaction,
+                requestManager
             )
-            else -> PhotoViewHolder(bindingPhoto, interaction)
+            else -> PhotoViewHolder(
+                bindingPhoto,
+                interaction,
+                requestManager
+            )
         }
     }
 
@@ -99,11 +121,12 @@ class MarsRoverPhotoAdapter(
 
     class PhotoViewHolder(
         private val binding: PhotoItemBinding,
-        private val interaction: RecyclerClickListener?
+        private val interaction: RecyclerClickListener?,
+        private val requestManager: RequestManager
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
-        var positionSel = 0
+        private var positionSel = 0
         var photo: MarsRoverPhotoTable? = null
 
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
@@ -111,8 +134,9 @@ class MarsRoverPhotoAdapter(
             this.photo = photo
             binding.apply {
                 photo.let {
-                    imageDescription.transitionName = it.photo_id.toString()
-                    Glide.with(itemView)
+                    imageDescription.setImageResource(R.drawable.imageview_placeholder)
+
+                    requestManager
                         .load(it.img_src)
                         .centerCrop()
                         .transition(DrawableTransitionOptions.withCrossFade())
@@ -129,11 +153,13 @@ class MarsRoverPhotoAdapter(
             }
         }
 
+
     }
 
     class PhotoSelectedViewHolder(
         private val binding: PhotoItemSelectedBinding,
-        private val interaction: RecyclerClickListener?
+        private val interaction: RecyclerClickListener?,
+        private val requestManager: RequestManager
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -146,7 +172,7 @@ class MarsRoverPhotoAdapter(
             binding.apply {
                 photo.let {
                     imageDescription.transitionName = it.photo_id.toString()
-                    Glide.with(itemView)
+                    requestManager
                         .load(it.img_src)
                         .centerCrop()
                         .into(imageDescription)
@@ -166,7 +192,8 @@ class MarsRoverPhotoAdapter(
 
     class PhotoDateViewHolder(
         private val binding: PhotoDateItemBinding,
-        private val interaction: RecyclerClickListener?
+        private val interaction: RecyclerClickListener?,
+        private val requestManager: RequestManager
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -179,7 +206,7 @@ class MarsRoverPhotoAdapter(
             binding.apply {
                 photo.let {
                     imageDescription.transitionName = it.photo_id.toString()
-                    Glide.with(itemView)
+                    requestManager
                         .load(it.img_src)
                         .centerCrop()
                         .transition(DrawableTransitionOptions.withCrossFade())
@@ -205,7 +232,8 @@ class MarsRoverPhotoAdapter(
 
     class PhotoDateSelectedViewHolder(
         private val binding: PhotoDateItemSelectedBinding,
-        private val interaction: RecyclerClickListener?
+        private val interaction: RecyclerClickListener?,
+        private val requestManager: RequestManager
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -218,7 +246,7 @@ class MarsRoverPhotoAdapter(
             binding.apply {
                 photo.let {
                     imageDescription.transitionName = it.photo_id.toString()
-                    Glide.with(itemView)
+                    requestManager
                         .load(it.img_src)
                         .centerCrop()
                         .into(imageDescription)

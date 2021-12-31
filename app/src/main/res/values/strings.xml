@@ -15,6 +15,7 @@
     <string name="retry">Retry</string>
     <string name="rover_captured_image">Rover Captured Image</string>
     <string name="share_text">Take a look at this photo taken by %1$s Rover!.\n\n%2$s\n\nFound it on : https://play.google.com/store/apps/details?id=com.akhilasdeveloper.marsroverphotos</string>
+    <string name="share_texts">Take a look at these photos taken by %1$s Rover!.\n\n%2$s\n\nFound these on : https://play.google.com/store/apps/details?id=com.akhilasdeveloper.marsroverphotos</string>
     <string name="view_photos">View Photos %1$s</string>
     <string name="sol">Sol - %1$s</string>
     <string name="select_date">Select Date</string>
@@ -26,4 +27,5 @@
     <string name="share_as">Share As</string>
     <string name="share_as_link_s">Share as link(s)</string>
     <string name="share_as_image_s">Share as image(s)</string>
+    <string name="downloading">Downloading</string>
 </resources>

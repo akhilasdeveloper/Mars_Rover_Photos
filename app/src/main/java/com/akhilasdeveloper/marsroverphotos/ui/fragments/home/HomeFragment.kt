@@ -21,13 +21,13 @@ import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.CACHE_IMAGE_EXTENSION
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
+import com.bumptech.glide.RequestManager
 import com.google.android.gms.ads.AdRequest
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -36,10 +36,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var _binding: FragmentHomeBinding? = null
     internal val binding get() = _binding!!
 
-    private val adapter = MarsRoverPhotoAdapter(this)
+    @Inject
+    lateinit var requestManager: RequestManager
+    private var adapter: MarsRoverPhotoAdapter? = null
     internal var master: RoverMaster? = null
     internal var currentDate: Long? = null
     private var hideFastScrollerJob: Job? = null
+    private var downloadJob: Job? = null
     private var navigateToDate = false
 
     var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
@@ -65,7 +68,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         hideSelectMenu()
                         selectedList.clear()
                         selectedPositions.forEach {
-                            adapter.notifyItemChanged(it)
+                            adapter?.notifyItemChanged(it)
                         }
                         selectedPositions.clear()
                     } else
@@ -91,6 +94,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         setWindowInsets()
 
+        adapter = MarsRoverPhotoAdapter(this, requestManager)
+
         val layoutManager = GridLayoutManager(
             requireContext(),
             GALLERY_SPAN,
@@ -100,13 +105,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                return if (adapter.snapshot().size > position)
-                    if (adapter.snapshot()[position]?.is_placeholder != true)
-                        1
+                adapter?.let { adapter ->
+                    return if (adapter.snapshot().size > position)
+                        if (adapter.snapshot()[position]?.is_placeholder != true)
+                            1
+                        else
+                            GALLERY_SPAN
                     else
                         GALLERY_SPAN
-                else
-                    GALLERY_SPAN
+                } ?: return GALLERY_SPAN
             }
         }
 
@@ -126,7 +133,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             hideSelectMenu()
             selectedList.clear()
             selectedPositions.forEach {
-                adapter.notifyItemChanged(it)
+                adapter?.notifyItemChanged(it)
             }
             selectedPositions.clear()
         }
@@ -147,53 +154,75 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 R.id.download -> {
                     true
                 }
+                R.id.wallpaper -> {
+                    true
+                }
                 else -> false
             }
         }
 
-        adapter.selectionChecker = object : SelectionChecker {
+        adapter?.selectionChecker = object : SelectionChecker {
             override fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
                 if (selectedList.isNotEmpty()) selectedList.contains(marsRoverPhotoTable) else false
         }
     }
 
     private fun shareAllAsLinks() {
-
+        if (selectedList.isNotEmpty()){
+            var links = ""
+            selectedList.forEach {
+                links += "${it.img_src} \n"
+            }
+            selectedList[0].let {
+                val intent = Intent(Intent.ACTION_SEND)
+                val shareBody = resources.getString(
+                    if (selectedList.size == 1) R.string.share_text else R.string.share_texts,
+                    it.rover_name,
+                    links
+                )
+                intent.type = "text/plain"
+                intent.putExtra(Intent.EXTRA_TEXT, shareBody)
+                startActivity(Intent.createChooser(intent, getString(R.string.share_text)))
+            }
+        }
     }
 
     private fun shareAllAsImage() {
-        CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main) {
-                viewModel.setLoading(true)
-            }
+        downloadJob = CoroutineScope(Dispatchers.IO).launch {
             downloadImage().let {
-                withContext(Dispatchers.Main) {
-                    viewModel.setLoading(false)
-                }
                 if (it.isNotEmpty()) {
                     val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
                     intent.type = "image/png"
-                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, downloadImage())
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, it)
                     startActivity(Intent.createChooser(intent, "Share Via"))
+                }
+                withContext(Dispatchers.Main) {
+                    uiCommunicationListener.hideDownloadProgressDialog()
                 }
             }
         }
     }
 
     private fun getDisplayName(rover: MarsRoverPhotoTable) =
-        "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}"
+        "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}$CACHE_IMAGE_EXTENSION"
 
     private fun hideSelectMenu() {
         if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty()) {
             binding.topAppbar.homeToolbarTop.menu.clear()
             binding.topAppbar.homeToolbarTop.navigationIcon = null
-
+            master?.let {
+                setTitle(it.name)
+            }
         }
     }
 
     private fun showSelectMenu() {
-        if (binding.topAppbar.homeToolbarTop.menu.isEmpty()) {
-            binding.topAppbar.homeToolbarTop.inflateMenu(R.menu.top_appbar_select_menu)
+        val menu = if (selectedList.size == 1) R.menu.top_appbar_single_item_select_menu else R.menu.top_appbar_select_menu
+        val menuSize = if (selectedList.size == 1) 4 else 3
+        if (binding.topAppbar.homeToolbarTop.menu.isEmpty() || binding.topAppbar.homeToolbarTop.menu.size() != menuSize) {
+            if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty())
+                binding.topAppbar.homeToolbarTop.menu.clear()
+            binding.topAppbar.homeToolbarTop.inflateMenu(menu)
             binding.topAppbar.homeToolbarTop.navigationIcon =
                 ResourcesCompat.getDrawable(resources, R.drawable.ic_x, null)
             binding.topAppbar.homeToolbarTop.setNavigationIconTint(
@@ -204,6 +233,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 )
             )
         }
+        setTitle("Selected (${selectedList.size})")
     }
 
     private fun showMainProgress() {
@@ -257,7 +287,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 val isHandled = it.hasBeenHandled()
                 it.peekContent?.let { photos ->
                     it.setAsHandled()
-                    adapter.submitData(viewLifecycleOwner.lifecycle, photos)
+                    adapter?.submitData(viewLifecycleOwner.lifecycle, photos)
                     if (!isHandled) {
                         onDateSelected(currentDate!!)
                     }
@@ -268,14 +298,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun setData() {
         master?.let {
-            setTitle()
+            setTitle(it.name)
             initFastScroller()
         }
     }
 
-    private fun setTitle() {
-        binding.topAppbar.homeToolbarTop.title = master!!.name
-        binding.topAppbar.homeCollapsingToolbarTop.title = master!!.name
+    private fun setTitle(name: String) {
+        binding.topAppbar.homeToolbarTop.title = name
+        binding.topAppbar.homeCollapsingToolbarTop.title = name
     }
 
     private fun initFastScroller() {
@@ -349,7 +379,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.bottomAppbar.solButtonText.setOnClickListener {
             showSolSelectorDialog()
         }
-        adapter.addLoadStateListener { loadStates ->
+        adapter?.addLoadStateListener { loadStates ->
 
             binding.progressTop.isVisible = loadStates.source.prepend is LoadState.Loading
             binding.progress.isVisible = loadStates.source.append is LoadState.Loading
@@ -366,13 +396,16 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
             binding.emptyMessage.isVisible = loadStates.source.refresh is LoadState.Error
 
-            if (loadStates.source.refresh is LoadState.NotLoading &&
-                loadStates.append.endOfPaginationReached &&
-                adapter.itemCount < 1
-            ) {
-                binding.photoRecycler.isVisible = false
-                binding.emptyMessage.isVisible = true
+            adapter?.let { adapter ->
+                if (loadStates.source.refresh is LoadState.NotLoading &&
+                    loadStates.append.endOfPaginationReached &&
+                    adapter.itemCount < 1
+                ) {
+                    binding.photoRecycler.isVisible = false
+                    binding.emptyMessage.isVisible = true
+                }
             }
+
         }
 
         binding.emptyMessage.setOnClickListener {
@@ -380,7 +413,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
 
         binding.photoRecycler.observeFirstItemPosition(firstItemPosition = { position ->
-            adapter.snapshot().let { items ->
+            adapter?.snapshot()?.let { items ->
                 if (items.isNotEmpty() && items.size > position)
                     items[position]?.let {
                         viewModel.setDate(it.earth_date)
@@ -388,20 +421,25 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
         })
 
-        binding.photoRecycler.fastScrollListener {
-            Timber.d("isFast :$it")
-            if (it)
-                showFastScroller()
-        }
+        binding.photoRecycler.fastScrollListener(fastScrolled = {
+            showFastScroller()
+            hideFastScrollerDate()
+        }, extraFastScrolled = {
+//            showFastScrollerDate()
+        })
 
         binding.photoRecycler.isIdle {
-            if (it)
+            if (it) {
                 hideFastScroller()
+                hideFastScrollerDate()
+            }
         }
 
 
         binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser)
+                    showFastScrollerDate()
                 master?.let { rover ->
                     val date =
                         ((progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
@@ -422,6 +460,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
                 hideFastScrollerDate()
             }
+
 
         })
 
@@ -461,21 +500,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun hideFastScrollerDate() {
         binding.scrollDateDisplayText.apply {
-
-            animate()
-                .alpha(0f)
-                .setListener(null).duration = 400L
+            if (alpha == 1f)
+                animate()
+                    .alpha(0f)
+                    .setListener(null).duration = 400L
         }
     }
 
     private fun showFastScrollerDate() {
         hideFastScrollerJob?.cancel()
         binding.scrollDateDisplayText.apply {
-
-            animate()
-                .alpha(1.0f)
-                .setListener(null).duration = 400L
-
+            if (alpha == 0f) {
+                animate()
+                    .alpha(1.0f)
+                    .setListener(null).duration = 200L
+            }
         }
     }
 
@@ -507,11 +546,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     internal fun onDateSelected(date: Long, fetch: Boolean = false) {
         currentDate = date
         viewModel.setDate(date)
-        val snapShot = adapter.snapshot()
-        val search = snapShot.filter { photo ->
+        val snapShot = adapter?.snapshot()
+        val search = snapShot?.filter { photo ->
             photo?.earth_date == date && photo.is_placeholder
         }
-        if (search.isNotEmpty()) {
+        if (search?.isNotEmpty() == true) {
             val pos = snapShot.indexOf(search[0])
             scrollToPosition(pos)
         } else if (fetch) {
@@ -540,7 +579,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         marsRoverPhoto: MarsRoverPhotoTable,
         position: Int
     ): Boolean {
-        showSelectMenu()
         setSelection(marsRoverPhoto, position)
         return true
     }
@@ -555,18 +593,33 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
         if (selectedList.isEmpty())
             hideSelectMenu()
-        adapter.notifyItemChanged(position)
+        else
+            showSelectMenu()
+        adapter?.notifyItemChanged(position)
     }
 
     private suspend fun downloadImage(): ArrayList<Uri> {
         val list: ArrayList<Uri> = arrayListOf()
-        selectedList.forEach { photo ->
-            withContext(Dispatchers.Default) {
-                photo.img_src.downloadImageAsBitmap2(requireContext())
-            }?.let {
-                utilities.toImageURI(it, getDisplayName(photo))?.let { uri ->
-                    list.add(uri)
+        val size = selectedList.size
+        selectedList.forEachIndexed { index, photo ->
+            withContext(Dispatchers.Main) {
+                uiCommunicationListener.showDownloadProgressDialog(
+                    ((index.plus(1).toFloat() / size.toFloat()) * 100).toInt()
+                ) {
+                    uiCommunicationListener.hideDownloadProgressDialog()
+                    downloadJob?.cancel()
                 }
+            }
+            val displayName = getDisplayName(photo)
+
+            if (utilities.isFileExistInCache(displayName)) {
+                utilities.toImageUriFromName(displayName)
+            } else {
+                photo.img_src.downloadImageAsBitmap2(requestManager)?.let {
+                    utilities.toImageURI(it, displayName)
+                }
+            }?.let { uri ->
+                list.add(uri)
             }
         }
         return list

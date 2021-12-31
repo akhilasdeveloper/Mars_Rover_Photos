@@ -8,24 +8,30 @@ import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.ViewPagerItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.utilities.downloadImageAsUri
+import com.bumptech.glide.RequestManager
 import com.davemorrissey.labs.subscaleview.ImageSource
 
-class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null) :
+class MarsRoverPagerAdapter(private val interaction: PagerClickListener? = null,
+private val requestManager: RequestManager) :
     PagingDataAdapter<MarsRoverPhotoTable, MarsRoverPagerAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val bindingPhoto =
             ViewPagerItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto, interaction)
+        return PhotoViewHolder(bindingPhoto, interaction, requestManager)
     }
 
-    class PhotoViewHolder(private val binding: ViewPagerItemBinding, private val interaction: PagerClickListener?) :
+    class PhotoViewHolder(
+        private val binding: ViewPagerItemBinding,
+        private val interaction: PagerClickListener?,
+        private val requestManager: RequestManager
+    ) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 photo.let {
-                    it.img_src.downloadImageAsUri(root.context){ resource->
+                    it.img_src.downloadImageAsUri(requestManager){ resource->
                         resource?.let {
                             viewPageImage.setImage(ImageSource.uri(resource))
                         }

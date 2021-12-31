@@ -6,14 +6,13 @@ import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.api.Photo
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.dao.MarsPhotoDao
-import com.akhilasdeveloper.marsroverphotos.db.dao.PhotoKeyDao
 import com.akhilasdeveloper.marsroverphotos.db.dao.RemoteKeyDao
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.PhotoDatesTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.RemoteKeysTable
 import com.akhilasdeveloper.marsroverphotos.utilities.*
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
+import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.IOException
@@ -25,7 +24,8 @@ class MarsPagingSource(
     private val marsPhotoDao: MarsPhotoDao,
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val date: Long
-) : PagingSource<Long, MarsRoverPhotoTable>() {
+
+    ) : PagingSource<Long, MarsRoverPhotoTable>() {
     override suspend fun load(params: LoadParams<Long>): LoadResult<Long, MarsRoverPhotoTable> {
 
         return try {
@@ -135,6 +135,7 @@ class MarsPagingSource(
             )
         } ?: listOf()
     }
+
 
     override fun getRefreshKey(state: PagingState<Long, MarsRoverPhotoTable>): Long? {
         return state.anchorPosition?.let { anchorPosition ->

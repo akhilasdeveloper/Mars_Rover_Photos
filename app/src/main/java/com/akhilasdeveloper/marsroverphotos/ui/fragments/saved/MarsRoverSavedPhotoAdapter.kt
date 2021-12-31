@@ -5,18 +5,21 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.RecyclerClickListener
-import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
-import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
-import com.bumptech.glide.Glide
+import com.akhilasdeveloper.marsroverphotos.utilities.*
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.bumptech.glide.request.RequestOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MarsRoverSavedPhotoAdapter(
-    private val interaction: RecyclerClickListener? = null
+    private val interaction: RecyclerClickListener? = null,
+    private val requestManager: RequestManager,
+    private val utilities: Utilities
 ) :
     PagingDataAdapter<MarsRoverPhotoTable, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
 
@@ -24,7 +27,7 @@ class MarsRoverSavedPhotoAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val bindingPhoto =
             PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(bindingPhoto, interaction)
+        return PhotoViewHolder(bindingPhoto, interaction, requestManager, utilities)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -39,19 +42,27 @@ class MarsRoverSavedPhotoAdapter(
 
     class PhotoViewHolder(
         private val binding: PhotoItemBinding,
-        private val interaction: RecyclerClickListener?
+        private val interaction: RecyclerClickListener?,
+        private val requestManager: RequestManager,
+        private val utilities: Utilities
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 photo.let {
-                    imageDescription.transitionName = it.photo_id.toString()
-                    Glide.with(itemView)
-                        .load(it.img_src)
-                        .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(imageDescription)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val file = it.img_src.downloadImageAsBitmap2(requestManager)
+                        val uri = utilities.toImageURI(file , getDisplayName(it))
+                        withContext(Dispatchers.Main) {
+                            requestManager
+                                .load(uri)
+                                .centerCrop()
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(imageDescription)
+                        }
+                    }
+
                 }
             }
             binding.root.setOnClickListener {
@@ -59,6 +70,8 @@ class MarsRoverSavedPhotoAdapter(
             }
         }
 
+        private fun getDisplayName(rover: MarsRoverPhotoTable) =
+            "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}${Constants.CACHE_IMAGE_EXTENSION}"
     }
 
     companion object {
