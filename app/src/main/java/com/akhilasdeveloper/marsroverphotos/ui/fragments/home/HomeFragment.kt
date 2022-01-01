@@ -1,13 +1,22 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.WallpaperManager
+import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.*
 import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.*
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +26,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.*
@@ -25,9 +35,15 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants.CACHE_IMAGE_EXTE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
 import com.bumptech.glide.RequestManager
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageView
+import com.canhub.cropper.options
 import com.google.android.gms.ads.AdRequest
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import timber.log.Timber
+import java.io.IOException
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -44,7 +60,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var hideFastScrollerJob: Job? = null
     private var downloadJob: Job? = null
     private var navigateToDate = false
-
+    private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
+    private var writePermissionGranted = false
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
     var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
 
     //    var selectedUriList: MutableMap<Long,Uri> = hashMapOf()
@@ -65,12 +83,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 override fun handleOnBackPressed() {
 
                     if (selectedList.isNotEmpty()) {
-                        hideSelectMenu()
-                        selectedList.clear()
-                        selectedPositions.forEach {
-                            adapter?.notifyItemChanged(it)
-                        }
-                        selectedPositions.clear()
+                        clearSelection()
                     } else
                         if (isEnabled) {
                             isEnabled = false
@@ -130,12 +143,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
 
         binding.topAppbar.homeToolbarTop.setNavigationOnClickListener {
-            hideSelectMenu()
-            selectedList.clear()
-            selectedPositions.forEach {
-                adapter?.notifyItemChanged(it)
-            }
-            selectedPositions.clear()
+            clearSelection()
         }
 
         binding.topAppbar.homeToolbarTop.setOnMenuItemClickListener {
@@ -148,13 +156,16 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     })
                     true
                 }
-                R.id.like -> {
+                R.id.favorites -> {
+                    setLike()
                     true
                 }
                 R.id.download -> {
+                    setDownload()
                     true
                 }
                 R.id.wallpaper -> {
+                    setWallpaper()
                     true
                 }
                 else -> false
@@ -165,10 +176,136 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             override fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
                 if (selectedList.isNotEmpty()) selectedList.contains(marsRoverPhotoTable) else false
         }
+
+        cropImage = registerForActivityResult(CropImageContract()) { result ->
+            if (result.isSuccessful) {
+                result.getBitmap(requireContext())?.let { bitmap ->
+                    val wallpaperManager =
+                        WallpaperManager.getInstance(requireActivity().applicationContext)
+                    lifecycleScope.launch {
+                        wallpaperManager.setBitmap(bitmap)
+                        clearSelection()
+                        requireContext().showShortToast(message = "Wallpaper set")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateOrRequestPermission() {
+        val hasWritePermission = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val minSdk29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        writePermissionGranted = hasWritePermission || minSdk29
+
+        if (!writePermissionGranted) {
+            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+    }
+
+    private fun setDownload() {
+        updateOrRequestPermission()
+        if (writePermissionGranted) {
+            downloadJob?.cancel()
+            downloadJob = CoroutineScope(Dispatchers.IO).launch {
+                selectedList.forEachIndexed { index, currentData ->
+                    withContext(Dispatchers.Main) {
+                        uiCommunicationListener.showDownloadProgressDialog(
+                            ((index.plus(1).toFloat() / selectedList.size.toFloat()) * 100).toInt()
+                        ) {
+                            uiCommunicationListener.hideDownloadProgressDialog()
+                            downloadJob?.cancel()
+                        }
+                    }
+                    currentData.img_src.downloadImageAsBitmap(requireContext()) { image ->
+                        image?.let {
+                            savePhotoToExternalStorage(getDisplayName(currentData), it)
+                        }
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    uiCommunicationListener.showSnackBarMessage(
+                        "Image(s) Saved to Gallery",
+                    )
+                    uiCommunicationListener.hideDownloadProgressDialog()
+                }
+            }
+        }
+    }
+
+    private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap): Uri? {
+        val imageCollection = sdk29andUp {
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } ?: MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, displayName)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(MediaStore.Images.Media.WIDTH, bmp.width)
+            put(MediaStore.Images.Media.HEIGHT, bmp.height)
+        }
+
+        try {
+            requireActivity().contentResolver.insert(imageCollection, contentValues)?.also { uri ->
+                requireActivity().contentResolver.openOutputStream(uri).use { outputStream ->
+                    if (!bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream))
+                        throw IOException("Failed to save Image!")
+                    return uri
+                }
+            } ?: throw IOException("Couldn't Create MediaStore Entry")
+            return null
+        } catch (exception: IOException) {
+            Timber.e(exception.fillInStackTrace())
+            return null
+        }
+    }
+
+    private fun clearSelection() {
+        hideSelectMenu()
+        selectedList.clear()
+        selectedPositions.forEach {
+            adapter?.notifyItemChanged(it)
+        }
+        selectedPositions.clear()
+    }
+
+    private fun setLike() {
+        selectedList.forEach { currentData ->
+            currentData.let {
+                it.photo_id.let { id ->
+                    viewModel.updateLike(
+                        marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
+                            id = id,
+                            rover_id = it.rover_id
+                        )
+                    )
+                }
+            }
+        }
+        clearSelection()
+        requireContext().showShortToast("Added to liked photos")
+    }
+
+    private fun setWallpaper() {
+        if (selectedList.isNotEmpty()) {
+            selectedList[0].img_src.downloadImageAsUri(requestManager) { uri ->
+                uri?.let {
+                    cropImage.launch(
+                        options(uri = it) {
+                            setGuidelines(CropImageView.Guidelines.ON)
+                            setOutputCompressFormat(Bitmap.CompressFormat.PNG)
+                        }
+                    )
+                }
+            }
+        }
     }
 
     private fun shareAllAsLinks() {
-        if (selectedList.isNotEmpty()){
+        if (selectedList.isNotEmpty()) {
             var links = ""
             selectedList.forEach {
                 links += "${it.img_src} \n"
@@ -188,6 +325,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun shareAllAsImage() {
+        downloadJob?.cancel()
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
             downloadImage().let {
                 if (it.isNotEmpty()) {
@@ -217,7 +355,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun showSelectMenu() {
-        val menu = if (selectedList.size == 1) R.menu.top_appbar_single_item_select_menu else R.menu.top_appbar_select_menu
+        val menu =
+            if (selectedList.size == 1) R.menu.top_appbar_single_item_select_menu else R.menu.top_appbar_select_menu
         val menuSize = if (selectedList.size == 1) 4 else 3
         if (binding.topAppbar.homeToolbarTop.menu.isEmpty() || binding.topAppbar.homeToolbarTop.menu.size() != menuSize) {
             if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty())
