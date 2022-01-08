@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sheet_frame"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/global_window_padding"
+    app:cardBackgroundColor="@color/second"
+    app:cardCornerRadius="@dimen/corner_radius">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:background="@drawable/ripple_effect"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="@dimen/global_window_padding"
+            app:drawableEndCompat="@drawable/ic_x"
+            app:drawableTint="@color/system_for" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/global_window_padding"
+            android:layout_marginRight="@dimen/global_window_padding"
+            android:layout_marginBottom="@dimen/global_window_padding"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/global_window_padding_half"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+                    android:text="@string/image_id"
+                    android:textColor="@color/system_for"
+                    app:drawableStartCompat="@drawable/ic_outline_image_24"
+                    app:drawableTint="@color/system_for" />
+
+                <TextView
+                    android:id="@+id/image_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/system_for" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/global_window_padding_half"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+                    android:text="@string/camera"
+                    android:textColor="@color/system_for"
+                    app:drawableStartCompat="@drawable/ic_camera"
+                    app:drawableTint="@color/system_for" />
+
+                <TextView
+                    android:id="@+id/camera_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/system_for" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/global_window_padding_half"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+                    android:text="@string/rover"
+                    android:textColor="@color/system_for"
+                    app:drawableStartCompat="@drawable/ic_rover"
+                    app:drawableTint="@color/system_for" />
+
+                <TextView
+                    android:id="@+id/rover_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/system_for" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/global_window_padding_half"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+                    android:text="@string/date"
+                    android:textColor="@color/system_for"
+                    app:drawableStartCompat="@drawable/ic_round_date_range_24"
+                    app:drawableTint="@color/system_for" />
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/system_for" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/global_window_padding_half"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+                    android:text="@string/sol_"
+                    android:textColor="@color/system_for"
+                    app:drawableStartCompat="@drawable/ic_mars_icon"
+                    app:drawableTint="@color/system_for" />
+
+                <TextView
+                    android:id="@+id/sol"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/system_for" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

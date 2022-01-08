@@ -60,7 +60,8 @@
                 android:layout_gravity="start|center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="12dp"/>
+                android:padding="12dp"
+                android:background="@drawable/ripple_effect"/>
 
             <com.google.android.material.slider.Slider
                 android:id="@+id/sol_slider"
@@ -86,7 +87,8 @@
                 android:layout_gravity="end|center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="12dp"/>
+                android:padding="12dp"
+                android:background="@drawable/ripple_effect"/>
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline2"

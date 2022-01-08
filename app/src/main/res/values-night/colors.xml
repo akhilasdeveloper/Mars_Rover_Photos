@@ -22,6 +22,7 @@
     <color name="system_for">#D1D1D1</color>
     <color name="system_for_light">#616161</color>
     <color name="accent">#A3805A</color>
+    <color name="rippleColor">#ABA3805A</color>
     <color name="light_for">#E1E1E1</color>
     <color name="date">#bbbbbb</color>
     <color name="splashbg">#222222</color>

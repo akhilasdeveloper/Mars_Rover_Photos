@@ -2,6 +2,7 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.saved
 
 import android.os.Bundle
 import android.view.*
+import android.widget.ImageView
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
@@ -17,6 +18,7 @@ import com.bumptech.glide.RequestManager
 
 @AndroidEntryPoint
 class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListener {
+
 
     private var _binding: FragmentSavedBinding? = null
     internal val binding get() = _binding!!
@@ -101,6 +103,15 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     ): Boolean {
         return true
     }
+
+    override fun onItemLongClick(
+        marsRoverPhoto: MarsRoverPhotoTable,
+        position: Int,
+        imageView: ImageView
+    ): Boolean {
+        return true
+    }
+
 
 
 }

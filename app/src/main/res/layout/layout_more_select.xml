@@ -27,37 +27,8 @@
             app:drawableStartCompat="@drawable/ic_twotone_share_24"
             app:drawableTint="@color/system_for" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="@dimen/global_window_padding"
-            android:layout_marginEnd="@dimen/global_window_padding"
-            android:layout_marginBottom="@dimen/global_window_padding_half"
-            android:layout_marginTop="@dimen/global_window_padding_half">
-
-            <TextView
-                android:id="@+id/link_select"
-                style="@style/photo_item_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawablePadding="@dimen/global_window_padding"
-                android:text="@string/share_as_link_s"
-                app:drawableStartCompat="@drawable/ic_link"
-                app:drawableTint="@color/system_for" />
-
-            <TextView
-                android:id="@+id/image_select"
-                style="@style/photo_item_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawablePadding="@dimen/global_window_padding"
-                android:text="@string/share_as_image_s"
-                app:drawableStartCompat="@drawable/ic_outline_image_24"
-                app:drawableTint="@color/system_for" />
-
-        </LinearLayout>
-
+        <include layout="@layout/layout_more_select_content"
+            android:id="@+id/layout_more_select_content"/>
 
         <TextView
             android:id="@+id/cancel_sol_selector"

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minWidth="@dimen/popup_window_width"
+    app:cardBackgroundColor="@color/appbar"
+    app:cardCornerRadius="@dimen/corner_radius">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/global_window_padding"
+        android:layout_marginEnd="@dimen/global_window_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ProgressBar
+            android:id="@+id/progressCenter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/accent"
+            android:scaleY=".7"
+            android:scaleX=".7"/>
+
+        <TextView
+            style="@style/tool_bar_title"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/toolbar_top_title_text_height"
+            android:layout_weight="1"
+            android:text="@string/loading"
+            android:textColor="@color/system_for"
+            android:layout_margin="@dimen/global_window_padding"/>
+
+        <TextView
+            android:id="@+id/cancel_sol_selector"
+            style="@style/bottom_appbar_button_ring"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="@dimen/global_window_padding"
+            android:text="@string/cancel"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

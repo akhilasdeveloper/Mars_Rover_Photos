@@ -96,6 +96,10 @@ class MainViewModel
         }
     }
 
+    fun cancelPendingOperation(){
+        job?.cancel()
+    }
+
     fun getLikedPhotos(rover: RoverMaster) {
         job?.cancel()
         job = viewModelScope.launch {

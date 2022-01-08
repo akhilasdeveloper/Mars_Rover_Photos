@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.RecyclerClickListener
@@ -51,18 +52,13 @@ class MarsRoverSavedPhotoAdapter(
         fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
             binding.apply {
                 photo.let {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val file = it.img_src.downloadImageAsBitmap2(requestManager)
-                        val uri = utilities.toImageURI(file , getDisplayName(it))
-                        withContext(Dispatchers.Main) {
-                            requestManager
-                                .load(uri)
-                                .centerCrop()
-                                .transition(DrawableTransitionOptions.withCrossFade())
-                                .into(imageDescription)
-                        }
-                    }
+                    imageDescription.setImageResource(R.drawable.imageview_placeholder)
 
+                    requestManager
+                        .load(it.img_src)
+                        .centerCrop()
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(imageDescription)
                 }
             }
             binding.root.setOnClickListener {
@@ -70,9 +66,7 @@ class MarsRoverSavedPhotoAdapter(
             }
         }
 
-        private fun getDisplayName(rover: MarsRoverPhotoTable) =
-            "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}${Constants.CACHE_IMAGE_EXTENSION}"
-    }
+     }
 
     companion object {
         private val PHOTO_COMPARATOR = object : DiffUtil.ItemCallback<MarsRoverPhotoTable>() {

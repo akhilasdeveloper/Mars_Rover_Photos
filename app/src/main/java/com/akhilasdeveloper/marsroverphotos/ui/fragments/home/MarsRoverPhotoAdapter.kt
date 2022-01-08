@@ -149,7 +149,8 @@ class MarsRoverPhotoAdapter(
             }
 
             binding.root.setOnLongClickListener {
-                interaction?.onItemLongClick(photo, absoluteAdapterPosition) ?: false
+//                interaction?.onItemLongClick(photo, absoluteAdapterPosition) ?: false
+                interaction?.onItemLongClick(photo, absoluteAdapterPosition, binding.imageDescription) ?: false
             }
         }
 

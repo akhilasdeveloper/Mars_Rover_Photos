@@ -14,6 +14,14 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/main_navigation"/>
 
+    <include
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        layout="@layout/layout_progress_indeterminate"
+        android:id="@+id/layout_progress_indeterminate"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
     <View
         android:id="@+id/status_bar_bg"
         android:layout_width="match_parent"
@@ -27,5 +35,21 @@
         android:layout_height="0dp"
         android:layout_gravity="bottom"
         android:background="@color/system_navigation_bar_background" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/bottom_sheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:orientation="vertical"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <include
+            android:id="@+id/layout_info_bottom_sheet"
+            layout="@layout/layout_info_bottom_sheet" />
+
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

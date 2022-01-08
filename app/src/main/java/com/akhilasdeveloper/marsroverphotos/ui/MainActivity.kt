@@ -9,14 +9,19 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.*
+import androidx.core.widget.NestedScrollView
 import androidx.core.widget.addTextChangedListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.*
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
+import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
+import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
 import com.google.android.gms.ads.MobileAds
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -27,6 +32,8 @@ class MainActivity : BaseActivity() {
     private var destinationChangedListener: NavController.OnDestinationChangedListener? = null
     private var navController: NavController? = null
     private var alertDialog: AlertDialog? = null
+    private var indeterminateAlertDialog: AlertDialog? = null
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
     private var dialogView: LayoutProgressBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,10 +74,21 @@ class MainActivity : BaseActivity() {
             }
         })
 
+        val marginBottom = binding.layoutInfoBottomSheet.root.marginBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.layoutInfoBottomSheet.root) { _, insets ->
+            val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.layoutInfoBottomSheet.root.updateMarginAndHeight(bottom = systemWindows.bottom + marginBottom)
+            return@setOnApplyWindowInsetsListener insets
+        }
+
         window.setBackgroundDrawableResource(R.color.first)
+
+        setBottomSheet()
 
         destinationChangedListener =
             NavController.OnDestinationChangedListener { _, destination, _ ->
+                closeInfoDialog()
+
                 when (destination.id) {
                     R.id.roverViewFragment -> {
                         setTransparentSystemBar()
@@ -91,6 +109,13 @@ class MainActivity : BaseActivity() {
             navController?.addOnDestinationChangedListener(it)
         }
 
+        binding.layoutInfoBottomSheet.close.setOnClickListener {
+            closeInfoDialog()
+        }
+    }
+    private fun setBottomSheet() {
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+        bottomSheetBehavior.isGestureInsetBottomIgnored = true
     }
 
     override fun hideSystemBar() {
@@ -243,6 +268,100 @@ class MainActivity : BaseActivity() {
 
     }
 
+    override fun showMoreSelectorDialog(
+        onImageSelect: () -> Unit,
+        onLinkSelect: () -> Unit,
+        onDownloadSelect: () -> Unit
+    ) {
+        val dialogView: LayoutMoreSelectBinding =
+            LayoutMoreSelectBinding.inflate(LayoutInflater.from(this))
+        val builder: AlertDialog.Builder =
+            AlertDialog.Builder(this, R.style.dialog_background)
+                .setView(dialogView.root)
+        val alertDialog: AlertDialog = builder.create()
+
+        dialogView.apply {
+
+            layoutMoreSelectContent.apply {
+                linkSelect.setOnClickListener {
+                    onLinkSelect()
+                    alertDialog.cancel()
+                }
+
+                imageSelect.setOnClickListener {
+                    onImageSelect()
+                    alertDialog.cancel()
+                }
+
+                downloadSelect.setOnClickListener {
+                    onDownloadSelect()
+                    alertDialog.cancel()
+                }
+            }
+
+            cancelSolSelector.setOnClickListener {
+                alertDialog.cancel()
+            }
+        }
+
+        alertDialog.show()
+
+    }
+
+    override fun setInfoDetails(marsRoverPhotoTable: MarsRoverPhotoTable) {
+        binding.layoutInfoBottomSheet.apply {
+            imageId.text = marsRoverPhotoTable.photo_id.toString()
+            cameraName.text = "${marsRoverPhotoTable.camera_full_name} (${marsRoverPhotoTable.camera_name})"
+            roverName.text = marsRoverPhotoTable.rover_name
+            date.text = marsRoverPhotoTable.earth_date.formatMillisToDisplayDate()
+            sol.text = marsRoverPhotoTable.sol.toString()
+        }
+    }
+
+    override fun showInfoDialog(marsRoverPhotoTable: MarsRoverPhotoTable?) {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        marsRoverPhotoTable?.let {
+            setInfoDetails(it)
+        }
+    }
+
+    override fun closeInfoDialog() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+    }
+
+    override fun showIndeterminateProgressDialog(
+        isCancelable: Boolean,
+        onCancelSelect: (() -> Unit)?
+    ) {
+        /*val dialogView: LayoutProgressIndeterminateBinding =
+            LayoutProgressIndeterminateBinding.inflate(LayoutInflater.from(this))
+        val builder: AlertDialog.Builder =
+            AlertDialog.Builder(this, R.style.dialog_background)
+                .setView(dialogView.root)
+        indeterminateAlertDialog = builder.create()
+        indeterminateAlertDialog?.setCanceledOnTouchOutside(false)
+
+        if (isCancelable) {
+            dialogView.apply {
+                cancelSolSelector.isVisible = true
+                cancelSolSelector.setOnClickListener {
+                    onCancelSelect?.invoke()
+                    indeterminateAlertDialog?.cancel()
+                }
+            }
+        }
+
+        indeterminateAlertDialog?.show()*/
+
+        binding.layoutProgressIndeterminate.root.isVisible = true
+
+    }
+
+    override fun hideIndeterminateProgressDialog() {
+//        indeterminateAlertDialog?.cancel()
+        binding.layoutProgressIndeterminate.root.isVisible = false
+    }
+
     private fun showDownloadDialog(onCancelClicked: () -> Unit) {
         dialogView = LayoutProgressBinding.inflate(LayoutInflater.from(this))
         val builder: AlertDialog.Builder =
@@ -259,7 +378,7 @@ class MainActivity : BaseActivity() {
     }
 
     override fun showDownloadProgressDialog(progress: Int, onCancelClicked: () -> Unit) {
-        if (alertDialog?.isShowing != true){
+        if (alertDialog?.isShowing != true) {
             showDownloadDialog {
                 onCancelClicked()
             }
@@ -270,5 +389,12 @@ class MainActivity : BaseActivity() {
 
     override fun hideDownloadProgressDialog() {
         alertDialog?.cancel()
+    }
+
+    override fun onBackPressed() {
+        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        else
+            super.onBackPressed()
     }
 }

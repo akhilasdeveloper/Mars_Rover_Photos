@@ -91,18 +91,24 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             like.setOnClickListener {
                 setLike()
             }
-            download.setOnClickListener {
-                setDownload()
+
+            setWallpaper.setOnClickListener {
+                setWallpaper()
+            }
+
+            info.setOnClickListener {
+                currentData?.let {
+                    uiCommunicationListener.showInfoDialog(it)
+                }
             }
             share.setOnClickListener {
-                uiCommunicationListener.showShareSelectorDialog(onImageSelect = {
+                uiCommunicationListener.showMoreSelectorDialog(onImageSelect = {
                     shareAsImage()
                 }, onLinkSelect = {
                     setShare()
+                }, onDownloadSelect = {
+                    setDownload()
                 })
-            }
-            setWallpaper.setOnClickListener {
-                setWallpaper()
             }
         }
 
@@ -113,6 +119,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             adapter?.let { adapter->
                 if (adapter.snapshot().size > it) {
                     currentData = adapter.snapshot()[it]
+                    currentData?.let {
+                        uiCommunicationListener.setInfoDetails(it)
+                    }
                     getIsLiked()
                 }
             }
@@ -328,16 +337,16 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun disableMenu() {
         binding.setWallpaper.isEnabled = false
-        binding.download.isEnabled = false
         binding.share.isEnabled = false
         binding.like.isEnabled = false
+        binding.info.isEnabled = false
     }
 
     private fun enableMenu() {
         binding.setWallpaper.isEnabled = true
-        binding.download.isEnabled = true
         binding.share.isEnabled = true
         binding.like.isEnabled = true
+        binding.info.isEnabled = true
     }
 
     private fun peekUI() {

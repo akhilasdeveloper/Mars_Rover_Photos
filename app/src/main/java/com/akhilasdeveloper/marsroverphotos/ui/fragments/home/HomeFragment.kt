@@ -12,9 +12,11 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
+import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.widget.PopupMenu
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -25,7 +27,6 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
-import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
@@ -45,6 +46,12 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
+import com.google.android.material.appbar.AppBarLayout
+import android.widget.RelativeLayout
+
+import android.widget.PopupWindow
+import com.akhilasdeveloper.marsroverphotos.databinding.*
+
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
@@ -63,7 +70,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
-    var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
+    private var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
+    private var selectedItem: MarsRoverPhotoTable? = null
+    private var selectedItemPosition: Int? = null
+
+    private var popupMenuWindow: PopupWindow? = null
 
     //    var selectedUriList: MutableMap<Long,Uri> = hashMapOf()
     var selectedPositions: ArrayList<Int> = arrayListOf()
@@ -106,6 +117,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun init() {
 
         setWindowInsets()
+        setPopupMenu()
 
         adapter = MarsRoverPhotoAdapter(this, requestManager)
 
@@ -165,7 +177,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     true
                 }
                 R.id.wallpaper -> {
-                    setWallpaper()
+                    if (selectedList.isNotEmpty())
+                        setWallpaper(selectedList[0])
                     true
                 }
                 else -> false
@@ -190,6 +203,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
             }
         }
+    }
+
+    private fun pinToolbar() {
+        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
+            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED)
+    }
+
+    private fun unPinToolbar() {
+        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
+            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED)
     }
 
     private fun updateOrRequestPermission() {
@@ -289,19 +314,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         requireContext().showShortToast("Added to liked photos")
     }
 
-    private fun setWallpaper() {
-        if (selectedList.isNotEmpty()) {
-            selectedList[0].img_src.downloadImageAsUri(requestManager) { uri ->
-                uri?.let {
-                    cropImage.launch(
-                        options(uri = it) {
-                            setGuidelines(CropImageView.Guidelines.ON)
-                            setOutputCompressFormat(Bitmap.CompressFormat.PNG)
-                        }
-                    )
-                }
+    private fun setWallpaper(marsRoverPhoto: MarsRoverPhotoTable) {
+        marsRoverPhoto.img_src.downloadImageAsUri(requestManager) { uri ->
+            uri?.let {
+                cropImage.launch(
+                    options(uri = it) {
+                        setGuidelines(CropImageView.Guidelines.ON)
+                        setOutputCompressFormat(Bitmap.CompressFormat.PNG)
+                    }
+                )
             }
         }
+
     }
 
     private fun shareAllAsLinks() {
@@ -351,6 +375,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             master?.let {
                 setTitle(it.name)
             }
+            unPinToolbar()
         }
     }
 
@@ -373,22 +398,62 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             )
         }
         setTitle("Selected (${selectedList.size})")
+        pinToolbar()
     }
 
     private fun showMainProgress() {
-        binding.progressCenter.apply {
-            if (!isVisible)
-                isVisible = true
-        }
+        uiCommunicationListener.showIndeterminateProgressDialog()
     }
 
     private fun hideMainProgress() {
-        binding.progressCenter.apply {
-            if (isVisible)
-                isVisible = false
-        }
+        uiCommunicationListener.hideIndeterminateProgressDialog()
     }
 
+    private fun setPopupMenu() {
+        val dialogView: LayoutPopupMenuMoreSelectBinding =
+            LayoutPopupMenuMoreSelectBinding.inflate(LayoutInflater.from(requireContext()))
+
+        popupMenuWindow = PopupWindow(
+            dialogView.root,
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+        dialogView.apply {
+            select.setOnClickListener {
+                selectedItem?.let { photo ->
+                    selectedItemPosition?.let { position ->
+                        setSelection(photo, position)
+                    }
+                }
+                popupMenuWindow?.dismiss()
+            }
+
+            shareSelect.setOnClickListener {
+                uiCommunicationListener.showMoreSelectorDialog(onDownloadSelect = {
+
+                }, onLinkSelect = {
+
+                }, onImageSelect = {
+
+                })
+                popupMenuWindow?.dismiss()
+            }
+
+            infoSelect.setOnClickListener {
+                uiCommunicationListener.showInfoDialog(selectedItem)
+                popupMenuWindow?.dismiss()
+            }
+
+            wallpaperSelect.setOnClickListener {
+                selectedItem?.let {
+                    setWallpaper(it)
+                }
+                popupMenuWindow?.dismiss()
+            }
+        }
+    }
 
     private fun subscribeObservers() {
 
@@ -522,7 +587,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
             binding.progressTop.isVisible = loadStates.source.prepend is LoadState.Loading
             binding.progress.isVisible = loadStates.source.append is LoadState.Loading
-            binding.progressCenter.isVisible = loadStates.source.refresh is LoadState.Loading
+            viewModel.setLoading(loadStates.source.refresh is LoadState.Loading)
 
             if (navigateToDate &&
                 loadStates.source.prepend !is LoadState.Loading &&
@@ -574,11 +639,17 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
         }
 
+        binding.solSlider.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                showFastScrollerDate()
+            } else if (event.action == MotionEvent.ACTION_UP) {
+                hideFastScrollerDate()
+            }
+            false
+        }
 
         binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser)
-                    showFastScrollerDate()
                 master?.let { rover ->
                     val date =
                         ((progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
@@ -587,7 +658,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                showFastScrollerDate()
+
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
@@ -597,7 +668,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                             .formatDateToMillis()
                     onDateSelected(date!!, true)
                 }
-                hideFastScrollerDate()
             }
 
 
@@ -649,11 +719,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun showFastScrollerDate() {
         hideFastScrollerJob?.cancel()
         binding.scrollDateDisplayText.apply {
-            if (alpha == 0f) {
-                animate()
-                    .alpha(1.0f)
-                    .setListener(null).duration = 200L
-            }
+            animate()
+                .alpha(1.0f).duration = 200L
+
         }
     }
 
@@ -721,6 +789,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         setSelection(marsRoverPhoto, position)
         return true
     }
+
+    override fun onItemLongClick(
+        marsRoverPhoto: MarsRoverPhotoTable,
+        position: Int,
+        imageView: ImageView
+    ): Boolean {
+        popupMenuWindow?.showAsDropDown(imageView)
+        selectedItem = marsRoverPhoto
+        selectedItemPosition = position
+        return true
+    }
+
 
     private fun setSelection(photo: MarsRoverPhotoTable, position: Int) {
         if (selectedList.contains(photo)) {
