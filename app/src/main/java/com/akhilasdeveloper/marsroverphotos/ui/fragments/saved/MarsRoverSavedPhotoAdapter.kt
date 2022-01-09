@@ -8,14 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.RecyclerClickListener
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MarsRoverSavedPhotoAdapter(
     private val interaction: RecyclerClickListener? = null,

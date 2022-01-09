@@ -10,12 +10,11 @@ import android.view.WindowInsetsController
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
-import androidx.core.widget.addTextChangedListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.HomeFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
@@ -24,6 +23,12 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import com.akhilasdeveloper.marsroverphotos.R
+
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
@@ -113,9 +118,21 @@ class MainActivity : BaseActivity() {
             closeInfoDialog()
         }
     }
+
     private fun setBottomSheet() {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.isGestureInsetBottomIgnored = true
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                val viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
+                viewModel.setInfoDialog(newState)
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+
+        })
     }
 
     override fun hideSystemBar() {
@@ -311,7 +328,8 @@ class MainActivity : BaseActivity() {
     override fun setInfoDetails(marsRoverPhotoTable: MarsRoverPhotoTable) {
         binding.layoutInfoBottomSheet.apply {
             imageId.text = marsRoverPhotoTable.photo_id.toString()
-            cameraName.text = "${marsRoverPhotoTable.camera_full_name} (${marsRoverPhotoTable.camera_name})"
+            cameraName.text =
+                "${marsRoverPhotoTable.camera_full_name} (${marsRoverPhotoTable.camera_name})"
             roverName.text = marsRoverPhotoTable.rover_name
             date.text = marsRoverPhotoTable.earth_date.formatMillisToDisplayDate()
             sol.text = marsRoverPhotoTable.sol.toString()
@@ -326,7 +344,8 @@ class MainActivity : BaseActivity() {
     }
 
     override fun closeInfoDialog() {
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_HIDDEN)
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
     override fun showIndeterminateProgressDialog(

@@ -11,14 +11,6 @@
         app:iconTint="@color/system_for"/>
 
     <item
-        android:id="@+id/download"
-        android:icon="@drawable/ic_twotone_arrow_circle_down_24"
-        android:title="@string/download"
-        android:contentDescription="@string/download"
-        app:showAsAction="always"
-        app:iconTint="@color/system_for"/>
-
-    <item
         android:id="@+id/favorites"
         android:icon="@drawable/ic_heart_unfill"
         android:title="@string/like"

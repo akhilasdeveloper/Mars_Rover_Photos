@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     app:cardCornerRadius="@dimen/corner_radius"
-    app:cardBackgroundColor="@color/second">
+    app:cardBackgroundColor="@color/first">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,44 +14,35 @@
         android:layout_marginBottom="@dimen/global_window_padding_half">
 
         <TextView
-            android:id="@+id/select"
+            android:id="@+id/image"
             style="@style/photo_item_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawablePadding="@dimen/global_window_padding"
-            android:text="@string/select"
-            app:drawableStartCompat="@drawable/ic_check_square"
+            android:text="@string/share_as_image"
+            app:drawableStartCompat="@drawable/ic_outline_image_24"
             app:drawableTint="@color/accent" />
 
         <TextView
-            android:id="@+id/info_select"
+            android:id="@+id/link"
             style="@style/photo_item_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawablePadding="@dimen/global_window_padding"
-            android:text="@string/info"
-            app:drawableStartCompat="@drawable/ic_info"
+            android:text="@string/share_as_link"
+            app:drawableStartCompat="@drawable/ic_link"
             app:drawableTint="@color/accent" />
 
         <TextView
-            android:id="@+id/share_select"
+            android:id="@+id/download"
             style="@style/photo_item_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawablePadding="@dimen/global_window_padding"
-            android:text="@string/share"
-            app:drawableStartCompat="@drawable/ic_twotone_share_24"
+            android:text="@string/save_to_device"
+            app:drawableStartCompat="@drawable/ic_twotone_arrow_circle_down_24"
             app:drawableTint="@color/accent" />
 
-        <TextView
-            android:id="@+id/wallpaper_select"
-            style="@style/photo_item_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawablePadding="@dimen/global_window_padding"
-            android:text="@string/wallpaper"
-            app:drawableStartCompat="@drawable/ic_twotone_wallpaper_24"
-            app:drawableTint="@color/accent" />
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

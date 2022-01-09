@@ -38,6 +38,7 @@ class MainViewModel
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
+    private val _dataStateInfoDialogChange: MutableLiveData<Int> = MutableLiveData()
 
     private var job: Job? = null
 
@@ -50,6 +51,8 @@ class MainViewModel
     val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>>
         get() = _dataStatePaging
 
+    val dataStateInfoDialogChange: LiveData<Int>
+        get() = _dataStateInfoDialogChange
 
     val dataStateIsLiked: LiveData<Boolean>
         get() = _dataStateIsLiked
@@ -80,6 +83,10 @@ class MainViewModel
 
     fun setLoading(isLoading: Boolean) {
         _dataStateLoading.value = isLoading
+    }
+
+    fun setInfoDialog(state: Int) {
+        _dataStateInfoDialogChange.value = state
     }
 
     fun getData(rover: RoverMaster, date: Long) {

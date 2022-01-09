@@ -6,32 +6,23 @@
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/global_window_padding"
     app:cardBackgroundColor="@color/second"
-    app:cardCornerRadius="@dimen/corner_radius">
+    app:cardCornerRadius="@dimen/corner_radius"
+    app:cardElevation="5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:background="@drawable/ripple_effect"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="@dimen/global_window_padding"
-            app:drawableEndCompat="@drawable/ic_x"
-            app:drawableTint="@color/system_for" />
+        android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginLeft="@dimen/global_window_padding"
-            android:layout_marginRight="@dimen/global_window_padding"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/global_window_padding"
+            android:layout_marginEnd="0dp"
             android:layout_marginBottom="@dimen/global_window_padding"
+            android:layout_marginTop="@dimen/global_window_padding"
             >
 
             <LinearLayout
@@ -48,14 +39,16 @@
                     android:text="@string/image_id"
                     android:textColor="@color/system_for"
                     app:drawableStartCompat="@drawable/ic_outline_image_24"
-                    app:drawableTint="@color/system_for" />
+                    app:drawableTint="@color/accent"
+                    android:textSize="@dimen/small_text_size" />
 
                 <TextView
                     android:id="@+id/image_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="@color/system_for" />
+                    android:textColor="@color/system_for"
+                    android:textSize="@dimen/small_text_size"/>
             </LinearLayout>
 
             <LinearLayout
@@ -72,14 +65,16 @@
                     android:text="@string/camera"
                     android:textColor="@color/system_for"
                     app:drawableStartCompat="@drawable/ic_camera"
-                    app:drawableTint="@color/system_for" />
+                    app:drawableTint="@color/accent"
+                    android:textSize="@dimen/small_text_size"/>
 
                 <TextView
                     android:id="@+id/camera_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="@color/system_for" />
+                    android:textColor="@color/system_for"
+                    android:textSize="@dimen/small_text_size"/>
             </LinearLayout>
 
             <LinearLayout
@@ -96,14 +91,16 @@
                     android:text="@string/rover"
                     android:textColor="@color/system_for"
                     app:drawableStartCompat="@drawable/ic_rover"
-                    app:drawableTint="@color/system_for" />
+                    app:drawableTint="@color/accent"
+                    android:textSize="@dimen/small_text_size"/>
 
                 <TextView
                     android:id="@+id/rover_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="@color/system_for" />
+                    android:textColor="@color/system_for"
+                    android:textSize="@dimen/small_text_size"/>
             </LinearLayout>
 
             <LinearLayout
@@ -120,14 +117,16 @@
                     android:text="@string/date"
                     android:textColor="@color/system_for"
                     app:drawableStartCompat="@drawable/ic_round_date_range_24"
-                    app:drawableTint="@color/system_for" />
+                    app:drawableTint="@color/accent"
+                    android:textSize="@dimen/small_text_size"/>
 
                 <TextView
                     android:id="@+id/date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="@color/system_for" />
+                    android:textColor="@color/system_for"
+                    android:textSize="@dimen/small_text_size"/>
             </LinearLayout>
 
             <LinearLayout
@@ -144,17 +143,29 @@
                     android:text="@string/sol_"
                     android:textColor="@color/system_for"
                     app:drawableStartCompat="@drawable/ic_mars_icon"
-                    app:drawableTint="@color/system_for" />
+                    app:drawableTint="@color/accent"
+                    android:textSize="@dimen/small_text_size"/>
 
                 <TextView
                     android:id="@+id/sol"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="@color/system_for" />
+                    android:textColor="@color/system_for"
+                    android:textSize="@dimen/small_text_size"/>
             </LinearLayout>
         </LinearLayout>
-
+        <TextView
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ripple_effect"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="@dimen/global_window_padding"
+            android:layout_marginTop="@dimen/global_window_padding_half"
+            app:drawableEndCompat="@drawable/ic_x"
+            app:drawableTint="@color/accent" />
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

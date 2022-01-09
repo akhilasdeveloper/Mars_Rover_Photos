@@ -1,8 +1,6 @@
-package com.akhilasdeveloper.marsroverphotos.ui.fragments.home
+package com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview
 
 import android.widget.ImageView
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 
 interface RecyclerClickListener {

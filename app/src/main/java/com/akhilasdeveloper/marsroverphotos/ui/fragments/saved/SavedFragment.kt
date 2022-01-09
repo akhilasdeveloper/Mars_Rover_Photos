@@ -13,7 +13,7 @@ import com.akhilasdeveloper.marsroverphotos.utilities.*
 
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentSavedBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.RecyclerClickListener
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.bumptech.glide.RequestManager
 
 @AndroidEntryPoint
