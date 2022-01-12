@@ -1,5 +1,7 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.viewholders
 
+import android.annotation.SuppressLint
+import android.view.MotionEvent
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
@@ -18,6 +20,7 @@ class PhotoViewHolder(
     private var positionSel = 0
     var photo: MarsRoverPhotoTable? = null
 
+    @SuppressLint("ClickableViewAccessibility")
     fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
         positionSel = position
         this.photo = photo
@@ -37,9 +40,22 @@ class PhotoViewHolder(
             interaction?.onItemSelected(photo, absoluteAdapterPosition)
         }
 
-        binding.root.setOnLongClickListener {
-            interaction?.onItemLongClick(photo, absoluteAdapterPosition, binding.imageDescription) ?: false
+        var x = 0f
+        var y = 0f
+
+        binding.root.setOnTouchListener { v, event ->
+            // save the X,Y coordinates
+            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                x = event.rawX
+                y = event.rawY
+            }
+            return@setOnTouchListener false
         }
+
+        binding.root.setOnLongClickListener {
+            interaction?.onItemLongClick(photo, absoluteAdapterPosition, it,x,y) ?: false
+        }
+
     }
 
 

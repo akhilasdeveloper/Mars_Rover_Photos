@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
-import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -55,9 +54,7 @@ import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.Recyc
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import android.view.Gravity
-
-
-
+import com.google.firebase.database.*
 
 
 @AndroidEntryPoint
@@ -78,11 +75,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
     private var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
-    private var selectedItem: MarsRoverPhotoTable? = null
-    private var selectedItemPosition: Int? = null
-
-    private var popupMenuWindow: PopupWindow? = null
-    private var sharePopupMenuWindow: PopupWindow? = null
 
     //    var selectedUriList: MutableMap<Long,Uri> = hashMapOf()
     var selectedPositions: ArrayList<Int> = arrayListOf()
@@ -94,6 +86,25 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         setBackPressCallBack()
         super.onCreate(savedInstanceState)
+
+        val database = FirebaseDatabase.getInstance("https://mars-rover-photos-58b3f-default-rtdb.asia-southeast1.firebasedatabase.app")
+        database.setLogLevel(Logger.Level.DEBUG)
+        val myRef = database.getReference("users")
+
+        myRef.setValue("Hello, World!")
+
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                val value = dataSnapshot.getValue(String::class.java)
+                requireContext().showShortToast(value.toString())
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Failed to read value
+            }
+        })
     }
 
     private fun setBackPressCallBack() {
@@ -125,8 +136,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun init() {
 
         setWindowInsets()
-        setPopupMenu()
-        setSharePopupMenu()
         adapter = MarsRoverPhotoAdapter(this, requestManager)
 
         val layoutManager = GridLayoutManager(
@@ -194,10 +203,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         adapter?.selectionChecker = object : SelectionChecker {
             override fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
                 if (selectedList.isNotEmpty()) selectedList.contains(marsRoverPhotoTable) else false
-
-            override fun isSelection(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean {
-                return marsRoverPhotoTable == selectedItem
-            }
         }
 
         cropImage = registerForActivityResult(CropImageContract()) { result ->
@@ -259,33 +264,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
     }
 
-    private fun selectionDownload() {
-        updateOrRequestPermission()
-        if (writePermissionGranted) {
-            downloadJob?.cancel()
-            downloadJob = CoroutineScope(Dispatchers.IO).launch {
-                selectedItem?.let { currentData ->
-                    currentData.img_src.downloadImageAsBitmap(requireContext()) { image ->
-                        image?.let {
-                            val uri = savePhotoToExternalStorage(getDisplayName(currentData), it)
-                            uiCommunicationListener.showSnackBarMessage(
-                                "Image Saved to Gallery",
-                                "View Image"
-                            ) {
-                                val intent = Intent()
-                                intent.action = Intent.ACTION_VIEW
-                                intent.setDataAndType(
-                                    uri,
-                                    "image/*"
-                                )
-                                startActivity(intent)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     private suspend fun download(currentData: MarsRoverPhotoTable, index: Int = 0): Uri? {
         var uri: Uri? = null
@@ -426,7 +404,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun showSelectMenu() {
         val menu =
             if (selectedList.size == 1) R.menu.top_appbar_single_item_select_menu else R.menu.top_appbar_select_menu
-        val menuSize = if (selectedList.size == 1) 4 else 3
+        val menuSize = if (selectedList.size == 1) 3 else 2
         if (binding.topAppbar.homeToolbarTop.menu.isEmpty() || binding.topAppbar.homeToolbarTop.menu.size() != menuSize) {
             if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty())
                 binding.topAppbar.homeToolbarTop.menu.clear()
@@ -451,92 +429,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun hideMainProgress() {
         uiCommunicationListener.hideIndeterminateProgressDialog()
-    }
-
-    private fun setSharePopupMenu() {
-        val dialogView: LayoutPopupMenuShareSelectBinding =
-            LayoutPopupMenuShareSelectBinding.inflate(LayoutInflater.from(requireContext()))
-
-        sharePopupMenuWindow = PopupWindow(
-            dialogView.root,
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            true
-        )
-        sharePopupMenuWindow?.elevation = resources.getDimension(R.dimen.elevation)
-
-        dialogView.apply {
-            image.setOnClickListener {
-            }
-
-            link.setOnClickListener {
-            }
-
-            download.setOnClickListener {
-            }
-        }
-
-    }
-
-    private fun setPopupMenu() {
-        val dialogView: LayoutPopupMenuMoreSelectBinding =
-            LayoutPopupMenuMoreSelectBinding.inflate(LayoutInflater.from(requireContext()))
-
-        popupMenuWindow = PopupWindow(
-            dialogView.root,
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            true
-        )
-        popupMenuWindow?.elevation = resources.getDimensionPixelSize(R.dimen.elevation).toFloat()
-        dialogView.apply {
-            select.setOnClickListener {
-                selectedItem?.let { photo ->
-                    selectedItemPosition?.let { position ->
-                        setSelection(photo, position)
-                    }
-                }
-                uiCommunicationListener.closeInfoDialog()
-                popupMenuWindow?.dismiss()
-            }
-
-            shareSelect.setOnClickListener {
-                sharePopupMenuWindow?.showAsDropDown(it,it.width, -it.height +popupMenuWindow!!.height, Gravity.CENTER)
-/*                uiCommunicationListener.showMoreSelectorDialog(onDownloadSelect = {
-                    selectionDownload()
-                    uiCommunicationListener.closeInfoDialog()
-                    popupMenuWindow?.dismiss()
-                }, onLinkSelect = {
-                    uiCommunicationListener.closeInfoDialog()
-                    popupMenuWindow?.dismiss()
-                }, onImageSelect = {
-                    uiCommunicationListener.closeInfoDialog()
-                    popupMenuWindow?.dismiss()
-                })*/
-            }
-
-            infoSelect.setOnClickListener {
-                uiCommunicationListener.showInfoDialog(selectedItem)
-                popupMenuWindow?.dismiss()
-            }
-
-            wallpaperSelect.setOnClickListener {
-                selectedItem?.let {
-                    setWallpaper(it)
-                }
-                uiCommunicationListener.closeInfoDialog()
-                popupMenuWindow?.dismiss()
-            }
-        }
-
-        popupMenuWindow?.setOnDismissListener {
-            viewModel.dataStateInfoDialogChange.value.let {
-                if (it == null || it == BottomSheetBehavior.STATE_HIDDEN || it == BottomSheetBehavior.STATE_COLLAPSED) {
-                    closeSelection()
-                }
-            }
-        }
-
     }
 
     private fun subscribeObservers() {
@@ -583,11 +475,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
         })
 
-        viewModel.dataStateInfoDialogChange.observe(viewLifecycleOwner, {
-            if (it == BottomSheetBehavior.STATE_HIDDEN || it == BottomSheetBehavior.STATE_COLLAPSED) {
-                closedInfoSheet()
-            }
-        })
     }
 
     private fun setData() {
@@ -864,16 +751,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {
         if (selectedList.isEmpty()) {
-            if (viewModel.dataStateInfoDialogChange.value == BottomSheetBehavior.STATE_EXPANDED) {
-                selectedItem = marsRoverPhoto
-                uiCommunicationListener.setInfoDetails(marsRoverPhoto)
-                showSelection()
-                selectedItemPosition = position
-                showSelection()
-            } else {
-                findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
-                viewModel.setPosition(position)
-            }
+
+            findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
+            viewModel.setPosition(position)
+
             hideSelectMenu()
         } else {
             setSelection(marsRoverPhoto, position)
@@ -882,25 +763,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     override fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
-        position: Int
+        position: Int,
+        view: View,
+        x: Float,
+        y: Float
     ): Boolean {
         setSelection(marsRoverPhoto, position)
-        return true
-    }
-
-    override fun onItemLongClick(
-        marsRoverPhoto: MarsRoverPhotoTable,
-        position: Int,
-        imageView: ImageView
-    ): Boolean {
-//        popupMenuWindow?.showAsDropDown(imageView, imageView.width / 2, -imageView.height / 2, Gravity.CENTER)
-        popupMenuWindow?.showAsDropDown(imageView, 0, 0, Gravity.START or Gravity.TOP)
-//        popupMenuWindow?.showAtLocation(imageView, Gravity.CENTER,imageView.top, imageView.top)
-        selectedItem = marsRoverPhoto
-        uiCommunicationListener.setInfoDetails(marsRoverPhoto)
-        showSelection()
-        selectedItemPosition = position
-        showSelection()
         return true
     }
 
@@ -920,7 +788,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         adapter?.notifyItemChanged(position)
     }
 
-    private suspend fun downloadImage(): ArrayList<Uri> {
+    private suspend fun downloadImage(selectedList: ArrayList<MarsRoverPhotoTable> = this.selectedList): ArrayList<Uri> {
         val list: ArrayList<Uri> = arrayListOf()
         val size = selectedList.size
         selectedList.forEachIndexed { index, photo ->
@@ -947,21 +815,5 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         return list
     }
 
-    private fun closedInfoSheet() {
-        closeSelection()
-    }
 
-    private fun closeSelection() {
-        selectedItem = null
-        selectedItemPosition?.let {
-            adapter?.notifyItemChanged(it)
-            selectedItemPosition = null
-        }
-    }
-
-    private fun showSelection() {
-        selectedItemPosition?.let {
-            adapter?.notifyItemChanged(it)
-        }
-    }
 }

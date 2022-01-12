@@ -23,10 +23,8 @@ class MarsRoverPhotoAdapter(
     enum class ViewType {
         SMALL,
         SMALL_SELECTED,
-        SMALL_SELECTION,
         DETAILED,
-        DETAILED_SELECTED,
-        DETAILED_SELECTION
+        DETAILED_SELECTED
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -34,17 +32,10 @@ class MarsRoverPhotoAdapter(
             PhotoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val bindingPhotoSelected =
             PhotoItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        val bindingPhotoSelection =
-            PhotoItemSelectionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val bindingDatePhoto =
             PhotoDateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val bindingDatePhotoSelected =
             PhotoDateItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        val bindingDatePhotoSelection = PhotoDateItemSelectionBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
         return when (viewType) {
             ViewType.DETAILED.ordinal -> PhotoDateViewHolder(
                 bindingDatePhoto,
@@ -56,11 +47,6 @@ class MarsRoverPhotoAdapter(
                 interaction,
                 requestManager
             )
-            ViewType.DETAILED_SELECTION.ordinal -> PhotoDateSelectionViewHolder(
-                bindingDatePhotoSelection,
-                interaction,
-                requestManager
-            )
             ViewType.SMALL.ordinal -> PhotoViewHolder(
                 bindingPhoto,
                 interaction,
@@ -68,11 +54,6 @@ class MarsRoverPhotoAdapter(
             )
             ViewType.SMALL_SELECTED.ordinal -> PhotoSelectedViewHolder(
                 bindingPhotoSelected,
-                interaction,
-                requestManager
-            )
-            ViewType.SMALL_SELECTION.ordinal -> PhotoSelectionViewHolder(
-                bindingPhotoSelection,
                 interaction,
                 requestManager
             )
@@ -123,25 +104,6 @@ class MarsRoverPhotoAdapter(
 
                 }
             }
-            ViewType.DETAILED_SELECTION.ordinal -> {
-                val photoViewHolder = holder as PhotoDateSelectionViewHolder
-                currentItem?.let { photo ->
-                    photoViewHolder.bindPhoto(
-                        photo,
-                        position
-                    )
-
-                }
-            }
-            ViewType.SMALL_SELECTION.ordinal -> {
-                val photoViewHolder = holder as PhotoSelectionViewHolder
-                currentItem?.let { photo ->
-                    photoViewHolder.bindPhoto(
-                        photo,
-                        position
-                    )
-                }
-            }
         }
 
     }
@@ -152,7 +114,6 @@ class MarsRoverPhotoAdapter(
             curr.let {
                 when {
                     selectionChecker?.isSelected(it) == true -> ViewType.DETAILED_SELECTED.ordinal
-                    selectionChecker?.isSelection(it) == true -> ViewType.DETAILED_SELECTION.ordinal
                     else -> ViewType.DETAILED.ordinal
                 }
             }
@@ -160,7 +121,6 @@ class MarsRoverPhotoAdapter(
             curr?.let {
                 when {
                     selectionChecker?.isSelected(it) == true -> ViewType.SMALL_SELECTED.ordinal
-                    selectionChecker?.isSelection(it) == true -> ViewType.SMALL_SELECTION.ordinal
                     else -> ViewType.SMALL.ordinal
                 }
             } ?: ViewType.SMALL.ordinal

@@ -2,7 +2,6 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.saved
 
 import android.os.Bundle
 import android.view.*
-import android.widget.ImageView
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
@@ -97,17 +96,13 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
 
     }
 
-    override fun onItemLongClick(
-        marsRoverPhoto: MarsRoverPhotoTable,
-        position: Int
-    ): Boolean {
-        return true
-    }
 
     override fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
         position: Int,
-        imageView: ImageView
+        view: View,
+        x: Float,
+        y: Float
     ): Boolean {
         return true
     }
