@@ -22,4 +22,6 @@ object Constants {
     const val NETWORK_TIME_OUT = (10 * 60 * 1000).toLong()
     const val AD_ENABLED = false
     const val CACHE_IMAGE_EXTENSION = ".png"
+    const val FIREBASE_NODE_LIKES = "likes"
+    const val FIREBASE_URL = "https://mars-rover-photos-58b3f-default-rtdb.asia-southeast1.firebasedatabase.app"
 }

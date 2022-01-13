@@ -54,7 +54,12 @@ import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.Recyc
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import android.view.Gravity
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FIREBASE_NODE_LIKES
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FIREBASE_URL
 import com.google.firebase.database.*
+import com.google.firebase.installations.FirebaseInstallations
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.ktx.app
 
 
 @AndroidEntryPoint
@@ -75,6 +80,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
     private var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
+    private var myRef: DatabaseReference? = null
 
     //    var selectedUriList: MutableMap<Long,Uri> = hashMapOf()
     var selectedPositions: ArrayList<Int> = arrayListOf()
@@ -87,17 +93,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         setBackPressCallBack()
         super.onCreate(savedInstanceState)
 
-        val database = FirebaseDatabase.getInstance("https://mars-rover-photos-58b3f-default-rtdb.asia-southeast1.firebasedatabase.app")
-        database.setLogLevel(Logger.Level.DEBUG)
-        val myRef = database.getReference("users")
+        myRef = database.getReference(FIREBASE_NODE_LIKES)
 
-        myRef.setValue("Hello, World!")
-
-        myRef.addValueEventListener(object : ValueEventListener {
+        myRef?.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                val value = dataSnapshot.getValue(String::class.java)
+                val value = dataSnapshot.getValue()
                 requireContext().showShortToast(value.toString())
             }
 
@@ -438,6 +440,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             it.peekContent?.let { rover ->
                 it.setAsHandled()
                 master = rover
+                firebaseInstallation.id.addOnCompleteListener {id->
+                    myRef?.child(id.result)?.push()?.setValue(rover)
+                }
                 setData()
                 if (!isHandled) {
                     currentDate = rover.max_date_in_millis
