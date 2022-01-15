@@ -25,4 +25,21 @@ data class MarsRoverPhotoTable(
     @PrimaryKey(autoGenerate = true)
     @SerializedName("id") @Expose val id: Long? = null,
     @SerializedName("photo_id") @Expose val photo_id: Long
-)
+){
+    constructor() : this(
+        false,
+        0L,
+        "",
+        0,
+        "",
+        "",
+        0,
+        "",
+        "",
+        "",
+        "",
+        0,
+        0,
+        0L
+    )
+}

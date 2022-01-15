@@ -1,5 +1,8 @@
 package com.akhilasdeveloper.marsroverphotos.repositories
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asFlow
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -29,6 +32,7 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.installations.FirebaseInstallations
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import timber.log.Timber
@@ -312,24 +316,59 @@ class MarsRoverPhotosRepository @Inject constructor(
         }
     }
 
-    private fun getLikedPhotos(){
+    fun getLikedPhotos(): Flow<List<MarsRoverPhotoTable>> {
         val myRef = database.reference
-        val photoIDList = arrayListOf<String>()
+        val photoList = arrayListOf<MarsRoverPhotoTable>()
+        val photoLiveData: MutableLiveData<List<MarsRoverPhotoTable>> = MutableLiveData()
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                photoIDList.clear()
+                myRef.removeEventListener(this)
                 firebaseInstallations.id.addOnCompleteListener { id ->
-                    for(data in dataSnapshot.child(id.result.toString()).children){
-                        data.getValue<String>()?.let { value->
-                            photoIDList.add(value)
+                    for (data in dataSnapshot.child(Constants.FIREBASE_NODE_USER_IDS)
+                        .child(id.result.toString()).children) {
+                        data.getValue<String>()?.let { value ->
+                            dataSnapshot.child(Constants.FIREBASE_NODE_PHOTOS).child(value).let {
+                                it.getValue(MarsRoverPhotoTable::class.java)?.let { photo ->
+                                    photoList.add(photo)
+                                }
+                            }
                         }
+                    }
+                    photoLiveData.value = photoList
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+        return photoLiveData.asFlow()
+    }
+
+    fun syncLikedPhotos() {
+        val myRef = database.reference
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                myRef.removeEventListener(this)
+                firebaseInstallations.id.addOnCompleteListener { id ->
+                    for (data in dataSnapshot.child(Constants.FIREBASE_NODE_USER_IDS)
+                        .child(id.result.toString()).children) {
+                        data.getValue<String>()?.let { value ->
+                            dataSnapshot.child(Constants.FIREBASE_NODE_PHOTOS).child(value).let {
+                                it.getValue(MarsRoverPhotoTable::class.java)?.let { photo ->
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        addLike(photo)
+                                        marsPhotoDao.insertMarsRoverPhoto(photo)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        utilities.setLikesSync()
                     }
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                // Failed to read value
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 }

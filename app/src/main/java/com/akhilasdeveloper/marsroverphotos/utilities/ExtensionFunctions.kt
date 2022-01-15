@@ -18,6 +18,9 @@ import androidx.core.view.marginBottom
 import androidx.core.view.marginEnd
 import androidx.core.view.marginStart
 import androidx.core.view.marginTop
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -244,3 +247,4 @@ fun View.updateMarginAndHeight(
 fun Fragment.toDpi(int: Int): Int = (this.resources.displayMetrics.density * int).toInt()
 val Fragment.displayHeightPx: Int get() = this.resources.displayMetrics.heightPixels
 
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")

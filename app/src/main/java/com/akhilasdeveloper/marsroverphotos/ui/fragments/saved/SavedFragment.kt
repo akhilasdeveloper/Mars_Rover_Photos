@@ -2,6 +2,7 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.saved
 
 import android.os.Bundle
 import android.view.*
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
@@ -14,6 +15,8 @@ import com.akhilasdeveloper.marsroverphotos.databinding.FragmentSavedBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.bumptech.glide.RequestManager
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListener {
@@ -25,16 +28,25 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     @Inject
     lateinit var utilities: Utilities
     internal var master: RoverMaster? = null
+
     @Inject
     lateinit var requestManager: RequestManager
-    private var adapter:MarsRoverSavedPhotoAdapter? = null
+    private var adapter: MarsRoverSavedPhotoAdapter? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentSavedBinding.bind(view)
 
         init()
+        sync()
         subscribeObservers()
+    }
+
+    private fun sync() {
+        lifecycleScope.launch {
+            if (utilities.isLikesInSync() == Constants.DATASTORE_LIKES_SYNC_FALSE)
+                viewModel.syncLikedPhotos()
+        }
     }
 
     private fun init() {
@@ -66,9 +78,7 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
         })
 
         viewModel.dataStateLikedPhotos.observe(viewLifecycleOwner, {
-            it?.let {
-                adapter?.submitData(viewLifecycleOwner.lifecycle, it)
-            }
+            adapter?.submitData(viewLifecycleOwner.lifecycle, it)
         })
     }
 
@@ -106,7 +116,5 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     ): Boolean {
         return true
     }
-
-
 
 }

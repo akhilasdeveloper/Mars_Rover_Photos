@@ -26,7 +26,7 @@ class MainViewModel
 
     private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> =
         MutableLiveData()
-    private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>?> =
+    private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>> =
         MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
     private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
@@ -41,7 +41,7 @@ class MainViewModel
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
-    val dataStateLikedPhotos: LiveData<PagingData<MarsRoverPhotoTable>?>
+    val dataStateLikedPhotos: LiveData<PagingData<MarsRoverPhotoTable>>
         get() = _dataStateLikedPhotos
 
     val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>>
@@ -142,6 +142,12 @@ class MainViewModel
         viewModelScope.launch {
             marsRoverPhotosRepository.updateLike(marsRoverPhotoTable)
             isLiked(marsRoverPhotoTable.photo_id)
+        }
+    }
+
+    fun syncLikedPhotos(){
+        viewModelScope.launch {
+            marsRoverPhotosRepository.syncLikedPhotos()
         }
     }
 

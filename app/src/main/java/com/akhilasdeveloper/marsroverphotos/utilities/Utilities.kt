@@ -7,7 +7,13 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import androidx.core.content.FileProvider
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC_FALSE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC_TRUE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -123,4 +129,16 @@ class Utilities @Inject constructor(
         return minDate + (sol * MILLIS_IN_A_SOL)
     }
 
+    suspend fun setLikesSync() {
+        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
+        context.dataStore.edit { settings ->
+            settings[dataStoreKey] = DATASTORE_LIKES_SYNC_TRUE
+        }
+    }
+
+    suspend fun isLikesInSync(): String {
+        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
+        val preferences = context.dataStore.data.first()
+        return preferences[dataStoreKey] ?: DATASTORE_LIKES_SYNC_FALSE
+    }
 }
