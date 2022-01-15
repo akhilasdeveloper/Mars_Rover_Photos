@@ -21,8 +21,6 @@ abstract class BaseFragment(layout: Int): Fragment(layout) {
 
     lateinit var viewModel: MainViewModel
     lateinit var uiCommunicationListener: UICommunicationListener
-    val database = FirebaseDatabase.getInstance(Constants.FIREBASE_URL)
-    val firebaseInstallation = FirebaseInstallations.getInstance()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

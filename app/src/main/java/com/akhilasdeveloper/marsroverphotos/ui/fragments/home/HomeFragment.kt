@@ -25,7 +25,6 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
-import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.*
@@ -45,21 +44,12 @@ import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import com.google.android.material.appbar.AppBarLayout
-import android.widget.RelativeLayout
 
-import android.widget.PopupWindow
 import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.MarsRoverPhotoAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import android.view.Gravity
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FIREBASE_NODE_LIKES
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FIREBASE_URL
 import com.google.firebase.database.*
-import com.google.firebase.installations.FirebaseInstallations
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.ktx.app
 
 
 @AndroidEntryPoint
@@ -70,6 +60,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     @Inject
     lateinit var requestManager: RequestManager
+    @Inject
+    lateinit var database: FirebaseDatabase
     private var adapter: MarsRoverPhotoAdapter? = null
     internal var master: RoverMaster? = null
     internal var currentDate: Long? = null
@@ -92,21 +84,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         setBackPressCallBack()
         super.onCreate(savedInstanceState)
-
-        myRef = database.getReference(FIREBASE_NODE_LIKES)
-
-        myRef?.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                val value = dataSnapshot.getValue()
-                requireContext().showShortToast(value.toString())
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Failed to read value
-            }
-        })
     }
 
     private fun setBackPressCallBack() {
@@ -324,14 +301,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun setLike() {
         selectedList.forEach { currentData ->
             currentData.let {
-                it.photo_id.let { id ->
-                    viewModel.updateLike(
-                        marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
-                            id = id,
-                            rover_id = it.rover_id
-                        )
-                    )
-                }
+                viewModel.updateLike(
+                    marsRoverPhotoTable = currentData
+                )
             }
         }
         clearSelection()
@@ -440,9 +412,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             it.peekContent?.let { rover ->
                 it.setAsHandled()
                 master = rover
-                firebaseInstallation.id.addOnCompleteListener {id->
-                    myRef?.child(id.result)?.push()?.setValue(rover)
-                }
+
                 setData()
                 if (!isHandled) {
                     currentDate = rover.max_date_in_millis

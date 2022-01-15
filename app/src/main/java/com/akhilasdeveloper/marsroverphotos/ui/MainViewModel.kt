@@ -4,16 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.akhilasdeveloper.marsroverphotos.data.DatePreviewData
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -140,10 +136,12 @@ class MainViewModel
         }
     }
 
-    fun updateLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
+    fun updateLike(
+        marsRoverPhotoTable: MarsRoverPhotoTable
+    ) {
         viewModelScope.launch {
-            marsRoverPhotosRepository.updateLike(marsRoverPhotoLikedTable)
-            isLiked(marsRoverPhotoLikedTable.id)
+            marsRoverPhotosRepository.updateLike(marsRoverPhotoTable)
+            isLiked(marsRoverPhotoTable.photo_id)
         }
     }
 

@@ -7,21 +7,26 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NO_INTERNET
 import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
-import com.akhilasdeveloper.marsroverphotos.data.DatePreviewData
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.*
 import com.akhilasdeveloper.marsroverphotos.db.dao.MarsPhotoDao
 import com.akhilasdeveloper.marsroverphotos.db.dao.MarsRoverDao
-import com.akhilasdeveloper.marsroverphotos.db.dao.PhotoKeyDao
 import com.akhilasdeveloper.marsroverphotos.db.dao.RemoteKeyDao
-import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverManifestTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
+import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverManifestTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
 import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
+import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.getValue
+import com.google.firebase.installations.FirebaseInstallations
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -35,7 +40,8 @@ class MarsRoverPhotosRepository @Inject constructor(
     private val marsRoverDao: MarsRoverDao,
     private val marsPhotoDao: MarsPhotoDao,
     private val remoteKeyDao: RemoteKeyDao,
-    private val marsRoverDataBase: MarsRoverDatabase,
+    private val database: FirebaseDatabase,
+    private val firebaseInstallations: FirebaseInstallations,
     private val utilities: Utilities
 ) {
 
@@ -135,7 +141,7 @@ class MarsRoverPhotosRepository @Inject constructor(
             val isExpired =
                 if (insertedDate == null) true else (System.currentTimeMillis() - insertedDate) > Constants.MILLIS_IN_A_DAY
 
-            if(isExpired || isRefresh)
+            if (isExpired || isRefresh)
                 emit(MarsRoverSrcResponse(message = "Syncing Database"))
 
             if (isExpired || isRefresh || isEmpty) {
@@ -181,26 +187,37 @@ class MarsRoverPhotosRepository @Inject constructor(
         marsRoverDao.insertMarsRoverSrc(marsRoverSrcTable)
     }
 
-    suspend fun updateLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
+    suspend fun updateLike(marsRoverPhotoTable: MarsRoverPhotoTable) {
         withContext(Dispatchers.IO) {
-            marsRoverPhotoLikedTable.let {
-                if (checkLike(it.id))
-                    removeLike(marsRoverPhotoLikedTable)
+            marsRoverPhotoTable.let {
+                if (checkLike(it.photo_id))
+                    removeLike(marsRoverPhotoTable)
                 else
-                    addLike(marsRoverPhotoLikedTable)
+                    addLike(marsRoverPhotoTable)
             }
         }
     }
 
-    private suspend fun addLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
+    private suspend fun addLike(marsRoverPhotoTable: MarsRoverPhotoTable) {
         withContext(Dispatchers.IO) {
-            marsPhotoDao.addLike(marsRoverPhotoLikedTable = marsRoverPhotoLikedTable)
+            marsPhotoDao.addLike(
+                marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
+                    id = marsRoverPhotoTable.photo_id,
+                    rover_id = marsRoverPhotoTable.rover_id
+                )
+            )
+            submitLike(marsRoverPhotoTable)
         }
     }
 
-    private suspend fun removeLike(marsRoverPhotoLikedTable: MarsRoverPhotoLikedTable) {
+    private suspend fun removeLike(marsRoverPhotoTable: MarsRoverPhotoTable) {
         withContext(Dispatchers.IO) {
-            marsPhotoDao.removeLike(marsRoverPhotoLikedTable = marsRoverPhotoLikedTable)
+            marsPhotoDao.removeLike(
+                marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
+                    id = marsRoverPhotoTable.photo_id,
+                    rover_id = marsRoverPhotoTable.rover_id
+                )
+            )
         }
     }
 
@@ -274,4 +291,45 @@ class MarsRoverPhotosRepository @Inject constructor(
      * Rover Photo END
      */
 
+    /**
+     * Firebase
+     */
+
+    private fun submitLike(marsRoverPhotoTable: MarsRoverPhotoTable) {
+        val myRef = database.reference
+        firebaseInstallations.id.addOnCompleteListener { id ->
+            myRef.child(Constants.FIREBASE_NODE_USER_IDS)
+                .child(id.result.toString())
+                .child(id.result.toString() + "_" + marsRoverPhotoTable.photo_id.toString())
+                .setValue(marsRoverPhotoTable.photo_id.toString() + "_" + marsRoverPhotoTable.rover_id)
+            myRef.child(Constants.FIREBASE_NODE_PHOTO_IDS)
+                .child(marsRoverPhotoTable.photo_id.toString())
+                .child(marsRoverPhotoTable.photo_id.toString() + "_" + id.result.toString())
+                .setValue(id.result.toString())
+            myRef.child(Constants.FIREBASE_NODE_PHOTOS)
+                .child(marsRoverPhotoTable.photo_id.toString() + "_" + marsRoverPhotoTable.rover_id)
+                .setValue(marsRoverPhotoTable)
+        }
+    }
+
+    private fun getLikedPhotos(){
+        val myRef = database.reference
+        val photoIDList = arrayListOf<String>()
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                photoIDList.clear()
+                firebaseInstallations.id.addOnCompleteListener { id ->
+                    for(data in dataSnapshot.child(id.result.toString()).children){
+                        data.getValue<String>()?.let { value->
+                            photoIDList.add(value)
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Failed to read value
+            }
+        })
+    }
 }

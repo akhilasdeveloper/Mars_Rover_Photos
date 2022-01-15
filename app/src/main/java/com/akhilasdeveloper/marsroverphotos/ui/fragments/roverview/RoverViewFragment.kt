@@ -30,11 +30,8 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageView
 import com.canhub.cropper.options
 import android.app.WallpaperManager
-import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.RequestManager
-import java.io.File
-import java.io.FileOutputStream
 import javax.inject.Inject
 
 
@@ -255,15 +252,10 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setLike() {
-        currentData?.let {
-            it.photo_id.let { id ->
-                viewModel.updateLike(
-                    marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(
-                        id = id,
-                        rover_id = it.rover_id
-                    )
-                )
-            }
+        currentData?.let {photo->
+            viewModel.updateLike(
+                marsRoverPhotoTable = photo
+            )
         }
     }
 
