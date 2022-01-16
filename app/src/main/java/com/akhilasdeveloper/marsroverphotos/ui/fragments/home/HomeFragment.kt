@@ -15,6 +15,7 @@ import android.view.*
 import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -162,7 +163,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     }, onLinkSelect = {
                         shareAllAsLinks()
                     }, onDownloadSelect = {
-                        setDownload()
+                        updateOrRequestPermission()
                     })
                     true
                 }
@@ -197,6 +198,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
             }
         }
+
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                writePermissionGranted = it
+                setDownload()
+            }
     }
 
     private fun pinToolbar() {
@@ -221,12 +228,26 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         writePermissionGranted = hasWritePermission || minSdk29
 
         if (!writePermissionGranted) {
-            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            uiCommunicationListener.showConsentSelectorDialog(
+                title = requireContext().getString(R.string.permission),
+                descriptionText = requireContext().getString(R.string.permission_consent),
+                onOkSelect = {
+                    permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                },
+                onCancelSelect = {
+                    uiCommunicationListener.showSnackBarMessage(
+                        messageText = requireContext().getString(
+                            R.string.permission_cancel
+                        ), buttonText = requireContext().getString(R.string.allow), onClick = {
+                            updateOrRequestPermission()
+                        })
+                })
+        } else {
+            setDownload()
         }
     }
 
     private fun setDownload() {
-        updateOrRequestPermission()
         if (writePermissionGranted) {
             downloadJob?.cancel()
             downloadJob = CoroutineScope(Dispatchers.IO).launch {

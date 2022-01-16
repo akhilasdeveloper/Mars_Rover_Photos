@@ -40,9 +40,10 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private var _binding: FragmentRoverviewBinding? = null
     private val binding get() = _binding!!
+
     @Inject
     lateinit var requestManager: RequestManager
-    private var adapter:MarsRoverPagerAdapter? =  null
+    private var adapter: MarsRoverPagerAdapter? = null
     private var isShow = true
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     private var currentData: MarsRoverPhotoTable? = null
@@ -104,7 +105,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                 }, onLinkSelect = {
                     setShare()
                 }, onDownloadSelect = {
-                    setDownload()
+                    updateOrRequestPermission()
                 })
             }
         }
@@ -113,7 +114,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun setCurrentData() {
         currentPosition?.let {
-            adapter?.let { adapter->
+            adapter?.let { adapter ->
                 if (adapter.snapshot().size > it) {
                     currentData = adapter.snapshot()[it]
                     currentData?.let {
@@ -135,7 +136,22 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         writePermissionGranted = hasWritePermission || minSdk29
 
         if (!writePermissionGranted) {
-            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            uiCommunicationListener.showConsentSelectorDialog(
+                title = requireContext().getString(R.string.permission),
+                descriptionText = requireContext().getString(R.string.permission_consent),
+                onOkSelect = {
+                    permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                },
+                onCancelSelect = {
+                    uiCommunicationListener.showSnackBarMessage(
+                        messageText = requireContext().getString(
+                            R.string.permission_cancel
+                        ), buttonText = requireContext().getString(R.string.allow), onClick = {
+                            updateOrRequestPermission()
+                        })
+                })
+        } else {
+            setDownload()
         }
     }
 
@@ -186,7 +202,6 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setDownload() {
-        updateOrRequestPermission()
         if (writePermissionGranted) {
             currentData?.img_src?.downloadImageAsBitmap(requireContext()) { image ->
                 image?.let {
@@ -252,7 +267,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setLike() {
-        currentData?.let {photo->
+        currentData?.let { photo ->
             viewModel.updateLike(
                 marsRoverPhotoTable = photo
             )
@@ -299,6 +314,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         permissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) {
                 writePermissionGranted = it
+                setDownload()
             }
         cropImage = registerForActivityResult(CropImageContract()) { result ->
             if (result.isSuccessful) {

@@ -25,4 +25,13 @@ interface UICommunicationListener {
     fun closeInfoDialog()
     fun showDownloadProgressDialog(progress: Int, onCancelClicked: () -> Unit)
     fun hideDownloadProgressDialog()
+    fun showConsentSelectorDialog(
+        title: String = "Info",
+        descriptionText: String,
+        oKText: String = "OK",
+        doNotShow: Boolean = false,
+        cancelText: String = "Cancel",
+        onOkSelect: (doNotShow:Boolean) -> Unit,
+        onCancelSelect: ((doNotShow:Boolean) -> Unit)? = null
+    )
 }

@@ -352,32 +352,11 @@ class MainActivity : BaseActivity() {
         isCancelable: Boolean,
         onCancelSelect: (() -> Unit)?
     ) {
-        /*val dialogView: LayoutProgressIndeterminateBinding =
-            LayoutProgressIndeterminateBinding.inflate(LayoutInflater.from(this))
-        val builder: AlertDialog.Builder =
-            AlertDialog.Builder(this, R.style.dialog_background)
-                .setView(dialogView.root)
-        indeterminateAlertDialog = builder.create()
-        indeterminateAlertDialog?.setCanceledOnTouchOutside(false)
-
-        if (isCancelable) {
-            dialogView.apply {
-                cancelSolSelector.isVisible = true
-                cancelSolSelector.setOnClickListener {
-                    onCancelSelect?.invoke()
-                    indeterminateAlertDialog?.cancel()
-                }
-            }
-        }
-
-        indeterminateAlertDialog?.show()*/
-
         binding.layoutProgressIndeterminate.root.isVisible = true
 
     }
 
     override fun hideIndeterminateProgressDialog() {
-//        indeterminateAlertDialog?.cancel()
         binding.layoutProgressIndeterminate.root.isVisible = false
     }
 
@@ -394,6 +373,46 @@ class MainActivity : BaseActivity() {
             }
         }
         alertDialog?.show()
+    }
+
+    override fun showConsentSelectorDialog(
+        title: String,
+        descriptionText: String,
+        oKText: String,
+        doNotShow: Boolean,
+        cancelText: String,
+        onOkSelect: (doNotShow:Boolean) -> Unit,
+        onCancelSelect: ((doNotShow:Boolean) -> Unit)?
+    ) {
+        val dialogView: LayoutConsentBinding =
+            LayoutConsentBinding.inflate(LayoutInflater.from(this))
+        val builder: AlertDialog.Builder =
+            AlertDialog.Builder(this, R.style.dialog_background)
+                .setView(dialogView.root)
+        val alertDialog: AlertDialog = builder.create()
+
+        dialogView.apply {
+
+            this.title.text = title
+            this.cancel.text = cancelText
+            this.description.text = descriptionText
+            this.ok.text = oKText
+
+            this.doNotShow.isVisible = doNotShow
+
+            ok.setOnClickListener {
+                onOkSelect(this.doNotShow.isChecked)
+                alertDialog.cancel()
+            }
+
+            cancel.setOnClickListener {
+                onCancelSelect?.invoke(this.doNotShow.isChecked)
+                alertDialog.cancel()
+            }
+        }
+
+        alertDialog.show()
+
     }
 
     override fun showDownloadProgressDialog(progress: Int, onCancelClicked: () -> Unit) {

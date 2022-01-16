@@ -141,4 +141,17 @@ class Utilities @Inject constructor(
         val preferences = context.dataStore.data.first()
         return preferences[dataStoreKey] ?: DATASTORE_LIKES_SYNC_FALSE
     }
+
+    suspend fun setDoNotShowSignIn() {
+        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
+        context.dataStore.edit { settings ->
+            settings[dataStoreKey] = DATASTORE_LIKES_SYNC_TRUE
+        }
+    }
+
+    suspend fun isDoNotShowSignIn(): String {
+        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
+        val preferences = context.dataStore.data.first()
+        return preferences[dataStoreKey] ?: DATASTORE_LIKES_SYNC_FALSE
+    }
 }

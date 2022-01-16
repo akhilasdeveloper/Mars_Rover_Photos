@@ -44,4 +44,9 @@
     <string name="share_as_link">Share as link</string>
     <string name="share_as_image">Share as image</string>
     <string name="select">Select</string>
+    <string name="permission_consent">App needs storage permission to save photos to device. Please allow permission to continue.</string>
+    <string name="permission">Storage Permission</string>
+    <string name="allow">Allow</string>
+    <string name="permission_cancel">Storage permission not granted.</string>
+    <string name="don_t_show_this_message_again">Don\'t show this message again</string>
 </resources>
