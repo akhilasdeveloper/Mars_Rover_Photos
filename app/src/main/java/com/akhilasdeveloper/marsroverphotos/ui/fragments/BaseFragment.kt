@@ -7,11 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.akhilasdeveloper.marsroverphotos.ui.MainViewModel
 import com.akhilasdeveloper.marsroverphotos.ui.UICommunicationListener
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants
-import com.bumptech.glide.RequestManager
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.Logger
-import com.google.firebase.installations.FirebaseInstallations
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject

@@ -50,7 +50,7 @@ import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.MarsRoverPhotoAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
-import com.google.firebase.database.*
+
 
 
 @AndroidEntryPoint
@@ -61,8 +61,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     @Inject
     lateinit var requestManager: RequestManager
-    @Inject
-    lateinit var database: FirebaseDatabase
+
     private var adapter: MarsRoverPhotoAdapter? = null
     internal var master: RoverMaster? = null
     internal var currentDate: Long? = null
@@ -73,7 +72,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
     private var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
-    private var myRef: DatabaseReference? = null
 
     //    var selectedUriList: MutableMap<Long,Uri> = hashMapOf()
     var selectedPositions: ArrayList<Int> = arrayListOf()

@@ -14,9 +14,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.installations.FirebaseInstallations
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -106,21 +103,5 @@ object AppModule {
     @Singleton
     @Provides
     fun provideRemoteKeysDao(db: MarsRoverDatabase) = db.getRemoteKeysDao()
-
-    @Singleton
-    @Provides
-    fun providePhotoKeysDao(db: MarsRoverDatabase) = db.getPhotoKeyDao()
-
-    @Singleton
-    @Provides
-    fun provideFirebaseInstallations() = FirebaseInstallations.getInstance()
-
-    @Singleton
-    @Provides
-    fun provideFirebaseDatabase() = FirebaseDatabase.getInstance(Constants.FIREBASE_URL)
-
-    @Singleton
-    @Provides
-    fun provideFirebaseAuth() = FirebaseAuth.getInstance()
 
 }

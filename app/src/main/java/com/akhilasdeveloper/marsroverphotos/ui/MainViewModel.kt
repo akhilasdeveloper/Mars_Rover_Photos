@@ -145,10 +145,4 @@ class MainViewModel
         }
     }
 
-    fun syncLikedPhotos(){
-        viewModelScope.launch {
-            marsRoverPhotosRepository.syncLikedPhotos()
-        }
-    }
-
 }

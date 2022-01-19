@@ -22,12 +22,6 @@ import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.utilities.formatDateToMillis
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.getValue
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -41,8 +35,6 @@ class MarsRoverPhotosRepository @Inject constructor(
     private val marsRoverDao: MarsRoverDao,
     private val marsPhotoDao: MarsPhotoDao,
     private val remoteKeyDao: RemoteKeyDao,
-    private val database: FirebaseDatabase,
-    private val firebaseAuth: FirebaseAuth,
     private val utilities: Utilities
 ) {
 
@@ -207,7 +199,6 @@ class MarsRoverPhotosRepository @Inject constructor(
                     rover_id = marsRoverPhotoTable.rover_id
                 )
             )
-            submitLike(marsRoverPhotoTable)
         }
     }
 
@@ -292,96 +283,4 @@ class MarsRoverPhotosRepository @Inject constructor(
      * Rover Photo END
      */
 
-    /**
-     * Firebase
-     */
-
-    private fun submitLike(marsRoverPhotoTable: MarsRoverPhotoTable) {
-        val myRef = database.reference
-        firebaseAuth.currentUser?.uid?.let { id ->
-            myRef.child(Constants.FIREBASE_NODE_USER_IDS)
-                .child(id)
-                .child(id + "_" + marsRoverPhotoTable.photo_id.toString())
-                .setValue(marsRoverPhotoTable.photo_id.toString() + "_" + marsRoverPhotoTable.rover_id)
-            myRef.child(Constants.FIREBASE_NODE_PHOTO_IDS)
-                .child(marsRoverPhotoTable.photo_id.toString())
-                .child(marsRoverPhotoTable.photo_id.toString() + "_" + id)
-                .setValue(id)
-            myRef.child(Constants.FIREBASE_NODE_PHOTOS)
-                .child(marsRoverPhotoTable.photo_id.toString() + "_" + marsRoverPhotoTable.rover_id)
-                .setValue(marsRoverPhotoTable)
-        }
-    }
-
-    fun getLikedPhotos(): Flow<List<MarsRoverPhotoTable>> {
-        val myRef = database.reference
-        val photoList = arrayListOf<MarsRoverPhotoTable>()
-        val photoLiveData: MutableLiveData<List<MarsRoverPhotoTable>> = MutableLiveData()
-        firebaseAuth.currentUser?.uid?.let { id ->
-            myRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    myRef.removeEventListener(this)
-                    for (data in dataSnapshot.child(Constants.FIREBASE_NODE_USER_IDS)
-                        .child(id).children) {
-                        data.getValue<String>()?.let { value ->
-                            dataSnapshot.child(Constants.FIREBASE_NODE_PHOTOS).child(value).let {
-                                it.getValue(MarsRoverPhotoTable::class.java)?.let { photo ->
-                                    photoList.add(photo)
-                                }
-                            }
-                        }
-
-                        photoLiveData.value = photoList
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
-            })
-        }
-        return photoLiveData.asFlow()
-    }
-
-    fun syncLikedPhotos() {
-        CoroutineScope(Dispatchers.IO).launch {
-            upSync()
-            downSync()
-        }
-    }
-
-    private fun downSync() {
-        val myRef = database.reference
-        firebaseAuth.currentUser?.uid?.let { id ->
-            myRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    myRef.removeEventListener(this)
-                    for (data in dataSnapshot.child(Constants.FIREBASE_NODE_USER_IDS)
-                        .child(id).children) {
-                        data.getValue<String>()?.let { value ->
-                            dataSnapshot.child(Constants.FIREBASE_NODE_PHOTOS).child(value).let {
-                                it.getValue(MarsRoverPhotoTable::class.java)?.let { photo ->
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        addLike(photo)
-                                        marsPhotoDao.insertMarsRoverPhoto(photo)
-                                    }
-                                }
-                            }
-                        }
-                        CoroutineScope(Dispatchers.IO).launch {
-                            utilities.setLikesSync(Constants.DATASTORE_TRUE)
-                        }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
-            })
-        }
-    }
-
-    private suspend fun upSync() {
-        marsPhotoDao.getSavedPhotosRaw().forEach {
-            withContext(Dispatchers.IO){
-                submitLike(it)
-            }
-        }
-    }
 }
