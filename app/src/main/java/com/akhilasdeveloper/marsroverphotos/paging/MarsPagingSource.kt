@@ -98,9 +98,10 @@ class MarsPagingSource(
     }
 
     private suspend fun loadPhotos(date: Long): List<MarsRoverPhotoTable> {
-        val response = getMarsApi(date).toMutableList()
+        var response = getMarsApi(date)
         val size = response.size
         if (size > 0) {
+            response = response.sortedBy { it-> it.photo_id }.toMutableList()
             marsPhotoDao.insertAllMarsRoverPhotos(response.apply {
                 set(0, first().copy(is_placeholder = true, total_count = size))
             }.toList())

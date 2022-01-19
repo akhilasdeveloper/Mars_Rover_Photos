@@ -18,13 +18,7 @@ interface MarsPhotoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarsRoverPhoto(marsRoverPhotoTable: MarsRoverPhotoTable):Long
 
-    @Query("SELECT * FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date <= :date ORDER BY earth_date DESC")
-    fun getPhotosByRoverIDAndDate(roverName: String, date: Long): PagingSource<Int, MarsRoverPhotoTable>
-
-    @Query("SELECT count(*) FROM display_photos WHERE date = :date AND roverName = :roverName")
-    fun getDisplayPhotosCountByRoverNameAndDate(roverName: String, date: Long): Int
-
-    @Query("SELECT * FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName ORDER BY earth_date DESC")
+    @Query("SELECT * FROM mars_rover_photo_table WHERE earth_date = :date AND rover_name = :roverName ORDER BY earth_date DESC,photo_id")
     fun getDisplayPhotosByRoverNameAndDate(roverName: String, date: Long): List<MarsRoverPhotoTable>
 
     @Query("SELECT min (foo.cnt) FROM (SELECT date, (SELECT count(*) FROM display_photos b  WHERE a.photoID >= b.photoID AND b.roverName = :roverName) AS cnt FROM display_photos a WHERE a.roverName = :roverName) foo WHERE foo.date = :date")
@@ -53,5 +47,8 @@ interface MarsPhotoDao {
 
     @Query("SELECT * FROM mars_rover_photo_table WHERE photo_id IN (SELECT id FROM mars_rover_photo_liked_table WHERE rover_id = :roverID) ORDER BY earth_date DESC")
     fun getSavedPhotos(roverID: Int): PagingSource<Int, MarsRoverPhotoTable>
+
+    @Query("SELECT * FROM mars_rover_photo_table WHERE photo_id IN (SELECT id FROM mars_rover_photo_liked_table) ORDER BY earth_date DESC")
+    fun getSavedPhotosRaw(): List<MarsRoverPhotoTable>
 
 }

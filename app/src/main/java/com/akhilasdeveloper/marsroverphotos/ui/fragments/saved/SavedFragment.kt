@@ -1,7 +1,9 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments.saved
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
@@ -15,8 +17,19 @@ import com.akhilasdeveloper.marsroverphotos.databinding.FragmentSavedBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.bumptech.glide.RequestManager
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import kotlinx.coroutines.launch
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
+
 
 @AndroidEntryPoint
 class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListener {
@@ -27,25 +40,95 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
 
     @Inject
     lateinit var utilities: Utilities
-    internal var master: RoverMaster? = null
+    private var master: RoverMaster? = null
 
     @Inject
     lateinit var requestManager: RequestManager
     private var adapter: MarsRoverSavedPhotoAdapter? = null
+    @Inject
+    lateinit var firebaseAuth: FirebaseAuth
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentSavedBinding.bind(view)
 
         init()
+        initSignIn()
         sync()
         subscribeObservers()
     }
 
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                initSignIn()
+            }
+        }
+
+    private fun initSignIn() {
+
+        val signInAccount = GoogleSignIn.getLastSignedInAccount(requireContext())
+        if (signInAccount != null) {
+
+            Timber.d("Signed in as ${signInAccount.email}")
+
+            authenticate(
+                signInAccount
+            )
+        } else {
+
+            Timber.d("Not Signed In")
+
+            getSignInClient().let {
+                resultLauncher.launch(it.signInIntent)
+            }
+
+        }
+
+    }
+
+    private fun authenticate(
+        signInAccount: GoogleSignInAccount
+    ) {
+        var users : FirebaseUser? = firebaseAuth.currentUser
+        if (users == null) {
+            val credential: AuthCredential = GoogleAuthProvider.getCredential(signInAccount.idToken, null)
+            firebaseAuth.signInWithCredential(credential).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    users = firebaseAuth.currentUser
+                    users?.let{
+                        signInSuccess(it)
+                    }
+                } else {
+                    uiCommunicationListener.showSnackBarMessage(getString(R.string.sign_in_failed))
+                }
+            }
+        }
+    }
+
+    private fun signInSuccess(user: FirebaseUser) {
+        sync()
+    }
+
+    private fun getSignInClient(): GoogleSignInClient {
+        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+        return GoogleSignIn.getClient(requireActivity(), signInOptions.build())
+    }
+
+
     private fun sync() {
         lifecycleScope.launch {
-            if (utilities.isLikesInSync() == Constants.DATASTORE_LIKES_SYNC_FALSE)
+            if (utilities.isLikesInSync() == Constants.DATASTORE_FALSE)
                 viewModel.syncLikedPhotos()
+        }
+    }
+
+    private fun logout(){
+        firebaseAuth.signOut()
+        CoroutineScope(Dispatchers.IO).launch {
+            utilities.setLikesSync(Constants.DATASTORE_FALSE)
         }
     }
 

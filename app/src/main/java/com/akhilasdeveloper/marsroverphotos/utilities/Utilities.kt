@@ -10,8 +10,8 @@ import androidx.core.content.FileProvider
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC_FALSE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC_TRUE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_FALSE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_TRUE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
@@ -129,29 +129,29 @@ class Utilities @Inject constructor(
         return minDate + (sol * MILLIS_IN_A_SOL)
     }
 
-    suspend fun setLikesSync() {
+    suspend fun setLikesSync(datastoreTrue: String) {
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
         context.dataStore.edit { settings ->
-            settings[dataStoreKey] = DATASTORE_LIKES_SYNC_TRUE
+            settings[dataStoreKey] = DATASTORE_TRUE
         }
     }
 
     suspend fun isLikesInSync(): String {
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
         val preferences = context.dataStore.data.first()
-        return preferences[dataStoreKey] ?: DATASTORE_LIKES_SYNC_FALSE
+        return preferences[dataStoreKey] ?: DATASTORE_FALSE
     }
 
     suspend fun setDoNotShowSignIn() {
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
         context.dataStore.edit { settings ->
-            settings[dataStoreKey] = DATASTORE_LIKES_SYNC_TRUE
+            settings[dataStoreKey] = DATASTORE_TRUE
         }
     }
 
     suspend fun isDoNotShowSignIn(): String {
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
         val preferences = context.dataStore.data.first()
-        return preferences[dataStoreKey] ?: DATASTORE_LIKES_SYNC_FALSE
+        return preferences[dataStoreKey] ?: DATASTORE_FALSE
     }
 }
