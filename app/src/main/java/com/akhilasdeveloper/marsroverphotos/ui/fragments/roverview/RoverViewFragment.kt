@@ -9,7 +9,6 @@ import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoverviewBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import timber.log.Timber
 import android.graphics.Bitmap
 import android.provider.MediaStore
@@ -52,6 +51,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
+    private var undoClickPositionData: MarsRoverPhotoTable? = null
 
     @Inject
     lateinit var utilities: Utilities
@@ -79,6 +79,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                 super.onPageSelected(position)
                 viewModel.setPosition(position)
             }
+
         }
 
         onPageChangeCallback?.let {
@@ -87,7 +88,10 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
         binding.apply {
             like.setOnClickListener {
-                setLike()
+                if (viewModel.isSavedView)
+                    setSavedLike()
+                else
+                    setLike()
             }
 
             setWallpaper.setOnClickListener {
@@ -110,13 +114,25 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             }
         }
 
+        adapter?.addOnPagesUpdatedListener {
+            if (viewModel.isSavedView) {
+                undoClickPositionData?.let { photo ->
+                    Timber.d("undoClickPositionData subscribeObservers $photo")
+                    adapter?.snapshot()?.indexOf(photo)?.let { pos ->
+                        Timber.d("undoClickPositionData subscribeObservers pos $pos")
+                        undoClickPositionData = null
+                        viewModel.setPosition(pos)
+                    }
+                }
+            }
+        }
     }
 
     private fun setCurrentData() {
         currentPosition?.let {
-            adapter?.let { adapter ->
-                if (adapter.snapshot().size > it) {
-                    currentData = adapter.snapshot()[it]
+            adapter?.snapshot()?.let { adapter ->
+                if (adapter.size > it && it >= 0) {
+                    currentData = adapter[it]
                     currentData?.let {
                         uiCommunicationListener.setInfoDetails(it)
                     }
@@ -272,6 +288,86 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                 marsRoverPhotoTable = photo
             )
         }
+    }
+
+    private fun setSavedLike() {
+        lifecycleScope.launch {
+            if (utilities.isShowLikeConsent()) {
+                val pos = currentData?.copy()
+                Timber.d("undoClickPositionData setSavedLike pos $currentPosition")
+                uiCommunicationListener.showConsentSelectorDialog(getString(R.string.remove_from_liked_photos),
+                    getString(
+                        R.string.selected_items_will_be_removed
+                    ), doNotShow = true,
+                    onOkSelect = {
+                        if (it) {
+                            lifecycleScope.launch {
+                                utilities.setHideLikeConsent()
+                            }
+                        }
+                        currentData?.let { currentData ->
+                            viewModel.updateLike(
+                                marsRoverPhotoTable = currentData
+                            )
+                        }
+
+                        val data = currentData
+                        uiCommunicationListener.showSnackBarMessage(
+                            "Item removed from Liked Photos",
+                            "Undo",
+                            onClick = {
+                                pos?.let {
+                                    Timber.d("undoClickPositionData setSavedLike $pos")
+                                    undoClickPositionData = pos
+                                    data?.let { currentData ->
+                                        currentData.let {
+                                            viewModel.updateLike(
+                                                marsRoverPhotoTable = currentData
+                                            )
+                                        }
+                                    }
+                                    requireContext().showShortToast("Photo added back")
+                                }
+                            })
+                    }, onCancelSelect = {
+                        if (it) {
+                            lifecycleScope.launch {
+                                utilities.setHideLikesConsent()
+                            }
+                        }
+                    })
+            } else {
+                val pos = currentData?.copy()
+                Timber.d("undoClickPositionData setSavedLike pos $currentPosition")
+
+                currentData?.let { currentData ->
+                    viewModel.updateLike(
+                        marsRoverPhotoTable = currentData
+                    )
+                }
+
+                val data = currentData
+                uiCommunicationListener.showSnackBarMessage(
+                    "Item removed from Liked Photos",
+                    "Undo",
+                    onClick = {
+                        pos?.let {
+                            Timber.d("undoClickPositionData setSavedLike $pos")
+                            undoClickPositionData = pos
+                            data?.let { currentData ->
+                                currentData.let {
+                                    viewModel.updateLike(
+                                        marsRoverPhotoTable = currentData
+                                    )
+                                }
+                            }
+                            requireContext().showShortToast("Photo added back")
+                        }
+                    })
+
+            }
+        }
+
     }
 
     private fun subscribeObservers() {

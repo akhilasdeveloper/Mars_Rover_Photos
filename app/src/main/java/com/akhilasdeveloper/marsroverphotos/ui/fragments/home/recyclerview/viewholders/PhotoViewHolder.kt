@@ -53,7 +53,7 @@ class PhotoViewHolder(
         }
 
         binding.root.setOnLongClickListener {
-            interaction?.onItemLongClick(photo, absoluteAdapterPosition, it,x,y) ?: false
+            interaction?.onItemLongClick(photo, absoluteAdapterPosition) ?: false
         }
 
     }

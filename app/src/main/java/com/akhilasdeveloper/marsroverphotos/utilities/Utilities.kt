@@ -6,11 +6,14 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.core.content.FileProvider
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_FALSE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKE_SYNC
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_TRUE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import kotlinx.coroutines.flow.first
@@ -22,7 +25,8 @@ import javax.inject.Inject
 
 
 class Utilities @Inject constructor(
-    var context: Context
+    var context: Context,
+    var vibrator: Vibrator
 ) {
 
     fun isConnectedToTheInternet(): Boolean {
@@ -129,29 +133,38 @@ class Utilities @Inject constructor(
         return minDate + (sol * MILLIS_IN_A_SOL)
     }
 
-    suspend fun setLikesSync(datastoreTrue: String) {
-        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
+    fun vibrate(){
+        sdkAndUp(Build.VERSION_CODES.O, onSdkAndAbove = {
+            vibrator.vibrate(VibrationEffect.createOneShot(25, VibrationEffect.DEFAULT_AMPLITUDE))
+        }, belowSdk = {
+            vibrator.vibrate(25)
+        })
+    }
+
+
+    suspend fun setHideLikeConsent() {
+        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKE_SYNC)
         context.dataStore.edit { settings ->
-            settings[dataStoreKey] = DATASTORE_TRUE
+            settings[dataStoreKey] = DATASTORE_FALSE
         }
     }
 
-    suspend fun isLikesInSync(): String {
-        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
+    suspend fun isShowLikeConsent(): Boolean {
+        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKE_SYNC)
         val preferences = context.dataStore.data.first()
-        return preferences[dataStoreKey] ?: DATASTORE_FALSE
+        return (preferences[dataStoreKey] ?: DATASTORE_TRUE) == DATASTORE_TRUE
     }
 
-    suspend fun setDoNotShowSignIn() {
+    suspend fun setHideLikesConsent() {
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
         context.dataStore.edit { settings ->
-            settings[dataStoreKey] = DATASTORE_TRUE
+            settings[dataStoreKey] = DATASTORE_FALSE
         }
     }
 
-    suspend fun isDoNotShowSignIn(): String {
+    suspend fun isShowLikesConsent(): Boolean {
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
         val preferences = context.dataStore.data.first()
-        return preferences[dataStoreKey] ?: DATASTORE_FALSE
+        return (preferences[dataStoreKey] ?: DATASTORE_TRUE) == DATASTORE_TRUE
     }
 }

@@ -88,12 +88,16 @@ internal fun HomeFragment.showSolSelectorDialog() {
                 solSelectorCount.setText("${value.toInt()}")
             }
             nextSolSelector.setOnClickListener {
-                if (solSlider.value < solSlider.valueTo)
+                if (solSlider.value < solSlider.valueTo) {
                     solSlider.value += 1
+                    utilities.vibrate()
+                }
             }
             prevSolSelector.setOnClickListener {
-                if (solSlider.value > 0)
+                if (solSlider.value > 0) {
                     solSlider.value -= 1
+                    utilities.vibrate()
+                }
             }
             solSelectorCount.addTextChangedListener { edit ->
                 edit?.let {

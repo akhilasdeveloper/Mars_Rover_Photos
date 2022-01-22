@@ -2,6 +2,7 @@ package com.akhilasdeveloper.marsroverphotos.di
 
 import android.app.Application
 import android.content.Context
+import android.os.Vibrator
 import android.view.inputmethod.InputMethodManager
 import androidx.room.Room
 import com.akhilasdeveloper.marsroverphotos.R
@@ -56,9 +57,10 @@ object AppModule {
     @Singleton
     @Provides
     fun provideUtilities(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        vibrator: Vibrator
     ): Utilities {
-        return Utilities(context)
+        return Utilities(context,vibrator)
     }
 
     @Singleton
@@ -90,6 +92,14 @@ object AppModule {
     ): RequestManager {
         return Glide.with(application)
             .setDefaultRequestOptions(requestOptions)
+    }
+
+    @Singleton
+    @Provides
+    fun provideVibrator(
+        @ApplicationContext app: Context
+    ): Vibrator {
+        return (app.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator)
     }
 
     @Singleton

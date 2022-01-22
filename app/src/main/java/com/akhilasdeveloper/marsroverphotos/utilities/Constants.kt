@@ -23,6 +23,7 @@ object Constants {
     const val AD_ENABLED = false
     const val CACHE_IMAGE_EXTENSION = ".png"
     const val DATASTORE_LIKES_SYNC = "DATASTORE_LIKES_SYNC"
+    const val DATASTORE_LIKE_SYNC = "DATASTORE_LIKE_SYNC"
     const val DATASTORE_TRUE = "DATASTORE_TRUE"
     const val DATASTORE_FALSE = "DATASTORE_FALSE"
     const val FIREBASE_NODE_PHOTO_IDS = "photo_ids"

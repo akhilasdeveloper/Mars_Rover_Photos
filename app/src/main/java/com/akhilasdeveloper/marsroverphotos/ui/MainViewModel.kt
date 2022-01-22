@@ -35,8 +35,12 @@ class MainViewModel
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateInfoDialogChange: MutableLiveData<Int> = MutableLiveData()
+    private var _isSavedView: Boolean = false
 
     private var job: Job? = null
+
+    val isSavedView: Boolean
+        get() = _isSavedView
 
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
@@ -81,6 +85,10 @@ class MainViewModel
         _dataStateLoading.value = isLoading
     }
 
+    fun setIsSavedView(isSavedView: Boolean) {
+        _isSavedView = isSavedView
+    }
+
     fun setInfoDialog(state: Int) {
         _dataStateInfoDialogChange.value = state
     }
@@ -99,7 +107,7 @@ class MainViewModel
         }
     }
 
-    fun cancelPendingOperation(){
+    fun cancelPendingOperation() {
         job?.cancel()
     }
 
@@ -109,7 +117,8 @@ class MainViewModel
             marsRoverPhotosRepository.getLikedPhotos(rover = rover)
                 .cachedIn(viewModelScope)
                 .onEach { its ->
-                    _dataStateLikedPhotos.value = its
+//                    _dataStateLikedPhotos.value = its
+                    _dataStatePaging.value = Event(its)
                 }
                 .launchIn(this)
         }

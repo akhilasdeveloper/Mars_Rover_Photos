@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Vibrator
 import android.provider.MediaStore
 import android.view.*
 import android.widget.SeekBar
@@ -757,10 +758,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     override fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
-        position: Int,
-        view: View,
-        x: Float,
-        y: Float
+        position: Int
     ): Boolean {
         setSelection(marsRoverPhoto, position)
         return true

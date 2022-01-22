@@ -7,9 +7,6 @@ interface RecyclerClickListener {
     fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int)
     fun onItemLongClick(
         marsRoverPhoto: MarsRoverPhotoTable,
-        position: Int,
-        view: View,
-        x: Float,
-        y: Float
+        position: Int
     ): Boolean
 }

@@ -44,20 +44,9 @@ class PhotoDateViewHolder(
             interaction?.onItemSelected(photo, absoluteAdapterPosition)
         }
 
-        var x = 0f
-        var y = 0f
-
-        binding.root.setOnTouchListener { v, event ->
-            // save the X,Y coordinates
-            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                x = event.x
-                y = event.y
-            }
-            return@setOnTouchListener false
-        }
 
         binding.root.setOnLongClickListener {
-            interaction?.onItemLongClick(photo, absoluteAdapterPosition, it,x,y) ?: false
+            interaction?.onItemLongClick(photo, absoluteAdapterPosition) ?: false
         }
     }
 
