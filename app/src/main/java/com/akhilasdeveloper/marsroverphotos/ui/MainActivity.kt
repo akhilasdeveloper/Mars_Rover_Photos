@@ -37,7 +37,6 @@ class MainActivity : BaseActivity() {
     private var destinationChangedListener: NavController.OnDestinationChangedListener? = null
     private var navController: NavController? = null
     private var alertDialog: AlertDialog? = null
-    private var indeterminateAlertDialog: AlertDialog? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
     private var dialogView: LayoutProgressBinding? = null
 
@@ -51,30 +50,38 @@ class MainActivity : BaseActivity() {
         sdkAndUp(Build.VERSION_CODES.R, onSdkAndAbove = {
             window.setDecorFitsSystemWindows(false)
             binding.statusBarBg.setOnApplyWindowInsetsListener { view, insets ->
-                val systemWindows =
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.updateLayoutParams { height = systemWindows.top }
+                if (view.height == 0) {
+                    val systemWindows =
+                        insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    view.updateLayoutParams { height = systemWindows.top }
+                }
                 return@setOnApplyWindowInsetsListener insets
             }
             binding.navigationBarBg.setOnApplyWindowInsetsListener { view, insets ->
-                val systemWindows =
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.updateLayoutParams { height = systemWindows.bottom }
+                if (view.height == 0) {
+                    val systemWindows =
+                        insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    view.updateLayoutParams { height = systemWindows.bottom }
+                }
                 return@setOnApplyWindowInsetsListener insets
             }
         }, belowSdk = {
             WindowCompat.setDecorFitsSystemWindows(window, false)
             ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarBg) { view, insets ->
-                val systemWindows =
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.updateLayoutParams { height = systemWindows.top }
+                if (view.height==0) {
+                    val systemWindows =
+                        insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    view.updateLayoutParams { height = systemWindows.top }
+                }
                 return@setOnApplyWindowInsetsListener insets
             }
 
             ViewCompat.setOnApplyWindowInsetsListener(binding.navigationBarBg) { view, insets ->
-                val systemWindows =
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.updateLayoutParams { height = systemWindows.bottom }
+                if (view.height==0) {
+                    val systemWindows =
+                        insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    view.updateLayoutParams { height = systemWindows.bottom }
+                }
                 return@setOnApplyWindowInsetsListener insets
             }
         })
@@ -381,8 +388,8 @@ class MainActivity : BaseActivity() {
         oKText: String,
         doNotShow: Boolean,
         cancelText: String,
-        onOkSelect: (doNotShow:Boolean) -> Unit,
-        onCancelSelect: ((doNotShow:Boolean) -> Unit)?
+        onOkSelect: (doNotShow: Boolean) -> Unit,
+        onCancelSelect: ((doNotShow: Boolean) -> Unit)?
     ) {
         val dialogView: LayoutConsentBinding =
             LayoutConsentBinding.inflate(LayoutInflater.from(this))

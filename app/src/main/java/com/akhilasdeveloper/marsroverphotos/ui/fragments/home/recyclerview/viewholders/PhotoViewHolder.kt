@@ -20,14 +20,11 @@ class PhotoViewHolder(
     private var positionSel = 0
     var photo: MarsRoverPhotoTable? = null
 
-    @SuppressLint("ClickableViewAccessibility")
     fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
         positionSel = position
         this.photo = photo
         binding.apply {
             photo.let {
-                imageDescription.setImageResource(R.drawable.imageview_placeholder)
-
                 requestManager
                     .load(it.img_src)
                     .centerCrop()
@@ -38,18 +35,6 @@ class PhotoViewHolder(
 
         binding.root.setOnClickListener {
             interaction?.onItemSelected(photo, absoluteAdapterPosition)
-        }
-
-        var x = 0f
-        var y = 0f
-
-        binding.root.setOnTouchListener { v, event ->
-            // save the X,Y coordinates
-            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                x = event.rawX
-                y = event.rawY
-            }
-            return@setOnTouchListener false
         }
 
         binding.root.setOnLongClickListener {

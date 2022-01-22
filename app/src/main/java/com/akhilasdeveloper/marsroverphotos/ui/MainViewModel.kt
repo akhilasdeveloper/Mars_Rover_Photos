@@ -29,7 +29,7 @@ class MainViewModel
     private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>> =
         MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
-    private val _dataStateRover: MutableLiveData<MarsRoverSrcResponse> = MutableLiveData()
+    private val _dataStateRover: MutableLiveData<Event<MarsRoverSrcResponse>> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
@@ -63,7 +63,7 @@ class MainViewModel
     val dataStateRoverMaster: LiveData<Event<RoverMaster>>
         get() = _dataStateRoverMaster
 
-    val dataStateRover: LiveData<MarsRoverSrcResponse>
+    val dataStateRover: LiveData<Event<MarsRoverSrcResponse>>
         get() = _dataStateRover
 
     val positionState: LiveData<Int>
@@ -132,7 +132,7 @@ class MainViewModel
         job?.cancel()
         job = viewModelScope.launch {
             marsRoverPhotosRepository.getRoverData(isRefresh).collect {
-                _dataStateRover.value = it
+                _dataStateRover.value = Event(it)
             }
         }
     }
@@ -151,6 +151,12 @@ class MainViewModel
         viewModelScope.launch {
             marsRoverPhotosRepository.updateLike(marsRoverPhotoTable)
             isLiked(marsRoverPhotoTable.photo_id)
+        }
+    }
+
+    fun fetchMaxDate(){
+        viewModelScope.launch {
+//            marsRoverPhotosRepository.calculateMaxDates()
         }
     }
 

@@ -14,6 +14,8 @@ import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoversBinding
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ROVER_STATUS_COMPLETE
+import com.akhilasdeveloper.marsroverphotos.utilities.simplify
 import com.akhilasdeveloper.marsroverphotos.utilities.toDpi
 import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
 import com.bumptech.glide.Glide
@@ -33,6 +35,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private var _binding: FragmentRoversBinding? = null
     private val binding get() = _binding!!
+
     @Inject
     lateinit var requestManager: RequestManager
     private var adapter: MarsRoverAdapter? = null
@@ -116,31 +119,33 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     private fun subscribeObservers() {
-        viewModel.dataStateRover.observe(viewLifecycleOwner, { response ->
-            response?.data?.let {
-                Timber.d("RoverFragment response : $it")
-                if (it.isEmpty())
-                    setEmptyMessage("Tap to refresh")
-                else {
-                    hideEmptyMessage()
-                    adapter?.submitList(it)
+        viewModel.dataStateRover.observe(viewLifecycleOwner, { data ->
+            data?.peekContent?.let { response ->
+                response.data?.let {
+                    Timber.d("RoverFragment response : $it")
+                    if (it.isEmpty())
+                        setEmptyMessage("Tap to refresh")
+                    else {
+                        hideEmptyMessage()
+                        adapter?.submitList(it)
+                    }
                 }
-            }
 
-            response?.message?.let {
-                uiCommunicationListener.showSnackBarMessage(messageText = it)
-            }
-
-            viewModel.setLoading(response?.isLoading == true)
-
-            response?.error?.let {
-                uiCommunicationListener.showSnackBarMessage(
-                    messageText = it,
-                    buttonText = "Refresh"
-                ) {
-                    refreshData()
+                response.message?.let {
+                    uiCommunicationListener.showSnackBarMessage(messageText = it)
                 }
-                setEmptyMessage("$it\nTap to refresh")
+
+                viewModel.setLoading(response.isLoading)
+
+                response.error?.let {
+                    uiCommunicationListener.showSnackBarMessage(
+                        messageText = it,
+                        buttonText = "Refresh"
+                    ) {
+                        refreshData()
+                    }
+                    setEmptyMessage("$it\nTap to refresh")
+                }
             }
         })
 
@@ -224,6 +229,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     override fun onReadMoreSelected(master: RoverMaster, position: Int) {
+//        viewModel.fetchMaxDate()
         setSheetData(master)
         showSheet()
     }
@@ -248,7 +254,10 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             roverLandingDate.text = master.landing_date
             roverLaunchDate.text = master.launch_date
             roverStatus.text = getString(R.string.rover_status, master.status)
-            roverPhotosCount.text = getString(R.string.view_photos, master.total_photos.toString())
+            roverPhotosCount.text = getString(
+                R.string.view_photos,
+                if (master.status == ROVER_STATUS_COMPLETE) master.total_photos.toString() else master.total_photos.simplify() + "+"
+            )
         }
         binding.bottomSheetView.roverPhotosCount.setOnClickListener {
             navigateToPhotos(master)

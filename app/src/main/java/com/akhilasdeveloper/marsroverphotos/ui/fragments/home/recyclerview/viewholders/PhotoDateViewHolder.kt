@@ -20,7 +20,6 @@ class PhotoDateViewHolder(
     var positionSel = 0
     var photo: MarsRoverPhotoTable? = null
 
-    @SuppressLint("ClickableViewAccessibility")
     fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
         positionSel = position
         this.photo = photo

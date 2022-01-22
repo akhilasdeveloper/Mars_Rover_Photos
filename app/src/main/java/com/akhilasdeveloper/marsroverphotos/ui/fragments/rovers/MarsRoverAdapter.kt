@@ -54,7 +54,7 @@ class MarsRoverAdapter(
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(roverImage)
                 roverName.text = photo.name
-                roverPhotosCount.text = photo.total_photos.simplify()
+                roverPhotosCount.text = photo.total_photos.simplify() + "+"
             }
 
             binding.roverPhotosCount.setOnClickListener {

@@ -203,6 +203,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 writePermissionGranted = it
                 setDownload()
             }
+
     }
 
     private fun pinToolbar() {
@@ -359,7 +360,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 )
                 intent.type = "text/plain"
                 intent.putExtra(Intent.EXTRA_TEXT, shareBody)
-                startActivity(Intent.createChooser(intent, getString(R.string.share_text)))
+                startActivity(Intent.createChooser(intent, shareBody))
             }
         }
     }

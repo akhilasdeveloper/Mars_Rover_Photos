@@ -19,15 +19,13 @@ object Constants {
     const val ERROR_NO_INTERNET = "No Internet! Offline mode"
     const val ERROR_NETWORK_TIMEOUT = "Network timeout"
     const val ADD_ITEM_TYPE = "ADD_ITEM_TYPE"
-    const val NETWORK_TIME_OUT = (10 * 60 * 1000).toLong()
+    const val NETWORK_TIME_OUT = (20 * 60 * 1000).toLong()
     const val AD_ENABLED = false
     const val CACHE_IMAGE_EXTENSION = ".png"
     const val DATASTORE_LIKES_SYNC = "DATASTORE_LIKES_SYNC"
     const val DATASTORE_LIKE_SYNC = "DATASTORE_LIKE_SYNC"
     const val DATASTORE_TRUE = "DATASTORE_TRUE"
     const val DATASTORE_FALSE = "DATASTORE_FALSE"
-    const val FIREBASE_NODE_PHOTO_IDS = "photo_ids"
-    const val FIREBASE_NODE_USER_IDS = "user_ids"
-    const val FIREBASE_NODE_PHOTOS = "photos"
-    const val FIREBASE_URL = "https://mars-rover-photos-58b3f-default-rtdb.asia-southeast1.firebasedatabase.app"
+    const val ROVER_STATUS_ACTIVE = "active"
+    const val ROVER_STATUS_COMPLETE = "complete"
 }

@@ -69,8 +69,6 @@ class MarsPagingSource(
                         reConfigureRemoteKey(date, nextKey, prevKey)
                 }
 
-                Timber.d("response response : $response")
-
                 LoadResult.Page(
                     data = response,
                     prevKey = prevKey,

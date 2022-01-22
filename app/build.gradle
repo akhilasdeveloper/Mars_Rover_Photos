@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId "com.akhilasdeveloper.marsroverphotos"
-        minSdkVersion 22
+        minSdkVersion 23
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"

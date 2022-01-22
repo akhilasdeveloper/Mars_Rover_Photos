@@ -20,6 +20,9 @@ interface MarsRoverDao {
     @Query("SELECT addedDate FROM mars_rover_source_table LIMIT 1")
     suspend fun getInsertDate(): Long?
 
+    @Query("UPDATE mars_rover_source_table SET max_date = :max_date WHERE roverName = :roverName")
+    suspend fun updateMaxDate(max_date:String, roverName: String)
+
     /**
      * MarsRoverManifestDb
      */

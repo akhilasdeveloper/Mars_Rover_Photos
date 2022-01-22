@@ -194,7 +194,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             )
             intent.type = "text/plain"
             intent.putExtra(Intent.EXTRA_TEXT, shareBody)
-            startActivity(Intent.createChooser(intent, getString(R.string.share_text)))
+            startActivity(Intent.createChooser(intent, shareBody))
         }
     }
 
