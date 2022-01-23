@@ -39,18 +39,33 @@
             android:paddingBottom="@dimen/global_window_padding"/>
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/rover_photos_count"
-        style="@style/bottom_appbar_button_ring"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
-        app:drawableStartCompat="@drawable/ic_outline_image_24"
+        android:orientation="horizontal"
         android:layout_marginBottom="@dimen/global_window_padding"
         android:layout_marginStart="@dimen/global_window_padding"
         android:layout_marginEnd="@dimen/global_window_padding"
-        app:drawableTint="@color/system_for" />
+        android:layout_gravity="bottom">
+
+        <TextView
+            android:id="@+id/rover_photos_count"
+            style="@style/bottom_appbar_button_ring"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/drawable_button_background_ring_icon_padding"
+            app:drawableStartCompat="@drawable/ic_outline_image_24"
+            app:drawableTint="@color/system_for"
+            android:layout_weight="1"/>
+        <TextView
+            android:id="@+id/rover_fav"
+            style="@style/bottom_appbar_button_ring"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:drawableStartCompat="@drawable/ic_heart_unfill"
+            app:drawableTint="@color/system_for"
+            android:layout_marginStart="@dimen/global_window_padding"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -112,6 +127,17 @@
             android:textSize="@dimen/small_text_size" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/rover_max_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/global_window_padding"
+        android:layout_marginTop="@dimen/global_window_padding"
+        android:layout_marginEnd="@dimen/global_window_padding"
+        android:layout_marginBottom="@dimen/global_window_padding"
+        android:textColor="@color/system_for"
+        android:textSize="@dimen/small_text_size"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/rover_status"

@@ -21,6 +21,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.*
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
@@ -51,6 +52,7 @@ import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.MarsRoverPhotoAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers.RoversViewModel
 
 
 @AndroidEntryPoint
@@ -61,7 +63,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     @Inject
     lateinit var requestManager: RequestManager
-
+    lateinit var homeViewModel: HomeViewModel
     private var adapter: MarsRoverPhotoAdapter? = null
     internal var master: RoverMaster? = null
     internal var currentDate: Long? = null
@@ -115,10 +117,31 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         init()
         setListeners()
         subscribeObservers()
+        uiObservers()
+    }
+
+    private fun uiObservers() {
+        homeViewModel.apply {
+            viewStatePinToolBar.observe(viewLifecycleOwner, {
+                if (it)
+                    pinToolbar()
+                else
+                    unPinToolbar()
+            })
+            viewStateTitle.observe(viewLifecycleOwner, {
+                setTitle(it)
+            })
+            viewStateSolButtonText.observe(viewLifecycleOwner, { solButtonText ->
+                binding.bottomAppbar.solButtonText.text = solButtonText
+            })
+            viewStateRoverMaster.observe(viewLifecycleOwner, { roverMaster ->
+
+            })
+        }
     }
 
     private fun init() {
-
+        homeViewModel = ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         setWindowInsets()
         adapter = MarsRoverPhotoAdapter(this, requestManager)
 
@@ -395,9 +418,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             binding.topAppbar.homeToolbarTop.menu.clear()
             binding.topAppbar.homeToolbarTop.navigationIcon = null
             master?.let {
-                setTitle(it.name)
+                homeViewModel.setViewStateTitle(it.name)
             }
-            unPinToolbar()
+            homeViewModel.setViewStatePinToolBar(false)
         }
     }
 
@@ -419,8 +442,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 )
             )
         }
-        setTitle("Selected (${selectedList.size})")
-        pinToolbar()
+        homeViewModel.setViewStateTitle("Selected (${selectedList.size})")
+        homeViewModel.setViewStatePinToolBar(true)
     }
 
     private fun showMainProgress() {
@@ -480,7 +503,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun setData() {
         master?.let {
-            setTitle(it.name)
+            homeViewModel.setViewStateTitle(it.name)
             initFastScroller()
         }
     }
@@ -517,9 +540,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun setSolButtonText() {
         master?.let {
-            binding.bottomAppbar.solButtonText.text = getString(
-                R.string.sol,
-                utilities.calculateDays(it.landing_date_in_millis, currentDate).toString()
+            homeViewModel.setViewStateSolButtonText(
+                getString(
+                    R.string.sol,
+                    utilities.calculateDays(it.landing_date_in_millis, currentDate).toString()
+                )
             )
         }
     }

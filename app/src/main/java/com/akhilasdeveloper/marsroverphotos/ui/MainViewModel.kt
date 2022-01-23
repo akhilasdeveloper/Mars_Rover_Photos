@@ -1,9 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
@@ -21,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel
 @Inject constructor(
-    private val marsRoverPhotosRepository: MarsRoverPhotosRepository
+    private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> =
@@ -29,7 +27,6 @@ class MainViewModel
     private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>> =
         MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
-    private val _dataStateRover: MutableLiveData<Event<MarsRoverSrcResponse>> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
@@ -45,14 +42,8 @@ class MainViewModel
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
-    val dataStateLikedPhotos: LiveData<PagingData<MarsRoverPhotoTable>>
-        get() = _dataStateLikedPhotos
-
     val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>>
         get() = _dataStatePaging
-
-    val dataStateInfoDialogChange: LiveData<Int>
-        get() = _dataStateInfoDialogChange
 
     val dataStateIsLiked: LiveData<Boolean>
         get() = _dataStateIsLiked
@@ -63,14 +54,18 @@ class MainViewModel
     val dataStateRoverMaster: LiveData<Event<RoverMaster>>
         get() = _dataStateRoverMaster
 
-    val dataStateRover: LiveData<Event<MarsRoverSrcResponse>>
-        get() = _dataStateRover
-
     val positionState: LiveData<Int>
         get() = _dataStatePosition
 
+    init {
+        savedStateHandle.get<String>("roverMaster")?.let {
+            getRoverSrcDbByName(it)
+        }
+    }
+
     fun setRoverMaster(roverMaster: RoverMaster) {
         _dataStateRoverMaster.value = Event(roverMaster)
+        savedStateHandle.set("roverMaster", roverMaster.name)
     }
 
     fun setEmptyPhotos() {
@@ -128,14 +123,6 @@ class MainViewModel
         _dataStateDate.value = date
     }
 
-    fun getRoverData(isRefresh: Boolean) {
-        job?.cancel()
-        job = viewModelScope.launch {
-            marsRoverPhotosRepository.getRoverData(isRefresh).collect {
-                _dataStateRover.value = Event(it)
-            }
-        }
-    }
 
     fun isLiked(id: Long) {
         viewModelScope.launch {
@@ -154,9 +141,11 @@ class MainViewModel
         }
     }
 
-    fun fetchMaxDate(){
+    private fun getRoverSrcDbByName(name: String) {
         viewModelScope.launch {
-//            marsRoverPhotosRepository.calculateMaxDates()
+            marsRoverPhotosRepository.getRoverSrcDbByName(name).collect { rover ->
+                setRoverMaster(rover)
+            }
         }
     }
 

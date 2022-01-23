@@ -20,7 +20,9 @@ import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NETWORK_TIMEOUT
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.NETWORK_TIME_OUT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ROVER_STATUS_ACTIVE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SYNCING_DATABASE
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -55,7 +57,8 @@ class MarsRoverPhotosRepository @Inject constructor(
                     while (currentMaxDate != startingMaxDate && list.isEmpty()) {
 
                         val date = startingMaxDate.formatDateToMillis()!!
-                        val nextKey = if (date > rover.landing_date.formatDateToMillis()!!) date.prevDate() else null
+                        val nextKey =
+                            if (date > rover.landing_date.formatDateToMillis()!!) date.prevDate() else null
 
                         Timber.d("calculateMaxDates5 nextKey : $nextKey")
 
@@ -159,12 +162,12 @@ class MarsRoverPhotosRepository @Inject constructor(
                 if (insertedDate == null) true else (System.currentTimeMillis() - insertedDate) > Constants.MILLIS_IN_A_DAY
 
             if ((isExpired || isRefresh) && !isEmpty)
-                emit(MarsRoverSrcResponse(message = "Syncing Database"))
+                emit(MarsRoverSrcResponse(message = SYNCING_DATABASE))
 
             if (isExpired || isRefresh || isEmpty) {
                 if (utilities.isConnectedToTheInternet()) {
                     emit(MarsRoverSrcResponse(isLoading = true))
-                    val networkJob = withTimeoutOrNull(Constants.NETWORK_TIME_OUT) {
+                    val networkJob = withTimeoutOrNull(NETWORK_TIME_OUT) {
                         try {
                             refreshRoverSrcDb()
                         } catch (exception: Exception) {
@@ -199,7 +202,7 @@ class MarsRoverPhotosRepository @Inject constructor(
                         id = src.id
                     )
                 }
-                val networkJob = withTimeoutOrNull(Constants.NETWORK_TIME_OUT) {
+                val networkJob = withTimeoutOrNull(NETWORK_TIME_OUT) {
                     try {
                         emit(MarsRoverSrcResponse(data = dataSrc))
                     } catch (exception: Exception) {
@@ -285,6 +288,28 @@ class MarsRoverPhotosRepository @Inject constructor(
         calculateMaxDates(response)
     }
 
+    suspend fun getRoverSrcDbByName(name: String) = flow {
+        marsRoverDao.getMarsRoverSrcByName(name)?.let { src ->
+            emit(
+                RoverMaster(
+                    launch_date = src.launch_date,
+                    launch_date_in_millis = src.launch_date.formatDateToMillis()!!,
+                    name = src.roverName,
+                    total_photos = src.total_photos,
+                    status = src.status,
+                    max_sol = src.max_sol,
+                    max_date = src.max_date,
+                    max_date_in_millis = src.max_date.formatDateToMillis()!!,
+                    landing_date = src.landing_date,
+                    landing_date_in_millis = src.landing_date.formatDateToMillis()!!,
+                    description = src.roverDescription,
+                    image = src.roverImage,
+                    id = src.id
+                )
+            )
+        }
+    }.flowOn(Dispatchers.IO)
+
     /**
      * Rover Src END
      */
@@ -314,17 +339,19 @@ class MarsRoverPhotosRepository @Inject constructor(
         ).flow
     }
 
-    fun getLikedPhotos(
+    suspend fun getLikedPhotos(
         rover: RoverMaster
     ): Flow<PagingData<MarsRoverPhotoTable>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
-            ),
-            pagingSourceFactory = {
-                marsPhotoDao.getSavedPhotos(roverID = rover.id)
-            }
-        ).flow
+        return withContext(Dispatchers.IO) {
+            Pager(
+                config = PagingConfig(
+                    pageSize = Constants.MARS_ROVER_PHOTOS_PAGE_SIZE
+                ),
+                pagingSourceFactory = {
+                    marsPhotoDao.getSavedPhotos(roverID = rover.id)
+                }
+            ).flow
+        }
     }
 
     /**

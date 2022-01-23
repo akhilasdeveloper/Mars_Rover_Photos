@@ -20,6 +20,7 @@ object Constants {
     const val ERROR_NETWORK_TIMEOUT = "Network timeout"
     const val ADD_ITEM_TYPE = "ADD_ITEM_TYPE"
     const val NETWORK_TIME_OUT = (60 * 60 * 1000).toLong()
+    const val SYNCING_DATABASE = "Syncing Database"
     const val AD_ENABLED = false
     const val CACHE_IMAGE_EXTENSION = ".png"
     const val DATASTORE_LIKES_SYNC = "DATASTORE_LIKES_SYNC"

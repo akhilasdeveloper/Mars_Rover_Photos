@@ -5,19 +5,18 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoversBinding
+import com.akhilasdeveloper.marsroverphotos.ui.MainViewModel
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
+import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ROVER_STATUS_COMPLETE
-import com.akhilasdeveloper.marsroverphotos.utilities.simplify
-import com.akhilasdeveloper.marsroverphotos.utilities.toDpi
-import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -26,6 +25,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.snack_bar_layout.*
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -40,6 +40,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     lateinit var requestManager: RequestManager
     private var adapter: MarsRoverAdapter? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
+    lateinit var roversViewModel: RoversViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -54,16 +55,68 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         init()
         setWindowInsets()
         setListeners()
-        subscribeObservers()
+        uiObservers()
         getData()
     }
 
+    private fun uiObservers() {
+        roversViewModel.apply {
+            viewStateRoverSwipeRefresh.observe(viewLifecycleOwner, {
+                binding.roverSwipeRefresh.isRefreshing = it
+            })
+            viewStateErrorMessage.observe(viewLifecycleOwner, {
+                it.contentIfNotHandled?.let { message ->
+                    uiCommunicationListener.showSnackBarMessage(
+                        messageText = message,
+                        buttonText = "Refresh"
+                    ) {
+                        refreshData()
+                    }
+                }
+            })
+            viewStateMessage.observe(viewLifecycleOwner, {
+                it.contentIfNotHandled?.let { message ->
+                    uiCommunicationListener.showSnackBarMessage(message)
+                }
+            })
+            viewStateRoverMasterList.observe(viewLifecycleOwner, {
+                adapter?.submitList(it)
+            })
+            viewStateSetEmptyMessage.observe(viewLifecycleOwner, {
+                it.let { event ->
+                    if (event == null)
+                        hideEmptyMessage()
+                    else
+                        event.contentIfNotHandled?.let { message ->
+                            setEmptyMessage(message)
+                        }
+                }
+
+            })
+            viewStateSheetData.observe(viewLifecycleOwner, {
+                setSheetData(it)
+            })
+            viewStateSheetState.observe(viewLifecycleOwner, {
+                bottomSheetBehavior.state = it
+            })
+            viewStateTopBarVisibility.observe(viewLifecycleOwner, {
+                binding.topAppbar.homeAppbarTop.isVisible = it
+            })
+        }
+    }
+
     private fun init() {
-        adapter = MarsRoverAdapter(this, requestManager)
+
+        roversViewModel = ViewModelProvider(requireActivity())[RoversViewModel::class.java]
+        viewModel.setEmptyPhotos()
+        binding.roverSwipeRefresh.setColorSchemeResources(R.color.accent)
+
         setBottomSheet()
         setRecyclerView()
-        binding.roverSwipeRefresh.setColorSchemeResources(R.color.accent)
-        viewModel.setEmptyPhotos()
+        setAd()
+    }
+
+    private fun setAd() {
         if (AD_ENABLED) {
             binding.adView.root.isVisible = true
             val adRequest: AdRequest = AdRequest.Builder().build()
@@ -112,53 +165,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                 Timber.d("onAdImpression")
             }
         }
-    }
-
-    private fun refreshData() {
-        viewModel.getRoverData(isRefresh = true)
-    }
-
-    private fun subscribeObservers() {
-        viewModel.dataStateRover.observe(viewLifecycleOwner, { data ->
-            data?.peekContent?.let { response ->
-                response.data?.let {
-                    Timber.d("RoverFragment response : $it")
-                    if (it.isEmpty())
-                        setEmptyMessage("Tap to refresh")
-                    else {
-                        hideEmptyMessage()
-                        adapter?.submitList(it)
-                    }
-                }
-
-                response.message?.let {
-                    uiCommunicationListener.showSnackBarMessage(messageText = it)
-                }
-
-                viewModel.setLoading(response.isLoading)
-
-                response.error?.let {
-                    uiCommunicationListener.showSnackBarMessage(
-                        messageText = it,
-                        buttonText = "Refresh"
-                    ) {
-                        refreshData()
-                    }
-                    setEmptyMessage("$it\nTap to refresh")
-                }
-            }
-        })
-
-        viewModel.dataStateRoverMaster.value?.let {
-            it.peekContent?.let { rover ->
-                setSheetData(rover)
-            }
-        }
-
-        viewModel.dataStateLoading.observe(viewLifecycleOwner, {
-            binding.roverSwipeRefresh.isRefreshing = it
-        })
-
         binding.adView.adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
                 super.onAdLoaded()
@@ -167,13 +173,18 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         }
     }
 
+    private fun refreshData() {
+        roversViewModel.getRoverData(isRefresh = true)
+    }
+
     private fun getData() {
-        if (viewModel.dataStateRover.value == null) {
-            viewModel.getRoverData(isRefresh = false)
+        if (roversViewModel.dataStateRover.value == null) {
+            roversViewModel.getRoverData(isRefresh = false)
         }
     }
 
     private fun setRecyclerView() {
+        adapter = MarsRoverAdapter(this, requestManager)
         binding.apply {
             recycler.setHasFixedSize(true)
             recycler.layoutManager = LinearLayoutManager(requireContext())
@@ -187,10 +198,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         bottomSheetBehavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED)
-                    binding.topAppbar.homeAppbarTop.visibility = View.VISIBLE
-                else
-                    binding.topAppbar.homeAppbarTop.visibility = View.GONE
+                roversViewModel.setViewStateSheetState(newState)
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -229,17 +237,12 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     override fun onReadMoreSelected(master: RoverMaster, position: Int) {
-//        viewModel.fetchMaxDate()
-        setSheetData(master)
-        showSheet()
-    }
-
-    private fun showSheet() {
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        roversViewModel.setViewStateSheetData(master)
+        roversViewModel.setViewStateSheetState(BottomSheetBehavior.STATE_EXPANDED)
     }
 
     private fun hideSheet() {
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        roversViewModel.setViewStateSheetState(BottomSheetBehavior.STATE_COLLAPSED)
     }
 
     private fun setSheetData(master: RoverMaster) {
@@ -251,8 +254,9 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                 .into(roverImage)
             roverName.text = master.name
             roverDescription.text = master.description
-            roverLandingDate.text = master.landing_date
-            roverLaunchDate.text = master.launch_date
+            roverLandingDate.text = master.landing_date_in_millis.formatMillisToDisplayDate()
+            roverLaunchDate.text = master.launch_date_in_millis.formatMillisToDisplayDate()
+            roverMaxDate.text = getString(R.string.last_photo_updated, master.max_date_in_millis.formatMillisToDisplayDate())
             roverStatus.text = getString(R.string.rover_status, master.status)
             roverPhotosCount.text = getString(
                 R.string.view_photos,
@@ -261,6 +265,9 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         }
         binding.bottomSheetView.roverPhotosCount.setOnClickListener {
             navigateToPhotos(master)
+        }
+        binding.bottomSheetView.roverFav.setOnClickListener {
+            navigateToSavedPhotos(master)
         }
     }
 

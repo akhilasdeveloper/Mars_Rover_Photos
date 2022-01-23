@@ -17,6 +17,9 @@ interface MarsRoverDao {
     @Query("SELECT * FROM mars_rover_source_table")
     fun getMarsRoverSrc(): List<MarsRoverSrcTable>
 
+    @Query("SELECT * FROM mars_rover_source_table WHERE roverName = :name")
+    fun getMarsRoverSrcByName(name:String): MarsRoverSrcTable?
+
     @Query("SELECT addedDate FROM mars_rover_source_table LIMIT 1")
     suspend fun getInsertDate(): Long?
 
