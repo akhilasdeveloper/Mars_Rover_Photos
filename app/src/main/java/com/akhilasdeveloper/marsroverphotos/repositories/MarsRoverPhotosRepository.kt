@@ -55,37 +55,9 @@ class MarsRoverPhotosRepository @Inject constructor(
                     while (currentMaxDate != startingMaxDate && list.isEmpty()) {
 
                         val date = startingMaxDate.formatDateToMillis()!!
-                        val remoteKey = remoteKeyDao.remoteKeyByNameAndDate(
-                            roverName = rover.name,
-                            currDate = date
-                        )
-                        val nextKey: Long?
-                        val prevKey: Long?
-                        Timber.d("calculateMaxDates5 currentMaxDate : $currentMaxDate")
-                        Timber.d("calculateMaxDates5 list : $list")
-
-                        if (remoteKey == null) {
-                            nextKey =
-                                if (date > rover.landing_date.formatDateToMillis()!!) date.prevDate() else null
-                            prevKey =
-                                if (date < System.currentTimeMillis().formatMillisToDate()
-                                        .formatDateToMillis()!!
-                                ) date.nextDate() else null
-                            remoteKeyDao.insertOrReplace(
-                                RemoteKeysTable(
-                                    roverName = rover.name,
-                                    currDate = date,
-                                    prevDate = prevKey,
-                                    nextDate = nextKey,
-                                )
-                            )
-                        } else {
-                            nextKey = remoteKey.nextDate
-                            prevKey = remoteKey.prevDate
-                        }
+                        val nextKey = if (date > rover.landing_date.formatDateToMillis()!!) date.prevDate() else null
 
                         Timber.d("calculateMaxDates5 nextKey : $nextKey")
-                        Timber.d("calculateMaxDates5 prevKey : $prevKey")
 
                         list = marsPhotoDao.getDisplayPhotosByRoverNameAndDate(
                             roverName = rover.name,
@@ -95,9 +67,6 @@ class MarsRoverPhotosRepository @Inject constructor(
                         if (list.isEmpty()) {
                             list = loadPhotos(date.formatMillisToDate(), rover.name)
                             Timber.d("calculateMaxDates5 list2 : $list")
-                            if (list.isEmpty()) {
-                                reConfigureRemoteKey(date, nextKey, prevKey, rover.name)
-                            }
                         }
 
                         startingMaxDate = nextKey?.formatMillisToDate()!!
@@ -109,24 +78,6 @@ class MarsRoverPhotosRepository @Inject constructor(
 
             }
         }
-    }
-
-    private suspend fun reConfigureRemoteKey(
-        date: Long,
-        nextKey: Long?,
-        prevKey: Long?,
-        name: String
-    ) {
-        remoteKeyDao.remoteKeyUpdatePreDate(
-            prevDate = prevKey,
-            currPrevDate = date,
-            roverName = name
-        )
-        remoteKeyDao.remoteKeyUpdateNextDate(
-            nextDate = nextKey,
-            currNextDate = date,
-            roverName = name
-        )
     }
 
     private suspend fun loadPhotos(date: String, name: String): List<MarsRoverPhotoTable> {

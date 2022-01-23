@@ -76,7 +76,10 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
                 override fun handleOnBackPressed() {
 
                     if (selectedList.isNotEmpty()) {
-                        clearSelection()
+                        uiCommunicationListener.showConsentSelectorDialog(getString(R.string.clear_selection),getString(
+                                                    R.string.clear_selection_consent), onOkSelect = {
+                            clearSelection()
+                        })
                     } else
                         if (isEnabled) {
                             isEnabled = false
@@ -158,6 +161,20 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
                 writePermissionGranted = it
                 setDownload()
             }
+
+        adapter?.addOnPagesUpdatedListener {
+            if (adapter?.snapshot()?.isEmpty() == true)
+                binding.emptyMessage.apply {
+                    isVisible = true
+                    text = "Empty\nTap to refresh"
+                }
+            else
+                binding.emptyMessage.isVisible = false
+        }
+
+        binding.emptyMessage.setOnClickListener {
+            getData()
+        }
     }
 
     private fun pinToolbar() {

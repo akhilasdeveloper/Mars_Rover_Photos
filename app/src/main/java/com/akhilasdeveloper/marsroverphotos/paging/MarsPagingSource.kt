@@ -25,7 +25,7 @@ class MarsPagingSource(
     private val marsRoverPhotosService: MarsRoverPhotosService,
     private val date: Long
 
-    ) : PagingSource<Long, MarsRoverPhotoTable>() {
+) : PagingSource<Long, MarsRoverPhotoTable>() {
     override suspend fun load(params: LoadParams<Long>): LoadResult<Long, MarsRoverPhotoTable> {
 
         return try {
@@ -45,14 +45,17 @@ class MarsPagingSource(
                         if (date > roverMaster.landing_date_in_millis) date.prevDate() else null
                     prevKey =
                         if (date < roverMaster.max_date_in_millis) date.nextDate() else null
-                    remoteKeyDao.insertOrReplace(
-                        RemoteKeysTable(
-                            roverName = roverMaster.name,
-                            currDate = date,
-                            prevDate = prevKey,
-                            nextDate = nextKey,
+
+                    if (date <= roverMaster.max_date_in_millis) {
+                        remoteKeyDao.insertOrReplace(
+                            RemoteKeysTable(
+                                roverName = roverMaster.name,
+                                currDate = date,
+                                prevDate = prevKey,
+                                nextDate = nextKey,
+                            )
                         )
-                    )
+                    }
                 } else {
                     nextKey = remoteKey.nextDate
                     prevKey = remoteKey.prevDate
@@ -65,7 +68,7 @@ class MarsPagingSource(
                 if (response.isEmpty()) {
                     response = loadPhotos(date)
 
-                    if (response.isEmpty())
+                    if (response.isEmpty() && date <= roverMaster.max_date_in_millis)
                         reConfigureRemoteKey(date, nextKey, prevKey)
                 }
 

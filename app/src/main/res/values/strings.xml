@@ -52,4 +52,8 @@
     <string name="sign_in_failed">Sign In Failed</string>
     <string name="remove_from_liked_photos">Remove from Liked Photos</string>
     <string name="selected_items_will_be_removed">Selected Items will be removed from Liked Photos</string>
+    <string name="clear_selection">Clear Selection</string>
+    <string name="clear_selection_consent">You are going to clear the selection</string>
+    <string name="quit">Quit?</string>
+    <string name="exit_consent">Are you sure you want to quit the application?</string>
 </resources>

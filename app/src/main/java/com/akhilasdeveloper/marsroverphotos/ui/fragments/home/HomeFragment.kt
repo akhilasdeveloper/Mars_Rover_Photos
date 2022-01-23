@@ -53,7 +53,6 @@ import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.Recyc
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
 
 
-
 @AndroidEntryPoint
 class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener {
 
@@ -92,7 +91,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 override fun handleOnBackPressed() {
 
                     if (selectedList.isNotEmpty()) {
-                        clearSelection()
+                        uiCommunicationListener.showConsentSelectorDialog(getString(R.string.clear_selection),
+                            getString(
+                                R.string.clear_selection_consent
+                            ),
+                            onOkSelect = {
+                                clearSelection()
+                            })
                     } else
                         if (isEnabled) {
                             isEnabled = false

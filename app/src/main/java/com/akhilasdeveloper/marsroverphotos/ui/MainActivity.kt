@@ -124,6 +124,7 @@ class MainActivity : BaseActivity() {
         binding.layoutInfoBottomSheet.close.setOnClickListener {
             closeInfoDialog()
         }
+
     }
 
     private fun setBottomSheet() {
@@ -408,8 +409,8 @@ class MainActivity : BaseActivity() {
             this.doNotShow.isVisible = doNotShow
 
             ok.setOnClickListener {
-                onOkSelect(this.doNotShow.isChecked)
                 alertDialog.cancel()
+                onOkSelect(this.doNotShow.isChecked)
             }
 
             cancel.setOnClickListener {
@@ -439,7 +440,10 @@ class MainActivity : BaseActivity() {
     override fun onBackPressed() {
         if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        else
+        else {
             super.onBackPressed()
+/*            showConsentSelectorDialog(getString(R.string.quit),getString(R.string.exit_consent), onOkSelect = {
+            })*/
+        }
     }
 }
