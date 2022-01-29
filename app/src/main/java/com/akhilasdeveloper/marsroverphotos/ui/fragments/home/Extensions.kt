@@ -27,6 +27,12 @@ internal fun HomeFragment.setWindowInsets() {
         }
     }
 
+    ViewCompat.setOnApplyWindowInsetsListener(binding.homeBottomToolbarSecond) { _, insets ->
+        val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        binding.homeBottomToolbarSecond.updateMarginAndHeight(bottom = systemWindows.bottom)
+        return@setOnApplyWindowInsetsListener insets
+    }
+
     val recyclerBottomPadding = binding.photoRecycler.paddingBottom
     ViewCompat.setOnApplyWindowInsetsListener(binding.photoRecycler) { _, insets ->
         val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())

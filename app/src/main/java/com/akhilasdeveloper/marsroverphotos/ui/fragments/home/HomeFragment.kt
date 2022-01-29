@@ -131,6 +131,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             viewStateTitle.observe(viewLifecycleOwner, {
                 setTitle(it)
             })
+            viewStateSelectedTitle.observe(viewLifecycleOwner, {
+                setSelectedTitle(it)
+            })
             viewStateSolButtonText.observe(viewLifecycleOwner, { solButtonText ->
                 binding.bottomAppbar.solButtonText.text = solButtonText
             })
@@ -178,11 +181,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             binding.adView.adView.loadAd(adRequest)
         }
 
-        binding.topAppbar.homeToolbarTop.setNavigationOnClickListener {
+        binding.homeBottomToolbarSecond.setNavigationOnClickListener {
             clearSelection()
         }
 
-        binding.topAppbar.homeToolbarTop.setOnMenuItemClickListener {
+        binding.homeBottomToolbarSecond.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.share -> {
                     uiCommunicationListener.showMoreSelectorDialog(onImageSelect = {
@@ -191,6 +194,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         shareAllAsLinks()
                     }, onDownloadSelect = {
                         updateOrRequestPermission()
+                    }, items = selectedList, onDeleteSelect = {photo, position ->
+                        setSelection(photo, selectedPositions[position])
                     })
                     true
                 }
@@ -235,15 +240,17 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     private fun pinToolbar() {
-        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
-            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED)
+        /*(binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
+            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED)*/
+        binding.homeBottomToolbarSecond.isVisible = true
     }
 
     private fun unPinToolbar() {
-        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
+/*        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
             (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
                     AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED)
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED)*/
+        binding.homeBottomToolbarSecond.isVisible = false
     }
 
     private fun updateOrRequestPermission() {
@@ -350,7 +357,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun setLike() {
         selectedList.forEach { currentData ->
             currentData.let {
-                viewModel.updateLike(
+                viewModel.addLike(
                     marsRoverPhotoTable = currentData
                 )
             }
@@ -414,11 +421,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}$CACHE_IMAGE_EXTENSION"
 
     private fun hideSelectMenu() {
-        if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty()) {
-            binding.topAppbar.homeToolbarTop.menu.clear()
-            binding.topAppbar.homeToolbarTop.navigationIcon = null
+        if (binding.homeBottomToolbarSecond.menu.isNotEmpty()) {
+            binding.homeBottomToolbarSecond.menu.clear()
+            binding.homeBottomToolbarSecond.navigationIcon = null
             master?.let {
-                homeViewModel.setViewStateTitle(it.name)
+                homeViewModel.setViewStateSelectedTitle(it.name)
             }
             homeViewModel.setViewStatePinToolBar(false)
         }
@@ -428,13 +435,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         val menu =
             if (selectedList.size == 1) R.menu.top_appbar_single_item_select_menu else R.menu.top_appbar_select_menu
         val menuSize = if (selectedList.size == 1) 3 else 2
-        if (binding.topAppbar.homeToolbarTop.menu.isEmpty() || binding.topAppbar.homeToolbarTop.menu.size() != menuSize) {
-            if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty())
-                binding.topAppbar.homeToolbarTop.menu.clear()
-            binding.topAppbar.homeToolbarTop.inflateMenu(menu)
-            binding.topAppbar.homeToolbarTop.navigationIcon =
+        if (binding.homeBottomToolbarSecond.menu.isEmpty() || binding.homeBottomToolbarSecond.menu.size() != menuSize) {
+            if (binding.homeBottomToolbarSecond.menu.isNotEmpty())
+                binding.homeBottomToolbarSecond.menu.clear()
+            binding.homeBottomToolbarSecond.inflateMenu(menu)
+            binding.homeBottomToolbarSecond.navigationIcon =
                 ResourcesCompat.getDrawable(resources, R.drawable.ic_x, null)
-            binding.topAppbar.homeToolbarTop.setNavigationIconTint(
+            binding.homeBottomToolbarSecond.setNavigationIconTint(
                 ResourcesCompat.getColor(
                     resources,
                     R.color.system_for,
@@ -442,7 +449,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 )
             )
         }
-        homeViewModel.setViewStateTitle("Selected (${selectedList.size})")
+        homeViewModel.setViewStateSelectedTitle("Selected (${selectedList.size})")
         homeViewModel.setViewStatePinToolBar(true)
     }
 
@@ -511,6 +518,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun setTitle(name: String) {
         binding.topAppbar.homeToolbarTop.title = name
         binding.topAppbar.homeCollapsingToolbarTop.title = name
+    }
+
+    private fun setSelectedTitle(name: String) {
+        binding.homeBottomToolbarSecond.title = name
     }
 
     private fun initFastScroller() {

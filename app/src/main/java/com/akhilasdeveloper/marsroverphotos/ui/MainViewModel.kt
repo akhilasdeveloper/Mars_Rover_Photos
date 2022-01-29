@@ -141,6 +141,14 @@ class MainViewModel
         }
     }
 
+    fun addLike(
+        marsRoverPhotoTable: MarsRoverPhotoTable
+    ) {
+        viewModelScope.launch {
+            marsRoverPhotosRepository.addLike(marsRoverPhotoTable)
+        }
+    }
+
     private fun getRoverSrcDbByName(name: String) {
         viewModelScope.launch {
             marsRoverPhotosRepository.getRoverSrcDbByName(name).collect { rover ->

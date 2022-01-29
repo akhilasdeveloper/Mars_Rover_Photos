@@ -32,6 +32,15 @@ class HomeViewModel
         _viewStateTitle.value = title
     }
 
+    private val _viewStateSelectedTitle: MutableLiveData<String> = MutableLiveData()
+
+    val viewStateSelectedTitle: LiveData<String>
+        get() = _viewStateSelectedTitle
+
+    fun setViewStateSelectedTitle(title: String) {
+        _viewStateSelectedTitle.value = title
+    }
+
     private val _viewStateSolButtonText: MutableLiveData<String> = MutableLiveData()
 
     val viewStateSolButtonText: LiveData<String>

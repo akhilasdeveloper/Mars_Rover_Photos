@@ -108,11 +108,11 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
             photoRecycler.adapter = adapter
         }
 
-        binding.topAppbar.homeToolbarTop.setNavigationOnClickListener {
+        binding.homeBottomToolbarSecond.setNavigationOnClickListener {
             clearSelection()
         }
 
-        binding.topAppbar.homeToolbarTop.setOnMenuItemClickListener {
+        binding.homeBottomToolbarSecond.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.share -> {
                     uiCommunicationListener.showMoreSelectorDialog(onImageSelect = {
@@ -121,6 +121,8 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
                         shareAllAsLinks()
                     }, onDownloadSelect = {
                         updateOrRequestPermission()
+                    }, items = selectedList, onDeleteSelect = {photo, position ->
+                        setSelection(photo, selectedPositions[position])
                     })
                     true
                 }
@@ -178,15 +180,17 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     }
 
     private fun pinToolbar() {
-        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
-            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED)
+        /*(binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
+            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED)*/
+        binding.homeBottomToolbarSecond.isVisible = true
     }
 
     private fun unPinToolbar() {
-        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
+/*        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
             (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
                     AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED)
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED)*/
+        binding.homeBottomToolbarSecond.isVisible = false
     }
 
     private fun updateOrRequestPermission() {
@@ -418,6 +422,11 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
         binding.topAppbar.homeCollapsingToolbarTop.title = name
     }
 
+    private fun setSelectTitle(name: String) {
+        binding.homeBottomToolbarSecond.title = name
+        binding.homeBottomToolbarSecond.title = name
+    }
+
     private suspend fun downloadImage(selectedList: ArrayList<MarsRoverPhotoTable> = this.selectedList): ArrayList<Uri> {
         val list: ArrayList<Uri> = arrayListOf()
         val size = selectedList.size
@@ -449,11 +458,11 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
         "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}${Constants.CACHE_IMAGE_EXTENSION}"
 
     private fun hideSelectMenu() {
-        if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty()) {
-            binding.topAppbar.homeToolbarTop.menu.clear()
-            binding.topAppbar.homeToolbarTop.navigationIcon = null
+        if (binding.homeBottomToolbarSecond.menu.isNotEmpty()) {
+            binding.homeBottomToolbarSecond.menu.clear()
+            binding.homeBottomToolbarSecond.navigationIcon = null
             master?.let {
-                setTitle(it.name + " Rover (Liked Photos)")
+                setSelectTitle(it.name + " Rover (Liked Photos)")
             }
             unPinToolbar()
         }
@@ -463,13 +472,13 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
         val menu =
             if (selectedList.size == 1) R.menu.top_appbar_single_item_select_menu else R.menu.top_appbar_select_menu
         val menuSize = if (selectedList.size == 1) 3 else 2
-        if (binding.topAppbar.homeToolbarTop.menu.isEmpty() || binding.topAppbar.homeToolbarTop.menu.size() != menuSize) {
-            if (binding.topAppbar.homeToolbarTop.menu.isNotEmpty())
-                binding.topAppbar.homeToolbarTop.menu.clear()
-            binding.topAppbar.homeToolbarTop.inflateMenu(menu)
-            binding.topAppbar.homeToolbarTop.navigationIcon =
+        if (binding.homeBottomToolbarSecond.menu.isEmpty() || binding.homeBottomToolbarSecond.menu.size() != menuSize) {
+            if (binding.homeBottomToolbarSecond.menu.isNotEmpty())
+                binding.homeBottomToolbarSecond.menu.clear()
+            binding.homeBottomToolbarSecond.inflateMenu(menu)
+            binding.homeBottomToolbarSecond.navigationIcon =
                 ResourcesCompat.getDrawable(resources, R.drawable.ic_x, null)
-            binding.topAppbar.homeToolbarTop.setNavigationIconTint(
+            binding.homeBottomToolbarSecond.setNavigationIconTint(
                 ResourcesCompat.getColor(
                     resources,
                     R.color.system_for,
@@ -477,7 +486,7 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
                 )
             )
         }
-        setTitle("Selected (${selectedList.size})")
+        setSelectTitle("Selected (${selectedList.size})")
         pinToolbar()
     }
 
@@ -578,6 +587,12 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
         ViewCompat.setOnApplyWindowInsetsListener(binding.topAppbar.homeCollapsingToolbarTop) { _, insets ->
             val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             binding.topAppbar.homeToolbarTop.updateMarginAndHeight(top = systemWindows.top)
+            return@setOnApplyWindowInsetsListener insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.homeBottomToolbarSecond) { _, insets ->
+            val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.homeBottomToolbarSecond.updateMarginAndHeight(bottom = systemWindows.bottom)
             return@setOnApplyWindowInsetsListener insets
         }
 

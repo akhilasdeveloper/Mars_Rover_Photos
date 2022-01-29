@@ -14,20 +14,22 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.HomeFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
-import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerShareClickListener
+import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
+import com.bumptech.glide.RequestManager
+
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -39,6 +41,8 @@ class MainActivity : BaseActivity() {
     private var alertDialog: AlertDialog? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
     private var dialogView: LayoutProgressBinding? = null
+    @Inject
+    lateinit var requestManager: RequestManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -296,40 +300,58 @@ class MainActivity : BaseActivity() {
     override fun showMoreSelectorDialog(
         onImageSelect: () -> Unit,
         onLinkSelect: () -> Unit,
-        onDownloadSelect: () -> Unit
+        onDownloadSelect: () -> Unit,
+        onDeleteSelect: ((marsRoverPhotoTable: MarsRoverPhotoTable, position: Int) -> Unit)?,
+        items: List<MarsRoverPhotoTable>?
     ) {
-        val dialogView: LayoutMoreSelectBinding =
-            LayoutMoreSelectBinding.inflate(LayoutInflater.from(this))
-        val builder: AlertDialog.Builder =
-            AlertDialog.Builder(this, R.style.dialog_background)
-                .setView(dialogView.root)
-        val alertDialog: AlertDialog = builder.create()
-
-        dialogView.apply {
-
-            layoutMoreSelectContent.apply {
-                linkSelect.setOnClickListener {
-                    onLinkSelect()
-                    alertDialog.cancel()
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val dialogView: LayoutShareBottomSheetBinding = LayoutShareBottomSheetBinding.inflate(LayoutInflater.from(this))
+        bottomSheetDialog.setContentView(dialogView.root)
+        val data = items?.toMutableList()
+        var shareAdapter:ShareRecyclerAdapter? = null
+        val listener = object :RecyclerShareClickListener{
+            override fun onItemDeleteClicked(
+                marsRoverPhotoTable: MarsRoverPhotoTable,
+                position: Int
+            ) {
+                onDeleteSelect?.invoke(marsRoverPhotoTable, position)
+                data?.removeAt(position)
+                data?.let {
+                    shareAdapter?.submitList(it)
                 }
-
-                imageSelect.setOnClickListener {
-                    onImageSelect()
-                    alertDialog.cancel()
-                }
-
-                downloadSelect.setOnClickListener {
-                    onDownloadSelect()
-                    alertDialog.cancel()
-                }
-            }
-
-            cancelSolSelector.setOnClickListener {
-                alertDialog.cancel()
+                shareAdapter?.notifyItemRemoved(position)
+                dialogView.selectCount.text = "Selected (${data?.size})"
+                if (data?.isEmpty() == true)
+                    bottomSheetDialog.dismiss()
             }
         }
+        shareAdapter = ShareRecyclerAdapter(requestManager = requestManager, interaction = listener)
+        dialogView.apply {
 
-        alertDialog.show()
+            shareItems.layoutManager = LinearLayoutManager(this@MainActivity,LinearLayoutManager.HORIZONTAL,false)
+            shareItems.adapter = shareAdapter
+
+            link.setOnClickListener {
+                onLinkSelect()
+                bottomSheetDialog.cancel()
+            }
+
+            image.setOnClickListener {
+                onImageSelect()
+                bottomSheetDialog.cancel()
+            }
+
+            download.setOnClickListener {
+                onDownloadSelect()
+                bottomSheetDialog.cancel()
+            }
+
+            selectCount.text = "Selected (${data?.size})"
+        }
+        data?.let {
+            shareAdapter.submitList(it)
+        }
+        bottomSheetDialog.show()
 
     }
 
@@ -446,4 +468,5 @@ class MainActivity : BaseActivity() {
             })*/
         }
     }
+
 }

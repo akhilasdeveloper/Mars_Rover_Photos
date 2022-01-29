@@ -51,10 +51,11 @@ class MarsRoverPhotosRepository @Inject constructor(
 
                 if (rover.status == ROVER_STATUS_ACTIVE) {
                     currentMaxDate = rover.max_date
-                    Timber.d("calculateMaxDates5 startingMaxDate : $startingMaxDate")
-                    Timber.d("calculateMaxDates5 currentMaxDate : $currentMaxDate")
                     var list = listOf<MarsRoverPhotoTable>()
                     while (currentMaxDate != startingMaxDate && list.isEmpty()) {
+
+                        Timber.d("calculateMaxDates5s startingMaxDate : $startingMaxDate")
+                        Timber.d("calculateMaxDates5s currentMaxDate : $currentMaxDate")
 
                         val date = startingMaxDate.formatDateToMillis()!!
                         val nextKey =
@@ -75,7 +76,9 @@ class MarsRoverPhotosRepository @Inject constructor(
                         startingMaxDate = nextKey?.formatMillisToDate()!!
                     }
 
-                    marsRoverDao.updateMaxDate(startingMaxDate, rover.name)
+                    utilities.calculateDays(rover.landing_date.formatDateToMillis()!!, startingMaxDate.formatDateToMillis()!!)?.let {
+                        marsRoverDao.updateMaxDate(startingMaxDate,it, rover.name)
+                    }
                     Timber.d("calculateMaxDates5 ${rover.name} : $startingMaxDate")
                 }
 
@@ -234,7 +237,7 @@ class MarsRoverPhotosRepository @Inject constructor(
         }
     }
 
-    private suspend fun addLike(marsRoverPhotoTable: MarsRoverPhotoTable) {
+    suspend fun addLike(marsRoverPhotoTable: MarsRoverPhotoTable) {
         withContext(Dispatchers.IO) {
             marsPhotoDao.addLike(
                 marsRoverPhotoLikedTable = MarsRoverPhotoLikedTable(

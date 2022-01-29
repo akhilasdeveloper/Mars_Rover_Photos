@@ -31,6 +31,19 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"/>
 
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/home_bottom_toolbar_second"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:contentInsetStart="@dimen/global_window_padding"
+        app:layout_collapseMode="pin"
+        app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"
+        android:visibility="gone"
+        app:layout_anchor="@id/bottom_appbar"
+        app:layout_anchorGravity="top|center_horizontal"
+        android:layout_gravity="center|top"
+        android:background="@color/appbar"/>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

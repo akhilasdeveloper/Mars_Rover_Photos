@@ -17,7 +17,9 @@ interface UICommunicationListener {
     fun showMoreSelectorDialog(
         onImageSelect: () -> Unit,
         onLinkSelect: () -> Unit,
-        onDownloadSelect: () -> Unit
+        onDownloadSelect: () -> Unit,
+        onDeleteSelect: ((marsRoverPhotoTable: MarsRoverPhotoTable, position: Int) -> Unit)? = null,
+        items: List<MarsRoverPhotoTable>? = null
     )
 
     fun setInfoDetails(marsRoverPhotoTable: MarsRoverPhotoTable)

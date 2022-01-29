@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.36770833333333336" />
+        <entry key="app/src/main/res/drawable/button_background.xml" value="0.37407407407407406" />
         <entry key="app/src/main/res/drawable/button_background_ring.xml" value="0.37538461538461537" />
         <entry key="app/src/main/res/drawable/button_bg.xml" value="0.2861111111111111" />
         <entry key="app/src/main/res/drawable/dialog_background.xml" value="0.38125" />
@@ -71,6 +72,7 @@
         <entry key="app/src/main/res/layout/layout_progress_indeterminate.xml" value="0.3582427536231884" />
         <entry key="app/src/main/res/layout/layout_saved_item.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/layout_saved_item_selected.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/layout_share_bottom_sheet.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/layout_share_select.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/layout_sol_select.xml" value="0.5" />
         <entry key="app/src/main/res/layout/marsrover_photo_load_state_footer.xml" value="0.25" />
@@ -83,6 +85,7 @@
         <entry key="app/src/main/res/layout/photo_item_selected.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/photo_item_selection.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/rover_item.xml" value="0.391304347826087" />
+        <entry key="app/src/main/res/layout/share_item.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/snack_bar_layout.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/top_appbar.xml" value="0.3651041666666667" />
         <entry key="app/src/main/res/layout/top_appbar_selection.xml" value="0.3651041666666667" />

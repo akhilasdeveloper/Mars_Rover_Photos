@@ -110,6 +110,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                     setShare()
                 }, onDownloadSelect = {
                     updateOrRequestPermission()
+                }, items = currentData?.let {
+                    listOf(it)
                 })
             }
         }

@@ -1,4 +1,5 @@
-<com.google.android.material.bottomappbar.BottomAppBar
+<com.google.android.material.bottomappbar.BottomAppBar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/home_appbar"
     android:layout_width="match_parent"
@@ -7,17 +8,28 @@
     app:backgroundTint="@color/appbar"
     app:contentInsetStart="0dp"
     app:hideOnScroll="true"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:ignore="BottomAppBar">
 
+    <LinearLayout
+        android:id="@+id/home_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/appbar"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <!--<com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/home_bottom_toolbar_second"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:contentInsetStart="@dimen/global_window_padding"
+            app:layout_collapseMode="pin"
+            app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"
+            android:visibility="gone"/>-->
 
         <LinearLayout
-            android:id="@+id/home_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/appbar"
-            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingTop="@dimen/toolbar_bottom_vertical_padding"
             android:paddingBottom="@dimen/toolbar_bottom_vertical_padding">
@@ -42,8 +54,9 @@
                 android:layout_weight="1"
                 app:drawableStartCompat="@drawable/ic_round_date_range_24"
                 app:drawableTint="@color/system_for" />
-
         </LinearLayout>
+
+    </LinearLayout>
 
 
 </com.google.android.material.bottomappbar.BottomAppBar>

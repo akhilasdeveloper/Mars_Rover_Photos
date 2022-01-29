@@ -41,8 +41,8 @@
     <string name="rover">Rover</string>
     <string name="date">Date</string>
     <string name="sol_">Sol</string>
-    <string name="share_as_link">Share as link</string>
-    <string name="share_as_image">Share as image</string>
+    <string name="share_as_link">As link</string>
+    <string name="share_as_image">As image</string>
     <string name="select">Select</string>
     <string name="permission_consent">App needs storage permission to save photos to device. Please allow permission to continue.</string>
     <string name="permission">Storage Permission</string>
