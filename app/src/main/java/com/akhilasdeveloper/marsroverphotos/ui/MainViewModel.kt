@@ -26,7 +26,7 @@ class MainViewModel
         MutableLiveData()
     private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>> =
         MutableLiveData()
-    private val _dataStatePosition: MutableLiveData<Int> = MutableLiveData()
+    private val _dataStatePosition: MutableLiveData<Event<Int>> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
     private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
     private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
@@ -54,7 +54,7 @@ class MainViewModel
     val dataStateRoverMaster: LiveData<Event<RoverMaster>>
         get() = _dataStateRoverMaster
 
-    val positionState: LiveData<Int>
+    val positionState: LiveData<Event<Int>>
         get() = _dataStatePosition
 
     init {
@@ -73,7 +73,7 @@ class MainViewModel
     }
 
     fun setPosition(position: Int) {
-        _dataStatePosition.value = position
+        _dataStatePosition.value = Event(position)
     }
 
     fun setLoading(isLoading: Boolean) {

@@ -62,11 +62,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     lateinit var requestManager: RequestManager
     lateinit var homeViewModel: HomeViewModel
     private var adapter: MarsRoverPhotoAdapter? = null
-    internal var master: RoverMaster? = null
-    internal var currentDate: Long? = null
     private var hideFastScrollerJob: Job? = null
     private var downloadJob: Job? = null
-    private var navigateToDate = false
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
@@ -130,12 +127,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     R.string.sol, solButtonText
                 )
             })
-            viewStateRoverMaster.observe(viewLifecycleOwner, { roverMaster ->
-                master = roverMaster
-            })
-            viewStateCurrentDate.observe(viewLifecycleOwner, { currentDate ->
-                this@HomeFragment.currentDate = currentDate
-            })
             viewStateScrollDateDisplayText.observe(viewLifecycleOwner, { scrollDateDisplayText ->
                 binding.scrollDateDisplayText.text = scrollDateDisplayText
             })
@@ -185,6 +176,44 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     clearSelectMenu()
             })
 
+            viewStateScrollToPosition.observe(viewLifecycleOwner, { position ->
+                position.contentIfNotHandled?.let { it ->
+                    scrollToPosition(it)
+                }
+            })
+            viewStateShowDatePicket.observe(viewLifecycleOwner, { isShowing ->
+                if (isShowing)
+                    showDatePicker()
+            })
+
+            viewStateShowSolSelected.observe(viewLifecycleOwner, { isShowing ->
+                if (isShowing)
+                    showSolSelectorDialog()
+            })
+
+            viewStateShowShareSelected.observe(viewLifecycleOwner, { isShowing ->
+                if(isShowing)
+                    uiCommunicationListener.showMoreSelectorDialog(
+                        onImageSelect = {
+                            shareAllAsImage()
+                        },
+                        onLinkSelect = {
+                            shareAllAsLinks()
+                        },
+                        onDownloadSelect = {
+                            updateOrRequestPermission()
+                        },
+                        items = homeViewModel.getSelectedList(),
+                        onDeleteSelect = { photo, position ->
+                            homeViewModel.setSelection(
+                                photo,
+                                homeViewModel.getSelectedItemPosition(position)
+                            )
+                        }, onDismiss = {
+                            homeViewModel.setViewStateShowShareSelected(false)
+                        })
+            })
+
             dataStatePaging.observe(viewLifecycleOwner, {
                 it?.let {
                     val isHandled = it.hasBeenHandled()
@@ -192,15 +221,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         it.setAsHandled()
                         adapter?.submitData(viewLifecycleOwner.lifecycle, photos)
                         if (!isHandled) {
-                            onDateSelected(currentDate!!)
+                            homeViewModel.getCurrentDate()?.let { currentDate ->
+                                onDateSelected(currentDate)
+                            }
                         }
                     }
                 }
             })
 
-            dataStateSelectedList.observe(viewLifecycleOwner, {
-
-            })
         }
     }
 
@@ -211,7 +239,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         })
 
         viewModel.positionState.observe(viewLifecycleOwner, {
-            scrollToPosition(it)
+            it.contentIfNotHandled?.let { position->
+                homeViewModel.setViewStateScrollToPosition(position)
+            }
         })
 
     }
@@ -261,23 +291,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.homeBottomToolbarSecond.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.share -> {
-                    uiCommunicationListener.showMoreSelectorDialog(
-                        onImageSelect = {
-                            shareAllAsImage()
-                        },
-                        onLinkSelect = {
-                            shareAllAsLinks()
-                        },
-                        onDownloadSelect = {
-                            updateOrRequestPermission()
-                        },
-                        items = homeViewModel.getSelectedList(),
-                        onDeleteSelect = { photo, position ->
-                            homeViewModel.setSelection(
-                                photo,
-                                homeViewModel.getSelectedItemPosition(position)
-                            )
-                        })
+                    homeViewModel.setViewStateShowShareSelected(true)
                     true
                 }
                 R.id.favorites -> {
@@ -491,19 +505,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     internal fun onSolSelected(toLong: Long) {
-        utilities.calculateDaysEarthDate(
-            toLong,
-            master!!.landing_date_in_millis
-        ).let {
-            currentDate = it.formatMillisToDate().formatDateToMillis()
-            onDateSelected(currentDate!!, true)
-        }
-    }
-
-    private fun getData() {
-        currentDate?.let { currentDate ->
-            master?.let { master ->
-                homeViewModel.getData(master, currentDate)
+        homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
+            utilities.calculateDaysEarthDate(
+                toLong,
+                landing_date_in_millis
+            ).let {
+                homeViewModel.setViewStateCurrentDate(it.formatMillisToDate().formatDateToMillis())
+                homeViewModel.getCurrentDate()?.let { currentDate ->
+                    onDateSelected(currentDate, true)
+                }
             }
         }
     }
@@ -512,11 +522,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun setListeners() {
         binding.bottomAppbar.dateButtonText.setOnClickListener {
             binding.photoRecycler.stopScroll()
-            showDatePicker()
+            homeViewModel.setViewStateShowDatePicket(true)
         }
 
         binding.bottomAppbar.solButtonText.setOnClickListener {
-            showSolSelectorDialog()
+            homeViewModel.setViewStateShowSolSelected(true)
         }
         adapter?.addLoadStateListener { loadStates ->
 
@@ -524,13 +534,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             homeViewModel.setViewStateSetBottomProgress(loadStates.source.append is LoadState.Loading)
             homeViewModel.setViewStateSetMainProgress(loadStates.source.refresh is LoadState.Loading)
 
-            if (navigateToDate &&
+            if (homeViewModel.isNavigateToDate() &&
                 loadStates.source.prepend !is LoadState.Loading &&
                 loadStates.source.append !is LoadState.Loading &&
                 loadStates.source.refresh !is LoadState.Loading
             ) {
-                navigateToDate = false
-                onDateSelected(currentDate!!)
+                homeViewModel.setViewStateNavigateToDate(false)
+                homeViewModel.getCurrentDate()?.let { currentDate ->
+                    onDateSelected(currentDate)
+                }
             }
 
             binding.emptyMessage.isVisible = loadStates.source.refresh is LoadState.Error
@@ -548,7 +560,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
 
         binding.emptyMessage.setOnClickListener {
-            getData()
+            homeViewModel.getData()
         }
 
         binding.photoRecycler.observeFirstItemPosition(firstItemPosition = { position ->
@@ -585,9 +597,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                master?.let { rover ->
+                homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
                     val date =
-                        ((progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis)
+                        ((progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis)
                     homeViewModel.setViewStateScrollDateDisplayText(date.formatMillisToDisplayDate())
                 }
             }
@@ -597,9 +609,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                master?.let { rover ->
+                homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
                     val date =
-                        ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + rover.landing_date_in_millis).formatMillisToDate()
+                        ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis).formatMillisToDate()
                             .formatDateToMillis()
                     onDateSelected(date!!, true)
                 }
@@ -686,18 +698,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     }
 
     internal fun onDateSelected(date: Long, fetch: Boolean = false) {
-        currentDate = date
-        homeViewModel.setViewStateCurrentDate(date)
-        val snapShot = adapter?.snapshot()
-        val search = snapShot?.filter { photo ->
-            photo?.earth_date == date && photo.is_placeholder
-        }
-        if (search?.isNotEmpty() == true) {
-            val pos = snapShot.indexOf(search[0])
-            scrollToPosition(pos)
-        } else if (fetch) {
-            navigateToDate = true
-            getData()
+        adapter?.snapshot()?.let { itemSnapshotList ->
+            homeViewModel.onDateSelected(date, fetch, itemSnapshotList)
         }
     }
 

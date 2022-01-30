@@ -19,6 +19,7 @@ interface UICommunicationListener {
         onLinkSelect: () -> Unit,
         onDownloadSelect: () -> Unit,
         onDeleteSelect: ((marsRoverPhotoTable: MarsRoverPhotoTable, position: Int) -> Unit)? = null,
+        onDismiss: (() -> Unit)? = null,
         items: List<MarsRoverPhotoTable>? = null
     )
 

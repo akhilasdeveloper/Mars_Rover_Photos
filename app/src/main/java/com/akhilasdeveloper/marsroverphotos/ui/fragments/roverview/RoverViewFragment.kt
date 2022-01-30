@@ -383,10 +383,12 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             }
         })
         viewModel.positionState.observe(viewLifecycleOwner, {
-            currentPosition = it
-            setCurrentData()
-            if (it != binding.viewPage.currentItem)
-                binding.viewPage.setCurrentItem(it, false)
+            it.contentIfNotHandled?.let { position->
+                currentPosition = position
+                setCurrentData()
+                if (position != binding.viewPage.currentItem)
+                    binding.viewPage.setCurrentItem(position, false)
+            }
         })
         viewModel.dataStateIsLiked.observe(viewLifecycleOwner, {
             updateLikeIcon(it)

@@ -3,10 +3,7 @@ package com.akhilasdeveloper.marsroverphotos.ui
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.WindowInsets
-import android.view.WindowInsetsController
+import android.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
@@ -302,9 +299,10 @@ class MainActivity : BaseActivity() {
         onLinkSelect: () -> Unit,
         onDownloadSelect: () -> Unit,
         onDeleteSelect: ((marsRoverPhotoTable: MarsRoverPhotoTable, position: Int) -> Unit)?,
+        onDismiss: (() -> Unit)?,
         items: List<MarsRoverPhotoTable>?
     ) {
-        val bottomSheetDialog = BottomSheetDialog(this)
+        val bottomSheetDialog = BottomSheetDialog(this,R.style.ShareBottomSheetTheme)
         val dialogView: LayoutShareBottomSheetBinding = LayoutShareBottomSheetBinding.inflate(LayoutInflater.from(this))
         bottomSheetDialog.setContentView(dialogView.root)
         val data = items?.toMutableList()
@@ -350,6 +348,9 @@ class MainActivity : BaseActivity() {
         }
         data?.let {
             shareAdapter.submitList(it)
+        }
+        bottomSheetDialog.setOnDismissListener {
+            onDismiss?.invoke()
         }
         bottomSheetDialog.show()
 
@@ -448,6 +449,7 @@ class MainActivity : BaseActivity() {
     override fun showDownloadProgressDialog(progress: Int, onCancelClicked: () -> Unit) {
         if (alertDialog?.isShowing != true) {
             showDownloadDialog {
+                alertDialog?.cancel()
                 onCancelClicked()
             }
         }

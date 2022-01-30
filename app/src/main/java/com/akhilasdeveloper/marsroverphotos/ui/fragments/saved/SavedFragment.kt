@@ -508,7 +508,9 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
         })*/
 
         viewModel.positionState.observe(viewLifecycleOwner, {
-            scrollToPosition(it)
+            it.contentIfNotHandled?.let { position->
+                scrollToPosition(position)
+            }
         })
 
         viewModel.dataStatePaging.observe(viewLifecycleOwner, {

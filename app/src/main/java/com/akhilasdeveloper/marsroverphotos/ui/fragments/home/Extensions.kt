@@ -21,7 +21,8 @@ internal fun HomeFragment.setWindowInsets() {
     if (Constants.AD_ENABLED) {
         ViewCompat.setOnApplyWindowInsetsListener(binding.adView.itemAdBanner) { _, insets ->
             val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val bottomMargin = requireActivity().resources.getDimension(R.dimen.global_window_padding)
+            val bottomMargin =
+                requireActivity().resources.getDimension(R.dimen.global_window_padding)
             binding.adView.itemAdBanner.updateMarginAndHeight(bottom = systemWindows.bottom + bottomMargin.toInt())
             return@setOnApplyWindowInsetsListener insets
         }
@@ -66,8 +67,12 @@ internal fun HomeFragment.setWindowInsets() {
         val bottomAppBarHeight = toDpi(76)
         val topAppBarHeight = toDpi(200)
 
-        binding.solSlider.updateLayoutParams { width = displayHeightPx - (bottomAppBarHeight + topAppBarHeight) }
-        binding.slideFrame.updateLayoutParams { height = displayHeightPx - (bottomAppBarHeight + topAppBarHeight) }
+        binding.solSlider.updateLayoutParams {
+            width = displayHeightPx - (bottomAppBarHeight + topAppBarHeight)
+        }
+        binding.slideFrame.updateLayoutParams {
+            height = displayHeightPx - (bottomAppBarHeight + topAppBarHeight)
+        }
         binding.slideFrame.updateMarginAndHeight(bottom = bottomAppBarHeight + systemWindows.bottom)
 
         return@setOnApplyWindowInsetsListener insets
@@ -75,98 +80,108 @@ internal fun HomeFragment.setWindowInsets() {
 }
 
 internal fun HomeFragment.showSolSelectorDialog() {
-    master?.let { rover ->
 
-        val dialogView: LayoutSolSelectBinding =
-            LayoutSolSelectBinding.inflate(LayoutInflater.from(requireContext()))
-        val builder: AlertDialog.Builder =
-            AlertDialog.Builder(requireContext(), R.style.dialog_background)
-                .setView(dialogView.root)
-        val alertDialog: AlertDialog = builder.create()
 
-        dialogView.apply {
-            solSlider.valueTo = rover.max_sol.toFloat()
-            utilities.calculateDays(rover.landing_date_in_millis, currentDate)?.let {
-                solSlider.value = it.toFloat()
-            }
-            solSelectorCount.setText(dialogView.solSlider.value.toInt().toString())
-            solSlider.addOnChangeListener { _, value, _ ->
-                solSelectorCount.setText("${value.toInt()}")
-            }
-            nextSolSelector.setOnClickListener {
-                if (solSlider.value < solSlider.valueTo) {
-                    solSlider.value += 1
-                    utilities.vibrate()
-                }
-            }
-            prevSolSelector.setOnClickListener {
-                if (solSlider.value > 0) {
-                    solSlider.value -= 1
-                    utilities.vibrate()
-                }
-            }
-            solSelectorCount.addTextChangedListener { edit ->
-                edit?.let {
-                    val validatedText = validateSolText(it.toString())
-                    if (validatedText != edit.toString()) {
-                        solSelectorCount.setText(validatedText)
+    val dialogView: LayoutSolSelectBinding =
+        LayoutSolSelectBinding.inflate(LayoutInflater.from(requireContext()))
+    val builder: AlertDialog.Builder =
+        AlertDialog.Builder(requireContext(), R.style.dialog_background)
+            .setView(dialogView.root)
+    val alertDialog: AlertDialog = builder.create()
+
+    dialogView.apply {
+        homeViewModel.getMaxSol()?.let { max_sol ->
+            solSlider.valueTo = max_sol.toFloat()
+        }
+        var solVal = homeViewModel.getSolSelectDialogValue()
+        if (solVal == null) {
+            homeViewModel.getCurrentDate()?.let { currentDate ->
+                homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
+                    utilities.calculateDays(landing_date_in_millis, currentDate)?.let {
+                        solVal = it.toFloat()
                     }
-                    solSlider.value = validatedText.toInt().toFloat()
                 }
-
-            }
-            okSolSelector.setOnClickListener {
-                onSolSelected(solSlider.value.toLong())
-                alertDialog.cancel()
-            }
-
-            cancelSolSelector.setOnClickListener {
-                alertDialog.cancel()
             }
         }
+        solVal?.let {
+            solSlider.value = it
+        }
+        solSelectorCount.setText(dialogView.solSlider.value.toInt().toString())
+        solSlider.addOnChangeListener { _, value, _ ->
+            solSelectorCount.setText("${value.toInt()}")
+            homeViewModel.setSolSelectDialogValue(value)
+        }
+        nextSolSelector.setOnClickListener {
+            if (solSlider.value < solSlider.valueTo) {
+                solSlider.value += 1
+                utilities.vibrate()
+            }
+        }
+        prevSolSelector.setOnClickListener {
+            if (solSlider.value > 0) {
+                solSlider.value -= 1
+                utilities.vibrate()
+            }
+        }
+        solSelectorCount.addTextChangedListener { edit ->
+            edit?.let {
+                val validatedText = homeViewModel.validateSolText(it.toString())
+                if (validatedText != edit.toString()) {
+                    solSelectorCount.setText(validatedText)
+                }
+                solSlider.value = validatedText.toInt().toFloat()
+            }
 
-        alertDialog.show()
+        }
+        okSolSelector.setOnClickListener {
+            onSolSelected(solSlider.value.toLong())
+            alertDialog.cancel()
+        }
+
+        cancelSolSelector.setOnClickListener {
+            alertDialog.cancel()
+        }
     }
+
+    alertDialog.setOnDismissListener {
+        homeViewModel.setViewStateShowSolSelected(false)
+        homeViewModel.setSolSelectDialogValue(null)
+    }
+
+    alertDialog.show()
+
 }
 
 internal fun HomeFragment.showDatePicker() {
-    master?.let { master ->
 
-        val constraintsBuilder = CalendarConstraints.Builder()
-        val validators: ArrayList<CalendarConstraints.DateValidator> = ArrayList()
-        validators.add(DateValidatorPointForward.from(master.landing_date_in_millis))
-        validators.add(DateValidatorPointBackward.before(master.max_date_in_millis + MILLIS_IN_A_DAY))
-        constraintsBuilder.setValidator(CompositeDateValidator.allOf(validators))
+    val constraintsBuilder = CalendarConstraints.Builder()
+    val validators: ArrayList<CalendarConstraints.DateValidator> = ArrayList()
+    homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
+        validators.add(DateValidatorPointForward.from(landing_date_in_millis))
+    }
+    homeViewModel.getMaxDateInMillis()?.let { max_date_in_millis ->
+        validators.add(DateValidatorPointBackward.before(max_date_in_millis + MILLIS_IN_A_DAY))
+    }
+    constraintsBuilder.setValidator(CompositeDateValidator.allOf(validators))
 
-        val setDate = currentDate?.let { it + MILLIS_IN_A_DAY }
-        val datePicker =
-            MaterialDatePicker.Builder.datePicker()
-                .setTitleText(getString(R.string.select_date))
-                .setSelection(setDate)
-                .setTheme(R.style.ThemeOverlay_App_DatePicker)
-                .setCalendarConstraints(constraintsBuilder.build())
-                .build()
+    val setDate = homeViewModel.getCurrentDate()?.let { it + MILLIS_IN_A_DAY }
+    val datePicker =
+        MaterialDatePicker.Builder.datePicker()
+            .setTitleText(getString(R.string.select_date))
+            .setSelection(setDate)
+            .setTheme(R.style.ThemeOverlay_App_DatePicker)
+            .setCalendarConstraints(constraintsBuilder.build())
+            .build()
 
-        datePicker.show(requireActivity().supportFragmentManager, "RoverDatePicker")
+    datePicker.show(requireActivity().supportFragmentManager, "RoverDatePicker")
 
-        datePicker.addOnPositiveButtonClickListener {
-            datePicker.selection?.let {
-                onDateSelected(it.formatMillisToDate().formatDateToMillis()!!, true)
-            }
+    datePicker.addOnPositiveButtonClickListener {
+        datePicker.selection?.let {
+            onDateSelected(it.formatMillisToDate().formatDateToMillis()!!, true)
         }
     }
-}
 
-private fun HomeFragment.validateSolText(it: String): String {
-    var validated = it.filter { str -> str.isDigit() }
-    if (validated.isNotEmpty()) {
-        val sol = validated.toInt()
-        master?.let { rover ->
-            if (rover.max_sol < sol)
-                validated = rover.max_sol.toString()
-            if (sol < 0)
-                validated = "0"
-        }
+    datePicker.addOnDismissListener {
+        homeViewModel.setViewStateShowDatePicket(false)
     }
-    return validated
 }
