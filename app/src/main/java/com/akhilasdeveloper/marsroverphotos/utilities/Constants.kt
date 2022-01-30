@@ -11,6 +11,20 @@ object Constants {
     const val MILLIS_IN_A_DAY = (1000 * 60 * 60 * 24).toLong()
     const val MILLIS_IN_A_SOL = (1000 * 60 * 60 * 24).toLong() + (1000 * 60 * 39) + 35244
     const val GALLERY_SPAN = 3
+    const val GALLERY_SPAN_LANDSCAPE = 6
+
+    const val GALLERY_SPAN_LARGE = 6
+    const val GALLERY_SPAN_X_LARGE = 6
+    const val GALLERY_SPAN_SMALL = 3
+    const val GALLERY_SPAN_NORMAL = 3
+    const val GALLERY_SPAN_LANDSCAPE_LARGE = 6
+    const val GALLERY_SPAN_LANDSCAPE_X_LARGE = 6
+    const val GALLERY_SPAN_LANDSCAPE_SMALL = 4
+    const val GALLERY_SPAN_LANDSCAPE_NORMAL = 6
+
+    const val ROVER_SPAN = 1
+    const val ROVER_SPAN_MULTI = 2
+
     const val DATE_FORMAT = "yyyy-MM-dd"
     const val DISPLAY_DATE_FORMAT = "dd MMMM yyyy"
     const val FILE_DATE_FORMAT = "yyyy_MM_dd"

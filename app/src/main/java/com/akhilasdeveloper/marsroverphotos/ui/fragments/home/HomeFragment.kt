@@ -6,6 +6,7 @@ import android.app.WallpaperManager
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
@@ -50,6 +51,15 @@ import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.MarsRoverPhotoAdapter
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_LARGE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_NORMAL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_SMALL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_X_LARGE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LARGE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_NORMAL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_SMALL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_X_LARGE
 
 
 @AndroidEntryPoint
@@ -192,7 +202,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             })
 
             viewStateShowShareSelected.observe(viewLifecycleOwner, { isShowing ->
-                if(isShowing)
+                if (isShowing)
                     uiCommunicationListener.showMoreSelectorDialog(
                         onImageSelect = {
                             shareAllAsImage()
@@ -239,7 +249,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         })
 
         viewModel.positionState.observe(viewLifecycleOwner, {
-            it.contentIfNotHandled?.let { position->
+            it.contentIfNotHandled?.let { position ->
                 homeViewModel.setViewStateScrollToPosition(position)
             }
         })
@@ -253,7 +263,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
         val layoutManager = GridLayoutManager(
             requireContext(),
-            GALLERY_SPAN,
+            getGallerySpan(),
             GridLayoutManager.VERTICAL,
             false
         )
@@ -265,10 +275,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         if (adapter.snapshot()[position]?.is_placeholder != true)
                             1
                         else
-                            GALLERY_SPAN
+                            getGallerySpan()
                     else
-                        GALLERY_SPAN
-                } ?: return GALLERY_SPAN
+                        getGallerySpan()
+                } ?: return getGallerySpan()
             }
         }
 
@@ -332,6 +342,41 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 setDownload()
             }
     }
+
+    private fun getGallerySpan(): Int =
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            when (screenSize) {
+                Configuration.SCREENLAYOUT_SIZE_LARGE -> GALLERY_SPAN_LANDSCAPE_LARGE
+                Configuration.SCREENLAYOUT_SIZE_NORMAL -> GALLERY_SPAN_LANDSCAPE_NORMAL
+                Configuration.SCREENLAYOUT_SIZE_XLARGE -> GALLERY_SPAN_LANDSCAPE_X_LARGE
+                Configuration.SCREENLAYOUT_SIZE_SMALL -> GALLERY_SPAN_LANDSCAPE_SMALL
+                else -> {
+                    GALLERY_SPAN_NORMAL
+                }
+            }
+        } else {
+            when (screenSize) {
+                Configuration.SCREENLAYOUT_SIZE_LARGE -> GALLERY_SPAN_LARGE
+                Configuration.SCREENLAYOUT_SIZE_NORMAL -> GALLERY_SPAN_NORMAL
+                Configuration.SCREENLAYOUT_SIZE_XLARGE -> GALLERY_SPAN_X_LARGE
+                Configuration.SCREENLAYOUT_SIZE_SMALL -> GALLERY_SPAN_SMALL
+                else -> {
+                    GALLERY_SPAN_NORMAL
+                }
+            }
+        }
+
+    /*private fun getGallerySpan(): Int =
+        when (screenSize) {
+            Configuration.SCREENLAYOUT_SIZE_LARGE -> GALLERY_SPAN_LARGE
+            Configuration.SCREENLAYOUT_SIZE_NORMAL -> GALLERY_SPAN_NORMAL
+            Configuration.SCREENLAYOUT_SIZE_XLARGE -> GALLERY_SPAN_X_LARGE
+            Configuration.SCREENLAYOUT_SIZE_SMALL -> GALLERY_SPAN_SMALL
+            else -> {
+                GALLERY_SPAN_NORMAL
+            }
+        }*/
+
 
     private fun updateOrRequestPermission() {
         val hasWritePermission = ContextCompat.checkSelfPermission(

@@ -1,5 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
@@ -8,6 +9,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
@@ -187,10 +189,24 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         adapter = MarsRoverAdapter(this, requestManager)
         binding.apply {
             recycler.setHasFixedSize(true)
-            recycler.layoutManager = LinearLayoutManager(requireContext())
+            recycler.layoutManager = GridLayoutManager(requireContext(),getGallerySpan())
             recycler.adapter = adapter
         }
     }
+
+
+    private fun getGallerySpan(): Int =
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Constants.ROVER_SPAN_MULTI
+        } else {
+            when (screenSize) {
+                Configuration.SCREENLAYOUT_SIZE_NORMAL -> Constants.ROVER_SPAN
+                Configuration.SCREENLAYOUT_SIZE_SMALL -> Constants.ROVER_SPAN
+                else -> {
+                    Constants.ROVER_SPAN_MULTI
+                }
+            }
+        }
 
     private fun setBottomSheet() {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
@@ -274,11 +290,11 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     private fun setWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.recycler) { _, insets ->
             val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+                insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val bottomAd = toDpi(60)
             val bottomMargin =
                 requireActivity().resources.getDimension(R.dimen.global_window_padding)
-            binding.recycler.updatePadding(bottom = systemWindows.bottom + bottomAd + bottomMargin.toInt())
+            binding.recycler.updatePadding(bottom = systemWindows.bottom + bottomAd + bottomMargin.toInt(), left = systemWindows.left, right = systemWindows.right)
 
             return@setOnApplyWindowInsetsListener insets
         }
@@ -292,6 +308,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.bottomSheetView.sheetFrame) { _, insets ->
             val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.bottomSheetView.sheetFrame.updatePadding(left = systemWindows.left, right = systemWindows.right)
             binding.bottomSheetView.sheetFrame.updateMarginAndHeight(
                 top = systemWindows.top,
                 bottom = systemWindows.bottom + toDpi(60)

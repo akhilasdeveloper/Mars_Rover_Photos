@@ -36,7 +36,7 @@
         <item name="bottomSheetStyle">@style/Widget.Demo.BottomSheet</item>
     </style>
 
-    <style name="Widget.Demo.BottomSheet" parent="Widget.MaterialComponents.BottomSheet">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.MediumComponent</item>
+    <style name="Widget.Demo.BottomSheet" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
     </style>
 </resources>

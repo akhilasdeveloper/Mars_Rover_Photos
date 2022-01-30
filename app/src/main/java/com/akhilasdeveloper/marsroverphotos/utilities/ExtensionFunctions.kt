@@ -90,7 +90,7 @@ fun RecyclerView.observeFirstItemPosition(firstItemPosition: (position: Int) -> 
     })
 }
 
-fun RecyclerView.fastScrollListener(fastScrolled: () -> Unit,extraFastScrolled: () -> Unit) {
+fun RecyclerView.fastScrollListener(fastScrolled: () -> Unit, extraFastScrolled: () -> Unit) {
     addOnScrollListener(object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
@@ -194,9 +194,10 @@ fun String.downloadImageAsBitmap(context: Context, callback: (Bitmap?) -> (Unit)
         })
 }
 
-fun String.downloadImageAsBitmap2(requestManager: RequestManager): Bitmap? = requestManager.asBitmap().load(this).submit().get()
+fun String.downloadImageAsBitmap2(requestManager: RequestManager): Bitmap? =
+    requestManager.asBitmap().load(this).submit().get()
 
-fun String.downloadImageAsUri(requestManager : RequestManager, callback: (Uri?) -> (Unit)) {
+fun String.downloadImageAsUri(requestManager: RequestManager, callback: (Uri?) -> (Unit)) {
     CoroutineScope(Dispatchers.IO).launch {
         val data = requestManager.asFile().load(this@downloadImageAsUri).submit().get()
         withContext(Dispatchers.Main) {
@@ -246,5 +247,7 @@ fun View.updateMarginAndHeight(
 
 fun Fragment.toDpi(int: Int): Int = (this.resources.displayMetrics.density * int).toInt()
 val Fragment.displayHeightPx: Int get() = this.resources.displayMetrics.heightPixels
+val Fragment.displayWidth: Float get() = this.resources.displayMetrics.let { it.widthPixels / it.density }
+val Fragment.screenSize: Int get() = this.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")

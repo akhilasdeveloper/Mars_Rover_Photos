@@ -15,6 +15,7 @@ internal fun HomeFragment.setWindowInsets() {
     ViewCompat.setOnApplyWindowInsetsListener(binding.bottomAppbar.homeAppbar) { _, insets ->
         val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         binding.bottomAppbar.homeToolbar.updateMarginAndHeight(bottom = systemWindows.bottom)
+        binding.bottomAppbar.homeToolbar.updatePadding(right = systemWindows.right, left = systemWindows.left)
         return@setOnApplyWindowInsetsListener insets
     }
 
@@ -31,6 +32,7 @@ internal fun HomeFragment.setWindowInsets() {
     ViewCompat.setOnApplyWindowInsetsListener(binding.homeBottomToolbarSecond) { _, insets ->
         val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         binding.homeBottomToolbarSecond.updateMarginAndHeight(bottom = systemWindows.bottom)
+        binding.homeBottomToolbarSecond.updatePadding(right = systemWindows.right, left = systemWindows.left)
         return@setOnApplyWindowInsetsListener insets
     }
 
@@ -73,7 +75,7 @@ internal fun HomeFragment.setWindowInsets() {
         binding.slideFrame.updateLayoutParams {
             height = displayHeightPx - (bottomAppBarHeight + topAppBarHeight)
         }
-        binding.slideFrame.updateMarginAndHeight(bottom = bottomAppBarHeight + systemWindows.bottom)
+        binding.slideFrame.updateMarginAndHeight(bottom = bottomAppBarHeight + systemWindows.bottom, end = systemWindows.right)
 
         return@setOnApplyWindowInsetsListener insets
     }
