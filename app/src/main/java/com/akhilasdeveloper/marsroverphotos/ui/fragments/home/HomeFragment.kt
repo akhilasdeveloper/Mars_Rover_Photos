@@ -74,6 +74,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private var adapter: MarsRoverPhotoAdapter? = null
     private var hideFastScrollerJob: Job? = null
     private var downloadJob: Job? = null
+    private var saveJob: Job? = null
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
     private var writePermissionGranted = false
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
@@ -205,7 +206,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 if (isShowing)
                     uiCommunicationListener.showMoreSelectorDialog(
                         onImageSelect = {
-                            shareAllAsImage()
+                            homeViewModel.setViewStateShareAsImage(true)
                         },
                         onLinkSelect = {
                             shareAllAsLinks()
@@ -222,6 +223,16 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         }, onDismiss = {
                             homeViewModel.setViewStateShowShareSelected(false)
                         })
+            })
+
+            viewStateShareAsImage.observe(viewLifecycleOwner, { isSelected ->
+                if (isSelected)
+                    shareAllAsImage()
+            })
+
+            viewStateSaveToDevice.observe(viewLifecycleOwner, { isSelected ->
+                if (isSelected)
+                    setDownload()
             })
 
             dataStatePaging.observe(viewLifecycleOwner, {
@@ -403,7 +414,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         })
                 })
         } else {
-            setDownload()
+            homeViewModel.setViewStateSaveToDevice(true)
         }
     }
 
@@ -419,14 +430,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         "Image(s) Saved to Gallery",
                     )
                     uiCommunicationListener.hideDownloadProgressDialog()
+//                    homeViewModel.setViewStateSaveToDevice(false)
                 }
             }
         }
     }
 
 
-    private suspend fun download(currentData: MarsRoverPhotoTable, index: Int = 0): Uri? {
-        var uri: Uri? = null
+    private suspend fun download(currentData: MarsRoverPhotoTable, index: Int = 0) {
+
         withContext(Dispatchers.Main) {
             uiCommunicationListener.showDownloadProgressDialog(
                 ((index.plus(1)
@@ -438,13 +450,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
         currentData.img_src.downloadImageAsBitmap(requireContext()) { image ->
             image?.let {
-                uri = savePhotoToExternalStorage(getDisplayName(currentData), it)
+                savePhotoToExternalStorage(getDisplayName(currentData), it)
             }
         }
-        return uri
+
     }
 
-    private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap): Uri? {
+    private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap) {
         val imageCollection = sdk29andUp {
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         } ?: MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -457,17 +469,17 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
 
         try {
-            requireActivity().contentResolver.insert(imageCollection, contentValues)?.also { uri ->
-                requireActivity().contentResolver.openOutputStream(uri).use { outputStream ->
-                    if (!bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream))
-                        throw IOException("Failed to save Image!")
-                    return uri
-                }
-            } ?: throw IOException("Couldn't Create MediaStore Entry")
-            return null
+            activity?.contentResolver?.insert(imageCollection, contentValues)
+                ?.also { uri ->
+                    requireActivity().contentResolver.openOutputStream(uri)
+                        .use { outputStream ->
+                            if (!bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream))
+                                throw IOException("Failed to save Image!")
+                        }
+                } ?: throw IOException("Couldn't Create MediaStore Entry")
+
         } catch (exception: IOException) {
             Timber.e(exception.fillInStackTrace())
-            return null
         }
     }
 
@@ -509,6 +521,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         downloadJob?.cancel()
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
             downloadImage().let {
+                withContext(Dispatchers.Main) {
+                    homeViewModel.setViewStateShareAsImage(false)
+                }
                 if (it.isNotEmpty()) {
                     val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
                     intent.type = "image/png"
@@ -798,5 +813,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         return list
     }
 
-
+    override fun onDestroy() {
+        super.onDestroy()
+        downloadJob?.cancel()
+        saveJob?.cancel()
+    }
 }

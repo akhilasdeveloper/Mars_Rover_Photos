@@ -263,6 +263,7 @@ class MainActivity : BaseActivity() {
             navController?.removeOnDestinationChangedListener(it)
             destinationChangedListener = null
         }
+        alertDialog?.dismiss()
     }
 
     override fun showShareSelectorDialog(onImageSelect: () -> Unit, onLinkSelect: () -> Unit) {
@@ -470,5 +471,6 @@ class MainActivity : BaseActivity() {
             })*/
         }
     }
+
 
 }

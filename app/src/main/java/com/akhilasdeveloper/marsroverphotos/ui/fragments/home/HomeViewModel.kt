@@ -328,6 +328,26 @@ class HomeViewModel
         _viewStateShowShareSelected.value = isShowing
     }
 
+    private val _viewStateShareAsImage: MutableLiveData<Boolean> = MutableLiveData()
+
+    val viewStateShareAsImage: LiveData<Boolean>
+        get() = _viewStateShareAsImage
+
+    fun setViewStateShareAsImage(isSelected: Boolean) {
+        _viewStateShareAsImage.value = isSelected
+    }
+
+    private val _viewStateShareAsLink: MutableLiveData<Boolean> = MutableLiveData()
+
+    private val _viewStateSaveToDevice: MutableLiveData<Boolean> = MutableLiveData()
+
+    val viewStateSaveToDevice: LiveData<Boolean>
+        get() = _viewStateSaveToDevice
+
+    fun setViewStateSaveToDevice(isSelected: Boolean) {
+        _viewStateSaveToDevice.value = isSelected
+    }
+
     fun onDateSelected(date: Long, fetch: Boolean = false, snapShot: ItemSnapshotList<MarsRoverPhotoTable>) {
         setViewStateCurrentDate(date)
         val search = snapShot.filter { photo ->
