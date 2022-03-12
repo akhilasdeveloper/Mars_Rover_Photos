@@ -12,28 +12,40 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.view.*
+import android.view.MotionEvent
+import android.view.View
 import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.*
+import androidx.core.view.isEmpty
+import androidx.core.view.isNotEmpty
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
+import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.MarsRoverPhotoAdapter
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
+import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
 import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.CACHE_IMAGE_EXTENSION
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_LARGE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_NORMAL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_SMALL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_X_LARGE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LARGE
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_NORMAL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_SMALL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_X_LARGE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
 import com.bumptech.glide.RequestManager
 import com.canhub.cropper.CropImageContract
@@ -46,20 +58,6 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
-
-import com.akhilasdeveloper.marsroverphotos.databinding.*
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.MarsRoverPhotoAdapter
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_LARGE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_NORMAL
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_SMALL
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_X_LARGE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LARGE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_NORMAL
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_SMALL
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_X_LARGE
 
 
 @AndroidEntryPoint
@@ -232,23 +230,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
             viewStateSaveToDevice.observe(viewLifecycleOwner, { isSelected ->
                 if (isSelected)
-                    setDownload()
+                    setDownload(homeViewModel.getSelectedList())
             })
 
-            dataStatePaging.observe(viewLifecycleOwner, {
-                it?.let {
-                    val isHandled = it.hasBeenHandled()
-                    it.peekContent?.let { photos ->
-                        it.setAsHandled()
-                        adapter?.submitData(viewLifecycleOwner.lifecycle, photos)
-                        if (!isHandled) {
-                            homeViewModel.getCurrentDate()?.let { currentDate ->
-                                onDateSelected(currentDate)
-                            }
+            viewStateGetData.observe(viewLifecycleOwner, { load->
+                load?.contentIfNotHandled?.let {
+                    getCurrentDate()?.let { currentDate ->
+                        getRover()?.let { master ->
+                            viewModel.getData(master, currentDate)
                         }
                     }
                 }
             })
+
 
         }
     }
@@ -262,6 +256,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         viewModel.positionState.observe(viewLifecycleOwner, {
             it.contentIfNotHandled?.let { position ->
                 homeViewModel.setViewStateScrollToPosition(position)
+            }
+        })
+
+        viewModel.dataStatePaging.observe(viewLifecycleOwner, {
+            it?.let {
+                val isHandled = it.hasBeenHandled()
+                it.peekContent?.let { photos ->
+                    it.setAsHandled()
+                    adapter?.submitData(viewLifecycleOwner.lifecycle, photos)
+                    if (!isHandled) {
+                        homeViewModel.getCurrentDate()?.let { currentDate ->
+                            onDateSelected(currentDate)
+                        }
+                    }
+                }
             }
         })
 
@@ -350,7 +359,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         permissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) {
                 writePermissionGranted = it
-                setDownload()
+                homeViewModel.setViewStateSaveToDevice(true)
             }
     }
 
@@ -418,45 +427,47 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
     }
 
-    private fun setDownload() {
+    private fun setDownload(selectedList: List<MarsRoverPhotoTable>) {
         if (writePermissionGranted) {
             downloadJob?.cancel()
             downloadJob = CoroutineScope(Dispatchers.IO).launch {
-                homeViewModel.getSelectedList().forEachIndexed { index, currentData ->
-                    download(currentData, index)
+                selectedList.forEachIndexed { index, currentData ->
+                    download(currentData)
+                    withContext(Dispatchers.Main) {
+                        uiCommunicationListener.showDownloadProgressDialog(
+                            ((index.plus(1)
+                                .toFloat() / selectedList.size.toFloat()) * 100).toInt()
+                        ) {
+                            uiCommunicationListener.hideDownloadProgressDialog()
+                            homeViewModel.setViewStateSaveToDevice(false)
+                            downloadJob?.cancel()
+                        }
+                    }
                 }
                 withContext(Dispatchers.Main) {
                     uiCommunicationListener.showSnackBarMessage(
                         "Image(s) Saved to Gallery",
                     )
                     uiCommunicationListener.hideDownloadProgressDialog()
-//                    homeViewModel.setViewStateSaveToDevice(false)
+                    homeViewModel.setViewStateSaveToDevice(false)
                 }
             }
+        }else{
+            homeViewModel.setViewStateSaveToDevice(false)
         }
     }
 
-
-    private suspend fun download(currentData: MarsRoverPhotoTable, index: Int = 0) {
-
-        withContext(Dispatchers.Main) {
-            uiCommunicationListener.showDownloadProgressDialog(
-                ((index.plus(1)
-                    .toFloat() / homeViewModel.getSelectedList().size.toFloat()) * 100).toInt()
-            ) {
-                uiCommunicationListener.hideDownloadProgressDialog()
-                downloadJob?.cancel()
-            }
-        }
+    private fun download(currentData: MarsRoverPhotoTable): Uri? {
+        var uri: Uri? = null
         currentData.img_src.downloadImageAsBitmap(requireContext()) { image ->
             image?.let {
-                savePhotoToExternalStorage(getDisplayName(currentData), it)
+                uri = savePhotoToExternalStorage(getDisplayName(currentData), it)
             }
         }
-
+        return uri
     }
 
-    private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap) {
+    private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap): Uri? {
         val imageCollection = sdk29andUp {
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         } ?: MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -469,17 +480,17 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         }
 
         try {
-            activity?.contentResolver?.insert(imageCollection, contentValues)
-                ?.also { uri ->
-                    requireActivity().contentResolver.openOutputStream(uri)
-                        .use { outputStream ->
-                            if (!bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream))
-                                throw IOException("Failed to save Image!")
-                        }
-                } ?: throw IOException("Couldn't Create MediaStore Entry")
-
+            requireActivity().contentResolver.insert(imageCollection, contentValues)?.also { uri ->
+                requireActivity().contentResolver.openOutputStream(uri).use { outputStream ->
+                    if (!bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream))
+                        throw IOException("Failed to save Image!")
+                    return uri
+                }
+            } ?: throw IOException("Couldn't Create MediaStore Entry")
+            return null
         } catch (exception: IOException) {
             Timber.e(exception.fillInStackTrace())
+            return null
         }
     }
 
@@ -535,6 +546,33 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
             }
         }
+    }
+
+    private suspend fun downloadImage(selectedList: List<MarsRoverPhotoTable> = homeViewModel.getSelectedList()): ArrayList<Uri> {
+        val list: ArrayList<Uri> = arrayListOf()
+        val size = selectedList.size
+        selectedList.forEachIndexed { index, photo ->
+            withContext(Dispatchers.Main) {
+                uiCommunicationListener.showDownloadProgressDialog(
+                    ((index.plus(1).toFloat() / size.toFloat()) * 100).toInt()
+                ) {
+                    uiCommunicationListener.hideDownloadProgressDialog()
+                    downloadJob?.cancel()
+                }
+            }
+            val displayName = getDisplayName(photo)
+
+            if (utilities.isFileExistInCache(displayName)) {
+                utilities.toImageUriFromName(displayName)
+            } else {
+                photo.img_src.downloadImageAsBitmap2(requestManager)?.let {
+                    utilities.toImageURI(it, displayName)
+                }
+            }?.let { uri ->
+                list.add(uri)
+            }
+        }
+        return list
     }
 
     private fun getDisplayName(rover: MarsRoverPhotoTable) =
@@ -771,8 +809,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     override fun onItemSelected(marsRoverPhoto: MarsRoverPhotoTable, position: Int) {
         if (homeViewModel.isSelectedListEmpty()) {
-            findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
             viewModel.setPosition(position)
+            findNavController().navigate(R.id.action_homeFragment_to_roverViewFragment)
         } else {
             homeViewModel.setSelection(marsRoverPhoto, position)
         }
@@ -784,33 +822,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     ): Boolean {
         homeViewModel.setSelection(marsRoverPhoto, position)
         return true
-    }
-
-    private suspend fun downloadImage(selectedList: List<MarsRoverPhotoTable> = homeViewModel.getSelectedList()): ArrayList<Uri> {
-        val list: ArrayList<Uri> = arrayListOf()
-        val size = selectedList.size
-        selectedList.forEachIndexed { index, photo ->
-            withContext(Dispatchers.Main) {
-                uiCommunicationListener.showDownloadProgressDialog(
-                    ((index.plus(1).toFloat() / size.toFloat()) * 100).toInt()
-                ) {
-                    uiCommunicationListener.hideDownloadProgressDialog()
-                    downloadJob?.cancel()
-                }
-            }
-            val displayName = getDisplayName(photo)
-
-            if (utilities.isFileExistInCache(displayName)) {
-                utilities.toImageUriFromName(displayName)
-            } else {
-                photo.img_src.downloadImageAsBitmap2(requestManager)?.let {
-                    utilities.toImageURI(it, displayName)
-                }
-            }?.let { uri ->
-                list.add(uri)
-            }
-        }
-        return list
     }
 
     override fun onDestroy() {

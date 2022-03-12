@@ -383,7 +383,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             }
         })
         viewModel.positionState.observe(viewLifecycleOwner, {
-            it.contentIfNotHandled?.let { position->
+            it.peekContent?.let { position->
                 currentPosition = position
                 setCurrentData()
                 if (position != binding.viewPage.currentItem)

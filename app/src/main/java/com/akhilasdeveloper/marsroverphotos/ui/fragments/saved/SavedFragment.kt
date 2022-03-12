@@ -53,7 +53,6 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     private var master: RoverMaster? = null
     private var selectedList: ArrayList<MarsRoverPhotoTable> = arrayListOf()
 
-    //    var selectedUriList: MutableMap<Long,Uri> = hashMapOf()
     var selectedPositions: ArrayList<Int> = arrayListOf()
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
     private var writePermissionGranted = false
@@ -180,16 +179,10 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     }
 
     private fun pinToolbar() {
-        /*(binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
-            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED)*/
         binding.homeBottomToolbarSecond.isVisible = true
     }
 
     private fun unPinToolbar() {
-/*        (binding.topAppbar.homeCollapsingToolbarTop.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
-            (AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED)*/
         binding.homeBottomToolbarSecond.isVisible = false
     }
 
@@ -503,9 +496,6 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
             }
         })
 
-        /*viewModel.dataStateLikedPhotos.observe(viewLifecycleOwner, {
-            adapter?.submitData(viewLifecycleOwner.lifecycle, it)
-        })*/
 
         viewModel.positionState.observe(viewLifecycleOwner, {
             it.contentIfNotHandled?.let { position->
@@ -544,7 +534,6 @@ class SavedFragment : BaseFragment(R.layout.fragment_saved), RecyclerClickListen
     ) {
         if (selectedList.isEmpty()) {
 
-            viewModel.setIsSavedView(true)
             findNavController().navigate(R.id.action_savedFragment_to_roverViewFragment)
             viewModel.setPosition(position)
 

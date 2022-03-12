@@ -97,7 +97,7 @@ class MainActivity : BaseActivity() {
         window.setBackgroundDrawableResource(R.color.first)
 
         setBottomSheet()
-
+        val viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         destinationChangedListener =
             NavController.OnDestinationChangedListener { _, destination, _ ->
                 closeInfoDialog()
@@ -106,6 +106,12 @@ class MainActivity : BaseActivity() {
                     R.id.roverViewFragment -> {
                         setTransparentSystemBar()
                         setStatusBarDarkTheme()
+                    }
+                    R.id.homeFragment -> {
+                        viewModel.setIsSavedView(false)
+                    }
+                    R.id.savedFragment -> {
+                        viewModel.setIsSavedView(true)
                     }
                     else -> {
                         removeTransparentSystemBar()
@@ -145,31 +151,17 @@ class MainActivity : BaseActivity() {
     }
 
     override fun hideSystemBar() {
-        sdkAndUp(Build.VERSION_CODES.S, onSdkAndAbove = {
-            window.insetsController?.apply {
-                hide(WindowInsets.Type.systemBars())
-                systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
-            }
-        }, belowSdk = {
-            WindowInsetsControllerCompat(window, binding.root).apply {
-                hide(WindowInsetsCompat.Type.systemBars())
-                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
-            }
-        })
-
+        WindowInsetsControllerCompat(window, binding.root).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
+        }
     }
 
     override fun showSystemBar() {
-        sdkAndUp(Build.VERSION_CODES.S, onSdkAndAbove = {
-            window.insetsController?.apply {
-                hide(WindowInsets.Type.systemBars())
-            }
-        }, belowSdk = {
-            WindowInsetsControllerCompat(
-                window,
-                binding.root
-            ).show(WindowInsetsCompat.Type.systemBars())
-        })
+        WindowInsetsControllerCompat(
+            window,
+            binding.root
+        ).show(WindowInsetsCompat.Type.systemBars())
     }
 
     override fun showSnackBarMessage(

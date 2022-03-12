@@ -35,6 +35,15 @@ class HomeViewModel
     private var _dataStateSelectedList: List<MarsRoverPhotoTable> = listOf()
     private var _dataStateSelectedPositions: List<Int> = listOf()
 
+    private val _viewStateGetData: MutableLiveData<Event<Boolean>> = MutableLiveData()
+
+    val viewStateGetData: LiveData<Event<Boolean>>
+        get() = _viewStateGetData
+
+    fun setViewStateGetData(load: Boolean) {
+        _viewStateGetData.value = Event(load)
+    }
+
     private val _viewStatePinToolBar: MutableLiveData<Boolean> = MutableLiveData()
     private val _viewStateTitle: MutableLiveData<String> = MutableLiveData()
     private val _viewStateSelectedTitle: MutableLiveData<String> = MutableLiveData()
@@ -172,7 +181,7 @@ class HomeViewModel
             setViewStateSolSliderMax(rover.max_sol)
             if (!isHandled) {
                 setViewStateCurrentDate(rover.max_date_in_millis)
-                getData(date = rover.max_date_in_millis, rover = rover)
+                getData()
             }
         }
     }
@@ -192,14 +201,10 @@ class HomeViewModel
 
 
     fun getData() {
-        getCurrentDate()?.let { currentDate ->
-            _viewStateRoverMaster?.let { master ->
-                getData(master, currentDate)
-            }
-        }
+        setViewStateGetData(true)
     }
 
-    private fun getData(rover: RoverMaster, date: Long) {
+    fun getData(rover: RoverMaster, date: Long) {
         job?.cancel()
         job = viewModelScope.launch {
 
@@ -375,6 +380,6 @@ class HomeViewModel
     fun getLandingDateInMillis() = _viewStateRoverMaster?.landing_date_in_millis
     fun getMaxDateInMillis() = _viewStateRoverMaster?.max_date_in_millis
     fun getMaxSol() = _viewStateRoverMaster?.max_sol
-    fun getRoverName() = _viewStateRoverMaster?.name
+    fun getRover() = _viewStateRoverMaster
     fun getSolSelectDialogValue() = _viewStateSolDialogValue
 }

@@ -22,7 +22,7 @@ class MainViewModel
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> =
+    private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>?> =
         MutableLiveData()
     private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>> =
         MutableLiveData()
@@ -42,7 +42,7 @@ class MainViewModel
     val dataStateDate: LiveData<Long>
         get() = _dataStateDate
 
-    val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>>
+    val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>?>
         get() = _dataStatePaging
 
     val dataStateIsLiked: LiveData<Boolean>
@@ -69,7 +69,8 @@ class MainViewModel
     }
 
     fun setEmptyPhotos() {
-        _dataStatePaging.value = Event(PagingData.empty())
+//        _dataStatePaging.value = Event(PagingData.empty())
+        _dataStatePaging.value = null
     }
 
     fun setPosition(position: Int) {
