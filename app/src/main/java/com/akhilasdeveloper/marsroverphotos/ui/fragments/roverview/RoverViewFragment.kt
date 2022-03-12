@@ -29,10 +29,11 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageView
 import com.canhub.cropper.options
 import android.app.WallpaperManager
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.RequestManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickListener {
@@ -43,9 +44,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     @Inject
     lateinit var requestManager: RequestManager
     private var adapter: MarsRoverPagerAdapter? = null
+    lateinit var roverViewViewModel: RoverViewViewModel
     private var isShow = true
     private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
-    private var currentData: MarsRoverPhotoTable? = null
     private var currentPosition: Int? = null
 
     private var writePermissionGranted = false
@@ -91,7 +92,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                 if (viewModel.isSavedView)
                     setSavedLike()
                 else
-                    setLike()
+                    roverViewViewModel.setLike()
             }
 
             setWallpaper.setOnClickListener {
@@ -99,29 +100,17 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             }
 
             info.setOnClickListener {
-                currentData?.let {
-                    uiCommunicationListener.showInfoDialog(it)
-                }
+                roverViewViewModel.setViewStateShowInfoDialog()
             }
             share.setOnClickListener {
-                uiCommunicationListener.showMoreSelectorDialog(onImageSelect = {
-                    shareAsImage()
-                }, onLinkSelect = {
-                    setShare()
-                }, onDownloadSelect = {
-                    updateOrRequestPermission()
-                }, items = currentData?.let {
-                    listOf(it)
-                })
+                roverViewViewModel.setViewStateShowMoreSelectDialog(true)
             }
         }
 
         adapter?.addOnPagesUpdatedListener {
             if (viewModel.isSavedView) {
                 undoClickPositionData?.let { photo ->
-                    Timber.d("undoClickPositionData subscribeObservers $photo")
                     adapter?.snapshot()?.indexOf(photo)?.let { pos ->
-                        Timber.d("undoClickPositionData subscribeObservers pos $pos")
                         undoClickPositionData = null
                         viewModel.setPosition(pos)
                     }
@@ -134,11 +123,9 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         currentPosition?.let {
             adapter?.snapshot()?.let { adapter ->
                 if (adapter.size > it && it >= 0) {
-                    currentData = adapter[it]
-                    currentData?.let {
-                        uiCommunicationListener.setInfoDetails(it)
+                    adapter[it]?.let {
+                        roverViewViewModel.setViewStateCurrentData(it)
                     }
-                    getIsLiked()
                 }
             }
         }
@@ -154,27 +141,14 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         writePermissionGranted = hasWritePermission || minSdk29
 
         if (!writePermissionGranted) {
-            uiCommunicationListener.showConsentSelectorDialog(
-                title = requireContext().getString(R.string.permission),
-                descriptionText = requireContext().getString(R.string.permission_consent),
-                onOkSelect = {
-                    permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                },
-                onCancelSelect = {
-                    uiCommunicationListener.showSnackBarMessage(
-                        messageText = requireContext().getString(
-                            R.string.permission_cancel
-                        ), buttonText = requireContext().getString(R.string.allow), onClick = {
-                            updateOrRequestPermission()
-                        })
-                })
+            roverViewViewModel.setViewStateStorageConsentDialog(true)
         } else {
             setDownload()
         }
     }
 
     private fun setWallpaper() {
-        currentData?.img_src?.downloadImageAsUri(requestManager) { uri ->
+        roverViewViewModel.getCurrentDataImage?.downloadImageAsUri(requestManager) { uri ->
             uri?.let {
                 cropImage.launch(
                     options(uri = it) {
@@ -187,12 +161,12 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun setShare() {
-        currentData?.let {
+        roverViewViewModel.getCurrentData?.let {
             val intent = Intent(Intent.ACTION_SEND)
             val shareBody = resources.getString(
                 R.string.share_text,
-                currentData?.rover_name,
-                currentData?.img_src
+                it.rover_name,
+                it.img_src
             )
             intent.type = "text/plain"
             intent.putExtra(Intent.EXTRA_TEXT, shareBody)
@@ -201,7 +175,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun shareAsImage() {
-        currentData?.img_src?.downloadImageAsBitmap(requireContext()) { bmp ->
+        roverViewViewModel.getCurrentDataImage?.downloadImageAsBitmap(requireContext()) { bmp ->
             bmp?.let {
                 lifecycleScope.launch {
                     val uriFile = withContext(Dispatchers.IO) {
@@ -221,7 +195,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
 
     private fun setDownload() {
         if (writePermissionGranted) {
-            currentData?.img_src?.downloadImageAsBitmap(requireContext()) { image ->
+            roverViewViewModel.getCurrentDataImage?.downloadImageAsBitmap(requireContext()) { image ->
                 image?.let {
                     savePhotoToExternalStorage(getDisplayName(), it).let { uri ->
                         if (uri != null) {
@@ -247,7 +221,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun getDisplayName() =
-        "${currentData!!.rover_name}_${currentData!!.camera_name}_${currentData!!.earth_date.formatMillisToFileDate()}_${currentData!!.photo_id}$${Constants.CACHE_IMAGE_EXTENSION}"
+        "${roverViewViewModel.getCurrentDataRoverName}_${roverViewViewModel.getCurrentDataCameraName}_${roverViewViewModel.getCurrentDataEarthDate?.formatMillisToFileDate()}_${roverViewViewModel.getCurrentDataPhotoID}$${Constants.CACHE_IMAGE_EXTENSION}"
+
 
     private fun savePhotoToExternalStorage(displayName: String, bmp: Bitmap): Uri? {
         val imageCollection = sdk29andUp {
@@ -276,100 +251,36 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         }
     }
 
-    private fun getIsLiked() {
-        currentData?.let {
-            it.photo_id.let { id ->
-                viewModel.isLiked(id)
-            }
-        }
-    }
-
-    private fun setLike() {
-        currentData?.let { photo ->
-            viewModel.updateLike(
-                marsRoverPhotoTable = photo
-            )
-        }
-    }
-
     private fun setSavedLike() {
         lifecycleScope.launch {
             if (utilities.isShowLikeConsent()) {
-                val pos = currentData?.copy()
-                Timber.d("undoClickPositionData setSavedLike pos $currentPosition")
-                uiCommunicationListener.showConsentSelectorDialog(getString(R.string.remove_from_liked_photos),
-                    getString(
-                        R.string.selected_items_will_be_removed
-                    ), doNotShow = true,
-                    onOkSelect = {
-                        if (it) {
-                            lifecycleScope.launch {
-                                utilities.setHideLikeConsent()
-                            }
-                        }
-                        currentData?.let { currentData ->
-                            viewModel.updateLike(
-                                marsRoverPhotoTable = currentData
-                            )
-                        }
-
-                        val data = currentData
-                        uiCommunicationListener.showSnackBarMessage(
-                            "Item removed from Liked Photos",
-                            "Undo",
-                            onClick = {
-                                pos?.let {
-                                    Timber.d("undoClickPositionData setSavedLike $pos")
-                                    undoClickPositionData = pos
-                                    data?.let { currentData ->
-                                        currentData.let {
-                                            viewModel.updateLike(
-                                                marsRoverPhotoTable = currentData
-                                            )
-                                        }
-                                    }
-                                    requireContext().showShortToast("Photo added back")
-                                }
-                            })
-                    }, onCancelSelect = {
-                        if (it) {
-                            lifecycleScope.launch {
-                                utilities.setHideLikesConsent()
-                            }
-                        }
-                    })
+                roverViewViewModel.setViewStateLikeConsentDialog(true)
             } else {
-                val pos = currentData?.copy()
-                Timber.d("undoClickPositionData setSavedLike pos $currentPosition")
-
-                currentData?.let { currentData ->
-                    viewModel.updateLike(
-                        marsRoverPhotoTable = currentData
-                    )
-                }
-
-                val data = currentData
-                uiCommunicationListener.showSnackBarMessage(
-                    "Item removed from Liked Photos",
-                    "Undo",
-                    onClick = {
-                        pos?.let {
-                            Timber.d("undoClickPositionData setSavedLike $pos")
-                            undoClickPositionData = pos
-                            data?.let { currentData ->
-                                currentData.let {
-                                    viewModel.updateLike(
-                                        marsRoverPhotoTable = currentData
-                                    )
-                                }
-                            }
-                            requireContext().showShortToast("Photo added back")
-                        }
-                    })
-
+                removeUndoLike()
             }
         }
 
+    }
+
+    private fun removeUndoLike() {
+        val pos = roverViewViewModel.getCurrentData?.copy()
+        roverViewViewModel.updateCurrentLike()
+        uiCommunicationListener.showSnackBarMessage(
+            "Item removed from Liked Photos",
+            "Undo",
+            onClick = {
+                pos?.let {
+                    undoClickPositionData = pos
+                    roverViewViewModel.updateCurrentLike()
+                    requireContext().showShortToast("Photo added back")
+                }
+            })
+    }
+
+    private fun hideLikeConsent() {
+        lifecycleScope.launch {
+            utilities.setHideLikesConsent()
+        }
     }
 
     private fun subscribeObservers() {
@@ -383,20 +294,91 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             }
         })
         viewModel.positionState.observe(viewLifecycleOwner, {
-            it.peekContent?.let { position->
+            it.peekContent?.let { position ->
                 currentPosition = position
                 setCurrentData()
                 if (position != binding.viewPage.currentItem)
                     binding.viewPage.setCurrentItem(position, false)
             }
         })
-        viewModel.dataStateIsLiked.observe(viewLifecycleOwner, {
+        viewModel.dataStateInfoDialogChange.observe(viewLifecycleOwner, {
+            if (it == BottomSheetBehavior.STATE_COLLAPSED || it == BottomSheetBehavior.STATE_HIDDEN)
+                roverViewViewModel.setViewStateShowInfoDialog(null)
+        })
+        roverViewViewModel.dataStateIsLiked.observe(viewLifecycleOwner, {
             updateLikeIcon(it)
+        })
+
+        roverViewViewModel.viewStateCurrentData.observe(viewLifecycleOwner, { currentData ->
+            currentData?.let {
+                uiCommunicationListener.setInfoDetails(it)
+            }
+        })
+
+        roverViewViewModel.viewStateShowInfoDialog.observe(viewLifecycleOwner, { currentData ->
+            currentData?.let {
+                uiCommunicationListener.showInfoDialog(currentData)
+            }
+        })
+
+        roverViewViewModel.viewStateShowMoreSelectDialog.observe(viewLifecycleOwner, { isSelected ->
+            if (isSelected) {
+                uiCommunicationListener.showMoreSelectorDialog(onImageSelect = {
+                    shareAsImage()
+                }, onLinkSelect = {
+                    setShare()
+                }, onDownloadSelect = {
+                    updateOrRequestPermission()
+                }, items = roverViewViewModel.getCurrentData?.let {
+                    listOf(it)
+                }, onDismiss = {
+                    roverViewViewModel.setViewStateShowMoreSelectDialog(false)
+                })
+            }
+        })
+
+        roverViewViewModel.viewStateStorageConsentDialog.observe(viewLifecycleOwner, { isSelected ->
+            if (isSelected) {
+                uiCommunicationListener.showConsentSelectorDialog(
+                    title = requireContext().getString(R.string.permission),
+                    descriptionText = requireContext().getString(R.string.permission_consent),
+                    onOkSelect = {
+                        permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    },
+                    onCancelSelect = {
+                        uiCommunicationListener.showSnackBarMessage(
+                            messageText = requireContext().getString(
+                                R.string.permission_cancel
+                            ), buttonText = requireContext().getString(R.string.allow), onClick = {
+                                updateOrRequestPermission()
+                            })
+                    }, onDismiss = {
+                        roverViewViewModel.setViewStateStorageConsentDialog(false)
+                    })
+            }
+        })
+
+        roverViewViewModel.viewStateLikeConsentDialog.observe(viewLifecycleOwner, { isSelected ->
+            if (isSelected) {
+                uiCommunicationListener.showConsentSelectorDialog(getString(R.string.remove_from_liked_photos),
+                    getString(
+                        R.string.selected_items_will_be_removed
+                    ), doNotShow = true,
+                    onOkSelect = {
+                        if (it) hideLikeConsent()
+                        removeUndoLike()
+                    }, onCancelSelect = {
+                        if (it) hideLikeConsent()
+
+                    }, onDismiss = {
+                        roverViewViewModel.setViewStateLikeConsentDialog(false)
+                    })
+            }
         })
     }
 
     private fun init() {
-
+        roverViewViewModel = ViewModelProvider(requireActivity())[RoverViewViewModel::class.java]
         var isSet = true
         adapter = MarsRoverPagerAdapter(this, requestManager)
         ViewCompat.setOnApplyWindowInsetsListener(binding.menus) { _, insets ->
@@ -435,8 +417,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
             binding.like.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_heart_fill, 0, 0)
         } else {
             binding.like.setCompoundDrawablesWithIntrinsicBounds(
-                0,
-                com.akhilasdeveloper.marsroverphotos.R.drawable.ic_heart_unfill,
+                0, R.drawable.ic_heart_unfill,
                 0,
                 0
             )
@@ -492,3 +473,5 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
 }
+
+

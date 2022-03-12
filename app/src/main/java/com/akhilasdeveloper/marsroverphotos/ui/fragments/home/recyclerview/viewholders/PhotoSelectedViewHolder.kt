@@ -33,9 +33,6 @@ class PhotoSelectedViewHolder(
             interaction?.onItemSelected(photo, absoluteAdapterPosition)
         }
 
-        /*binding.root.setOnLongClickListener {
-            interaction?.onItemLongClick(photo, position, binding) ?: false
-        }*/
     }
 
 }

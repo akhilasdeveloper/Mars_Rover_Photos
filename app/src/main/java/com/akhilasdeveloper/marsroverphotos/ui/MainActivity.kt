@@ -97,7 +97,6 @@ class MainActivity : BaseActivity() {
         window.setBackgroundDrawableResource(R.color.first)
 
         setBottomSheet()
-        val viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         destinationChangedListener =
             NavController.OnDestinationChangedListener { _, destination, _ ->
                 closeInfoDialog()
@@ -106,12 +105,6 @@ class MainActivity : BaseActivity() {
                     R.id.roverViewFragment -> {
                         setTransparentSystemBar()
                         setStatusBarDarkTheme()
-                    }
-                    R.id.homeFragment -> {
-                        viewModel.setIsSavedView(false)
-                    }
-                    R.id.savedFragment -> {
-                        viewModel.setIsSavedView(true)
                     }
                     else -> {
                         removeTransparentSystemBar()
@@ -135,12 +128,12 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setBottomSheet() {
+        val viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.isGestureInsetBottomIgnored = true
         bottomSheetBehavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                val viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
                 viewModel.setInfoDialog(newState)
             }
 
@@ -256,35 +249,6 @@ class MainActivity : BaseActivity() {
             destinationChangedListener = null
         }
         alertDialog?.dismiss()
-    }
-
-    override fun showShareSelectorDialog(onImageSelect: () -> Unit, onLinkSelect: () -> Unit) {
-        val dialogView: LayoutShareSelectBinding =
-            LayoutShareSelectBinding.inflate(LayoutInflater.from(this))
-        val builder: AlertDialog.Builder =
-            AlertDialog.Builder(this, R.style.dialog_background)
-                .setView(dialogView.root)
-        val alertDialog: AlertDialog = builder.create()
-
-        dialogView.apply {
-
-            linkSelect.setOnClickListener {
-                onLinkSelect()
-                alertDialog.cancel()
-            }
-
-            imageSelect.setOnClickListener {
-                onImageSelect()
-                alertDialog.cancel()
-            }
-
-            cancelSolSelector.setOnClickListener {
-                alertDialog.cancel()
-            }
-        }
-
-        alertDialog.show()
-
     }
 
     override fun showMoreSelectorDialog(
@@ -406,7 +370,8 @@ class MainActivity : BaseActivity() {
         doNotShow: Boolean,
         cancelText: String,
         onOkSelect: (doNotShow: Boolean) -> Unit,
-        onCancelSelect: ((doNotShow: Boolean) -> Unit)?
+        onCancelSelect: ((doNotShow: Boolean) -> Unit)?,
+        onDismiss: (() -> Unit)?
     ) {
         val dialogView: LayoutConsentBinding =
             LayoutConsentBinding.inflate(LayoutInflater.from(this))
@@ -433,6 +398,10 @@ class MainActivity : BaseActivity() {
                 onCancelSelect?.invoke(this.doNotShow.isChecked)
                 alertDialog.cancel()
             }
+        }
+
+        alertDialog.setOnDismissListener {
+            onDismiss?.invoke()
         }
 
         alertDialog.show()

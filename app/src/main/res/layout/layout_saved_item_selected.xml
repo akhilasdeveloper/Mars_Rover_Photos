@@ -60,6 +60,7 @@
         android:buttonTint="@color/white"
         android:checked="true"
         android:layout_gravity="end"
-        android:translationZ="1dp" />
+        android:translationZ="1dp"
+        android:clickable="false"/>
 
 </FrameLayout>

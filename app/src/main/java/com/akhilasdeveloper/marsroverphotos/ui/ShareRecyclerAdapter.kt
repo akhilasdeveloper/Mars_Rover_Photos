@@ -5,12 +5,9 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.*
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.ShareItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerShareClickListener
-import com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers.RecyclerRoverClickListener
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 

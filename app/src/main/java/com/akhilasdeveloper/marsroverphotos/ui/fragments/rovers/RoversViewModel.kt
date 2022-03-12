@@ -1,13 +1,10 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments.rovers
 
-import android.os.Message
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
-import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
@@ -16,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -102,7 +98,7 @@ class RoversViewModel
                 marsRoverSrcResponse.let { response ->
                     response.data?.let {roverMasterList->
                         if (roverMasterList.isEmpty())
-                            setViewStateSetEmptyMessage("Tap to refresh")
+                            setViewStateSetEmptyMessage("")
                         else {
                             setViewStateSetEmptyMessage(null)
                             setViewStateRoverMasterList(roverMasterList)
@@ -117,7 +113,7 @@ class RoversViewModel
 
                     response.error?.let {
                         setViewStateErrorMessage(it)
-                        setViewStateSetEmptyMessage("$it\nTap to refresh")
+                        setViewStateSetEmptyMessage("")
                     }
                 }
             }

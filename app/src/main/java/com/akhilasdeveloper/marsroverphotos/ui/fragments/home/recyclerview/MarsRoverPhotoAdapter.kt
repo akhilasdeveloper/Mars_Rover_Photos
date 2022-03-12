@@ -8,13 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.viewholders.*
-import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.bumptech.glide.RequestManager
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class MarsRoverPhotoAdapter(
     private val interaction: RecyclerClickListener? = null,
-    private val requestManager: RequestManager
+    private val requestManager: RequestManager,
+    private val isSavedView: Boolean
 ) :
     PagingDataAdapter<MarsRoverPhotoTable, RecyclerView.ViewHolder>(PHOTO_COMPARATOR) {
 
@@ -24,7 +23,9 @@ class MarsRoverPhotoAdapter(
         SMALL,
         SMALL_SELECTED,
         DETAILED,
-        DETAILED_SELECTED
+        DETAILED_SELECTED,
+        DETAILED_SAVED,
+        DETAILED_SELECTED_SAVED
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -36,6 +37,13 @@ class MarsRoverPhotoAdapter(
             PhotoDateItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val bindingDatePhotoSelected =
             PhotoDateItemSelectedBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val bindingPhotoSaved =
+            LayoutSavedItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val bindingPhotoSelectedSaved = LayoutSavedItemSelectedBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
         return when (viewType) {
             ViewType.DETAILED.ordinal -> PhotoDateViewHolder(
                 bindingDatePhoto,
@@ -54,6 +62,16 @@ class MarsRoverPhotoAdapter(
             )
             ViewType.SMALL_SELECTED.ordinal -> PhotoSelectedViewHolder(
                 bindingPhotoSelected,
+                interaction,
+                requestManager
+            )
+            ViewType.DETAILED_SELECTED_SAVED.ordinal -> PhotoSavedSelectedViewHolder(
+                bindingPhotoSelectedSaved,
+                interaction,
+                requestManager
+            )
+            ViewType.DETAILED_SAVED.ordinal -> PhotoSavedViewHolder(
+                bindingPhotoSaved,
                 interaction,
                 requestManager
             )
@@ -104,26 +122,47 @@ class MarsRoverPhotoAdapter(
 
                 }
             }
+            ViewType.DETAILED_SELECTED_SAVED.ordinal -> {
+                val photoItemSelectedViewHolder = holder as PhotoSavedSelectedViewHolder
+                currentItem?.let {
+                    photoItemSelectedViewHolder.bindPhoto(currentItem, position)
+                }
+            }
+            ViewType.DETAILED_SAVED.ordinal -> {
+                val photoViewHolder = holder as PhotoSavedViewHolder
+                currentItem?.let {
+                    photoViewHolder.bindPhoto(currentItem, position)
+                }
+            }
         }
 
     }
 
     override fun getItemViewType(position: Int): Int {
         val curr = getItem(position)
-        return if (curr?.is_placeholder == true)
-            curr.let {
-                when {
-                    selectionChecker?.isSelected(it) == true -> ViewType.DETAILED_SELECTED.ordinal
-                    else -> ViewType.DETAILED.ordinal
-                }
-            }
-        else
+        return if (isSavedView){
             curr?.let {
                 when {
-                    selectionChecker?.isSelected(it) == true -> ViewType.SMALL_SELECTED.ordinal
-                    else -> ViewType.SMALL.ordinal
+                    selectionChecker?.isSelected(it) == true -> ViewType.DETAILED_SELECTED_SAVED.ordinal
+                    else -> ViewType.DETAILED_SAVED.ordinal
                 }
-            } ?: ViewType.SMALL.ordinal
+            }?:ViewType.DETAILED_SAVED.ordinal
+        }else {
+            if (curr?.is_placeholder == true)
+                curr.let {
+                    when {
+                        selectionChecker?.isSelected(it) == true -> ViewType.DETAILED_SELECTED.ordinal
+                        else -> ViewType.DETAILED.ordinal
+                    }
+                }
+            else
+                curr?.let {
+                    when {
+                        selectionChecker?.isSelected(it) == true -> ViewType.SMALL_SELECTED.ordinal
+                        else -> ViewType.SMALL.ordinal
+                    }
+                } ?: ViewType.SMALL.ordinal
+        }
     }
 
     companion object {

@@ -2,6 +2,7 @@
     <string name="app_name">Mars Rover Photos</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="tap_to_refresh">Tap to Refresh</string>
+    <string name="trefresh">Refresh</string>
     <string name="landing_date">Landing Date</string>
     <string name="launch_date">Launch Date</string>
     <string name="rover_image">Rover Image</string>
@@ -57,4 +58,17 @@
     <string name="quit">Quit?</string>
     <string name="exit_consent">Are you sure you want to quit the application?</string>
     <string name="last_photo_updated">Last photo updated : %1$s</string>
+
+    <string name="error_no_internet">No Internet! Offline mode</string>
+    <string name="error_network_timeout">Network timeout</string>
+    <string name="syncing_database">Syncing Database</string>
+    <string name="total_count_photos">%1$s photos</string>
+    <string name="simplify_photo_count">%1$s+</string>
+    <string name="wallpapet_set">Wallpaper set</string>
+    <string name="items_removed_from_like">Items removed from Liked Photos</string>
+    <string name="undo">Undo</string>
+    <string name="photos_added_back">Photos are added back</string>
+    <string name="images_saved_to_gallery">Image(s) Saved to Gallery</string>
+    <string name="share_via">Share Via</string>
+    <string name="adding_to_likes">Adding to Liked Photos</string>
 </resources>

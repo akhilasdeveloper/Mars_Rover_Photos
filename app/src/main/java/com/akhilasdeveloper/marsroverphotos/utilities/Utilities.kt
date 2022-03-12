@@ -11,6 +11,7 @@ import android.os.Vibrator
 import androidx.core.content.FileProvider
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_FALSE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKE_SYNC
@@ -31,31 +32,16 @@ class Utilities @Inject constructor(
 
     fun isConnectedToTheInternet(): Boolean {
         try {
-            var result = false
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val networkCapabilities = connectivityManager.activeNetwork ?: return false
-                val actNw =
-                    connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
-                result = when {
-                    actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                    actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                    actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                    else -> false
-                }
-            } else {
-                connectivityManager.run {
-                    connectivityManager.activeNetworkInfo?.run {
-                        result = when (type) {
-                            ConnectivityManager.TYPE_WIFI -> true
-                            ConnectivityManager.TYPE_MOBILE -> true
-                            ConnectivityManager.TYPE_ETHERNET -> true
-                            else -> false
-                        }
-
-                    }
-                }
+            val networkCapabilities = connectivityManager.activeNetwork ?: return false
+            val actNw =
+                connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+            val result = when {
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                else -> false
             }
             return result
         } catch (e: Exception) {
@@ -142,13 +128,6 @@ class Utilities @Inject constructor(
     }
 
 
-    suspend fun setHideLikeConsent() {
-        val dataStoreKey = stringPreferencesKey(DATASTORE_LIKE_SYNC)
-        context.dataStore.edit { settings ->
-            settings[dataStoreKey] = DATASTORE_FALSE
-        }
-    }
-
     suspend fun isShowLikeConsent(): Boolean {
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKE_SYNC)
         val preferences = context.dataStore.data.first()
@@ -167,4 +146,7 @@ class Utilities @Inject constructor(
         val preferences = context.dataStore.data.first()
         return (preferences[dataStoreKey] ?: DATASTORE_TRUE) == DATASTORE_TRUE
     }
+
+    fun getDisplayName(rover: MarsRoverPhotoTable) = "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}${Constants.CACHE_IMAGE_EXTENSION}"
+
 }

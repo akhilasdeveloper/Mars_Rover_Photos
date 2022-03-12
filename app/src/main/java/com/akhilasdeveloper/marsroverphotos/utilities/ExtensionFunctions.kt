@@ -1,49 +1,41 @@
 package com.akhilasdeveloper.marsroverphotos.utilities
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
-import android.util.DisplayMetrics
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.net.toUri
-import androidx.core.view.marginBottom
-import androidx.core.view.marginEnd
-import androidx.core.view.marginStart
-import androidx.core.view.marginTop
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.akhilasdeveloper.marsroverphotos.R
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ADDING_LIKES
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATE_FORMAT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DISPLAY_DATE_FORMAT
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NETWORK_TIMEOUT
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NO_INTERNET
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FILE_DATE_FORMAT
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_DOWN
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SCROLL_DIRECTION_UP
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SYNCING_DATABASE
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
-import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 fun Int.simplify() = when {
     abs(this / 1000000) > 1 -> {
@@ -110,24 +102,6 @@ fun RecyclerView.isIdle(isIdle: (isIdle: Boolean) -> Unit) {
     })
 }
 
-fun RecyclerView.observeVisibleItemPositions(visibleItemPosition: (firstVisibleItemPosition: Int, secondVisibleItemPosition: Int) -> Unit) {
-    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            if (newState == RecyclerView.SCROLL_STATE_IDLE || newState == RecyclerView.SCROLL_STATE_SETTLING) {
-                val layoutManager = layoutManager
-                if (layoutManager is LinearLayoutManager) {
-                    visibleItemPosition(
-                        layoutManager.findFirstVisibleItemPosition(),
-                        layoutManager.findLastVisibleItemPosition()
-                    )
-                } else {
-                    visibleItemPosition(-1, -1)
-                }
-            }
-        }
-    })
-}
-
 
 fun RecyclerView.scrollToCenter(position: Int) {
     addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
@@ -152,9 +126,6 @@ fun RecyclerView.scrollToCenter(position: Int) {
 
                 this@scrollToCenter.post {
                     layoutManager?.scrollToPosition(position)
-/*                    layoutManager?.startSmoothScroll(CenterSmoothScroller(context = context).apply {
-                        targetPosition = position
-                    })*/
                 }
             }
             removeOnLayoutChangeListener(this)
@@ -206,14 +177,6 @@ fun String.downloadImageAsUri(requestManager: RequestManager, callback: (Uri?) -
     }
 }
 
-fun String.downloadImageAsFile(context: Context, callback: (File?) -> (Unit)) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val data = Glide.with(context).asFile().load(this@downloadImageAsFile).submit().get()
-        withContext(Dispatchers.Main) {
-            callback(data)
-        }
-    }
-}
 
 inline fun <T> sdk29andUp(onSdk29: () -> T): T? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
@@ -247,7 +210,14 @@ fun View.updateMarginAndHeight(
 
 fun Fragment.toDpi(int: Int): Int = (this.resources.displayMetrics.density * int).toInt()
 val Fragment.displayHeightPx: Int get() = this.resources.displayMetrics.heightPixels
-val Fragment.displayWidth: Float get() = this.resources.displayMetrics.let { it.widthPixels / it.density }
 val Fragment.screenSize: Int get() = this.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
+fun Resources.getStringResource(string: String) = when (string) {
+    ERROR_NO_INTERNET -> this.getString(R.string.error_no_internet)
+    ERROR_NETWORK_TIMEOUT -> this.getString(R.string.error_network_timeout)
+    SYNCING_DATABASE -> this.getString(R.string.syncing_database)
+    ADDING_LIKES -> this.getString(R.string.adding_to_likes)
+    else -> ""
+}

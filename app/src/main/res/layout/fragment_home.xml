@@ -39,9 +39,6 @@
         app:layout_collapseMode="pin"
         app:titleTextAppearance="@style/TextAppearance.ToolBarTitle.Collapsed"
         android:visibility="gone"
-        app:layout_anchor="@id/bottom_appbar"
-        app:layout_anchorGravity="top|center_horizontal"
-        android:layout_gravity="center|top"
         android:background="@color/appbar"
         app:navigationIcon="@drawable/ic_x"
         app:navigationIconTint="@color/system_for"/>

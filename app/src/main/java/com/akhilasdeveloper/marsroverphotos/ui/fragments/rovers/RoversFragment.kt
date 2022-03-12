@@ -69,8 +69,8 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             viewStateErrorMessage.observe(viewLifecycleOwner, {
                 it.contentIfNotHandled?.let { message ->
                     uiCommunicationListener.showSnackBarMessage(
-                        messageText = message,
-                        buttonText = "Refresh"
+                        messageText = message.toSource(),
+                        buttonText = getString(R.string.trefresh)
                     ) {
                         refreshData()
                     }
@@ -78,7 +78,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             })
             viewStateMessage.observe(viewLifecycleOwner, {
                 it.contentIfNotHandled?.let { message ->
-                    uiCommunicationListener.showSnackBarMessage(message)
+                    uiCommunicationListener.showSnackBarMessage(message.toSource())
                 }
             })
             viewStateRoverMasterList.observe(viewLifecycleOwner, {
@@ -89,8 +89,8 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                     if (event == null)
                         hideEmptyMessage()
                     else
-                        event.contentIfNotHandled?.let { message ->
-                            setEmptyMessage(message)
+                        event.contentIfNotHandled?.let { _ ->
+                            setEmptyMessage(getString(R.string.tap_to_refresh))
                         }
                 }
 
@@ -243,13 +243,16 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private fun navigateToPhotos(master: RoverMaster) {
         viewModel.setPosition(0)
+        viewModel.setIsSavedView(false)
         viewModel.setRoverMaster(master)
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
     }
 
     private fun navigateToSavedPhotos(master: RoverMaster) {
+        viewModel.setPosition(0)
         viewModel.setRoverMaster(master)
-        findNavController().navigate(R.id.action_roversFragment_to_savedFragment)
+        viewModel.setIsSavedView(true)
+        findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
     }
 
     override fun onReadMoreSelected(master: RoverMaster, position: Int) {

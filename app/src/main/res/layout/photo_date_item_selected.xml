@@ -70,6 +70,7 @@
         android:layout_height="wrap_content"
         android:buttonTint="@color/white"
         android:checked="true"
-        android:translationZ="1dp"/>
+        android:translationZ="1dp"
+        android:clickable="false"/>
 
 </FrameLayout>

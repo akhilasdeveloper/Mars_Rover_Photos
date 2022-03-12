@@ -9,7 +9,6 @@ import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.RoverItemBinding
 import com.akhilasdeveloper.marsroverphotos.utilities.simplify
-import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
@@ -54,7 +53,7 @@ class MarsRoverAdapter(
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(roverImage)
                 roverName.text = photo.name
-                roverPhotosCount.text = photo.total_photos.simplify() + "+"
+                roverPhotosCount.text = root.context.getString(R.string.simplify_photo_count,photo.total_photos.simplify())
             }
 
             binding.roverPhotosCount.setOnClickListener {

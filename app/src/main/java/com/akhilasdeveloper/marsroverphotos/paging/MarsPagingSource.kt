@@ -10,9 +10,7 @@ import com.akhilasdeveloper.marsroverphotos.db.dao.RemoteKeyDao
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.RemoteKeysTable
 import com.akhilasdeveloper.marsroverphotos.utilities.*
-import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.IOException
@@ -72,8 +70,6 @@ class MarsPagingSource(
                         reConfigureRemoteKey(date, nextKey, prevKey)
                 }
 
-                Timber.d("Data Loading : $response")
-
                 LoadResult.Page(
                     data = response,
                     prevKey = prevKey,
@@ -112,7 +108,7 @@ class MarsPagingSource(
     }
 
     private suspend fun getMarsApi(pageDate: Long): List<MarsRoverPhotoTable> {
-        val url = Constants.URL_PHOTO + roverMaster.name + "/photos"
+        val url = Constants.URL_PHOTO + roverMaster.name + Constants.PHOTOS
         val response = marsRoverPhotosService.getRoverPhotos(
             url = url,
             earth_date = pageDate.formatMillisToDate()

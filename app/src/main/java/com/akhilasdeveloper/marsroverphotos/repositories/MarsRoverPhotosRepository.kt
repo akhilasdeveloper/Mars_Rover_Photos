@@ -14,7 +14,6 @@ import com.akhilasdeveloper.marsroverphotos.db.dao.MarsRoverDao
 import com.akhilasdeveloper.marsroverphotos.db.dao.RemoteKeyDao
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoLikedTable
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.db.table.photo.key.RemoteKeysTable
 import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
 import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
@@ -54,23 +53,16 @@ class MarsRoverPhotosRepository @Inject constructor(
                     var list = listOf<MarsRoverPhotoTable>()
                     while (currentMaxDate != startingMaxDate && list.isEmpty()) {
 
-                        Timber.d("calculateMaxDates5s startingMaxDate : $startingMaxDate")
-                        Timber.d("calculateMaxDates5s currentMaxDate : $currentMaxDate")
-
                         val date = startingMaxDate.formatDateToMillis()!!
                         val nextKey =
                             if (date > rover.landing_date.formatDateToMillis()!!) date.prevDate() else null
-
-                        Timber.d("calculateMaxDates5 nextKey : $nextKey")
 
                         list = marsPhotoDao.getDisplayPhotosByRoverNameAndDate(
                             roverName = rover.name,
                             date = date
                         )
-                        Timber.d("calculateMaxDates5 list1 : $list")
                         if (list.isEmpty()) {
                             list = loadPhotos(date.formatMillisToDate(), rover.name)
-                            Timber.d("calculateMaxDates5 list2 : $list")
                         }
 
                         startingMaxDate = nextKey?.formatMillisToDate()!!
@@ -79,7 +71,6 @@ class MarsRoverPhotosRepository @Inject constructor(
                     utilities.calculateDays(rover.landing_date.formatDateToMillis()!!, startingMaxDate.formatDateToMillis()!!)?.let {
                         marsRoverDao.updateMaxDate(startingMaxDate,it, rover.name)
                     }
-                    Timber.d("calculateMaxDates5 ${rover.name} : $startingMaxDate")
                 }
 
             }
@@ -98,7 +89,7 @@ class MarsRoverPhotosRepository @Inject constructor(
     }
 
     private suspend fun getMarsApi(pageDate: String, name: String): List<MarsRoverPhotoTable> {
-        val url = Constants.URL_PHOTO + name + "/photos"
+        val url = Constants.URL_PHOTO + name + Constants.PHOTOS
         val response = marsRoverPhotosService.getRoverPhotos(
             url = url,
             earth_date = pageDate
@@ -175,7 +166,6 @@ class MarsRoverPhotosRepository @Inject constructor(
                             refreshRoverSrcDb()
                         } catch (exception: Exception) {
                             emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
-                            Timber.e("refreshRoverSrcDb() : $exception")
                             return@withTimeoutOrNull
                         }
                     }
@@ -210,7 +200,6 @@ class MarsRoverPhotosRepository @Inject constructor(
                         emit(MarsRoverSrcResponse(data = dataSrc))
                     } catch (exception: Exception) {
                         emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
-                        Timber.e("getRoverManifest : $exception")
                         return@withTimeoutOrNull
                     }
                 }

@@ -5,33 +5,23 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ItemSnapshotList
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ADDING_LIKES
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
-import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDate
-import com.akhilasdeveloper.marsroverphotos.utilities.showShortToast
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel
 @Inject constructor(
-    private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
-    private val utilities: Utilities
+    private val marsRoverPhotosRepository: MarsRoverPhotosRepository
 ) : ViewModel() {
 
-    private var job: Job? = null
-
-    private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>> = MutableLiveData()
     private var _dataStateSelectedList: List<MarsRoverPhotoTable> = listOf()
     private var _dataStateSelectedPositions: List<Int> = listOf()
 
@@ -40,8 +30,8 @@ class HomeViewModel
     val viewStateGetData: LiveData<Event<Boolean>>
         get() = _viewStateGetData
 
-    fun setViewStateGetData(load: Boolean) {
-        _viewStateGetData.value = Event(load)
+    private fun setViewStateGetData() {
+        _viewStateGetData.value = Event(true)
     }
 
     private val _viewStatePinToolBar: MutableLiveData<Boolean> = MutableLiveData()
@@ -52,20 +42,52 @@ class HomeViewModel
     private val _viewStateSolSlider: MutableLiveData<Int> = MutableLiveData()
     private val _viewStateSolSliderMax: MutableLiveData<Int> = MutableLiveData()
     private val _viewStateDateButtonText: MutableLiveData<String> = MutableLiveData()
-    private val _viewStateSetFastScrollerDateVisibility: MutableLiveData<Boolean> = MutableLiveData()
+    private val _viewStateSetFastScrollerDateVisibility: MutableLiveData<Boolean> =
+        MutableLiveData()
     private val _viewStateSetFastScrollerVisibility: MutableLiveData<Boolean> = MutableLiveData()
     private val _viewStateSetMainProgress: MutableLiveData<Boolean> = MutableLiveData()
     private val _viewStateSetTopProgress: MutableLiveData<Boolean> = MutableLiveData()
     private val _viewStateSetBottomProgress: MutableLiveData<Boolean> = MutableLiveData()
     private val _viewStateNotifyItemChanged: MutableLiveData<Int> = MutableLiveData()
     private val _viewStateSetSelectMenuVisibility: MutableLiveData<Boolean> = MutableLiveData()
-    private var _viewStateNavigateToDate:Boolean = false
+    private var _viewStateNavigateToDate: Boolean = false
     private var _viewStateRoverMaster: RoverMaster? = null
     private var _viewStateCurrentDate: Long? = null
     private var _viewStateSolDialogValue: Float? = null
+    private val _viewStateToastMessage: MutableLiveData<Event<String>> = MutableLiveData()
+    private val _viewStateClearSelectionConsent: MutableLiveData<Boolean> = MutableLiveData()
+    private val _viewStateRemoveLikesConsent: MutableLiveData<Boolean> = MutableLiveData()
+    private val _viewStateStoragePermission: MutableLiveData<Boolean> = MutableLiveData()
 
-    val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>>
-        get() = _dataStatePaging
+    val viewStateStoragePermission: LiveData<Boolean>
+        get() = _viewStateStoragePermission
+
+    fun setViewStateStoragePermission(isSelected: Boolean) {
+        _viewStateStoragePermission.value = isSelected
+    }
+
+    val viewStateRemoveLikesConsent: LiveData<Boolean>
+        get() = _viewStateRemoveLikesConsent
+
+    fun setViewStateRemoveLikesConsent(isSelected: Boolean) {
+        _viewStateRemoveLikesConsent.value = isSelected
+    }
+
+    val viewStateClearSelectionConsent: LiveData<Boolean>
+        get() = _viewStateClearSelectionConsent
+
+    fun setViewStateClearSelectionConsent(isSelected: Boolean) {
+        _viewStateClearSelectionConsent.value = isSelected
+    }
+
+
+
+    val viewStateToastMessage: LiveData<Event<String>>
+        get() = _viewStateToastMessage
+
+    private fun setViewStateToastMessage(message: Event<String>) {
+        _viewStateToastMessage.value = message
+    }
 
     val viewStatePinToolBar: LiveData<Boolean>
         get() = _viewStatePinToolBar
@@ -157,9 +179,9 @@ class HomeViewModel
     private fun setViewStateSetSelectMenuVisibility(isVisible: Boolean) {
         _viewStateSetSelectMenuVisibility.value = isVisible
         setViewStatePinToolBar(isVisible)
-        if (!isVisible){
+        if (!isVisible) {
             setViewStateSelectedTitle("Not Selected")
-        }else{
+        } else {
             setViewStateSelectedTitle("Selected (${getSelectedList().size})")
         }
     }
@@ -201,49 +223,34 @@ class HomeViewModel
 
 
     fun getData() {
-        setViewStateGetData(true)
+        setViewStateGetData()
     }
 
-    fun getData(rover: RoverMaster, date: Long) {
-        job?.cancel()
-        job = viewModelScope.launch {
-
-            marsRoverPhotosRepository.getPhotos(rover = rover, date = date)
-                .cachedIn(viewModelScope)
-                .onEach { its ->
-                    _dataStatePaging.value = Event(its)
-
-                }
-                .launchIn(this)
-
-        }
-    }
-
-    private fun addSelectedData(marsRoverPhotoTable: MarsRoverPhotoTable){
+    private fun addSelectedData(marsRoverPhotoTable: MarsRoverPhotoTable) {
         val dataMutable = _dataStateSelectedList.toMutableList()
         dataMutable.add(marsRoverPhotoTable)
         _dataStateSelectedList = dataMutable
     }
 
-    private fun removeSelectedData(position: MarsRoverPhotoTable){
+    private fun removeSelectedData(position: MarsRoverPhotoTable) {
         val dataMutable = _dataStateSelectedList.toMutableList()
         dataMutable.remove(position)
         _dataStateSelectedList = dataMutable
     }
 
-    private fun addSelectedPosition(position: Int){
+    private fun addSelectedPosition(position: Int) {
         val dataMutable = _dataStateSelectedPositions.toMutableList()
         dataMutable.add(position)
         _dataStateSelectedPositions = dataMutable
     }
 
-    private fun removeSelectedPosition(position: Int){
+    private fun removeSelectedPosition(position: Int) {
         val dataMutable = _dataStateSelectedPositions.toMutableList()
         dataMutable.remove(position)
         _dataStateSelectedPositions = dataMutable
     }
 
-    fun clearSelection(){
+    fun clearSelection() {
         _dataStateSelectedList = listOf()
         _dataStateSelectedPositions.forEach {
             setViewStateNotifyItemChanged(it)
@@ -253,19 +260,24 @@ class HomeViewModel
     }
 
     fun setLike() {
-        getSelectedList().forEach { currentData ->
-            addLike(
-                marsRoverPhotoTable = currentData
-            )
+        viewModelScope.launch {
+            getSelectedList().forEach { currentData ->
+                marsRoverPhotosRepository.addLike(currentData)
+            }
+            setViewStateToastMessage(Event(ADDING_LIKES))
+            clearSelection()
         }
-        clearSelection()
     }
 
-    private fun addLike(
-        marsRoverPhotoTable: MarsRoverPhotoTable
-    ) {
+    fun updateLike() {
+        getSelectedList().forEach { currentData ->
+            updateLikeDb(currentData)
+        }
+    }
+
+    fun updateLikeDb(currentData: MarsRoverPhotoTable) {
         viewModelScope.launch {
-            marsRoverPhotosRepository.addLike(marsRoverPhotoTable)
+            marsRoverPhotosRepository.updateLike(currentData)
         }
     }
 
@@ -342,8 +354,6 @@ class HomeViewModel
         _viewStateShareAsImage.value = isSelected
     }
 
-    private val _viewStateShareAsLink: MutableLiveData<Boolean> = MutableLiveData()
-
     private val _viewStateSaveToDevice: MutableLiveData<Boolean> = MutableLiveData()
 
     val viewStateSaveToDevice: LiveData<Boolean>
@@ -353,7 +363,11 @@ class HomeViewModel
         _viewStateSaveToDevice.value = isSelected
     }
 
-    fun onDateSelected(date: Long, fetch: Boolean = false, snapShot: ItemSnapshotList<MarsRoverPhotoTable>) {
+    fun onDateSelected(
+        date: Long,
+        fetch: Boolean = false,
+        snapShot: ItemSnapshotList<MarsRoverPhotoTable>
+    ) {
         setViewStateCurrentDate(date)
         val search = snapShot.filter { photo ->
             photo?.earth_date == date && photo.is_placeholder
@@ -367,13 +381,15 @@ class HomeViewModel
         }
     }
 
-    fun setSolSelectDialogValue(value: Float?){
+    fun setSolSelectDialogValue(value: Float?) {
         _viewStateSolDialogValue = value
     }
 
-    fun isNavigateToDate():Boolean = _viewStateNavigateToDate
-    fun isSelectedListEmpty():Boolean = _dataStateSelectedList.isNullOrEmpty()
-    fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable):Boolean = _dataStateSelectedList.contains(marsRoverPhotoTable)
+    fun isNavigateToDate(): Boolean = _viewStateNavigateToDate
+    fun isSelectedListEmpty(): Boolean = _dataStateSelectedList.isNullOrEmpty()
+    fun isSelected(marsRoverPhotoTable: MarsRoverPhotoTable): Boolean =
+        _dataStateSelectedList.contains(marsRoverPhotoTable)
+
     fun getSelectedList() = _dataStateSelectedList
     fun getSelectedItemPosition(position: Int) = _dataStateSelectedPositions[position]
     fun getCurrentDate() = _viewStateCurrentDate
@@ -382,4 +398,5 @@ class HomeViewModel
     fun getMaxSol() = _viewStateRoverMaster?.max_sol
     fun getRover() = _viewStateRoverMaster
     fun getSolSelectDialogValue() = _viewStateSolDialogValue
+
 }

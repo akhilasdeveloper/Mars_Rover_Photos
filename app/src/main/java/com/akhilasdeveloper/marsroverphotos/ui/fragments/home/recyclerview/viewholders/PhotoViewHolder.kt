@@ -1,9 +1,7 @@
 package com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.viewholders
 
-import android.annotation.SuppressLint
-import android.view.MotionEvent
+
 import androidx.recyclerview.widget.RecyclerView
-import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.PhotoItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener

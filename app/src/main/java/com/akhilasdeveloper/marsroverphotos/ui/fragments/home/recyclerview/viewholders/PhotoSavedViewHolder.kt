@@ -2,47 +2,39 @@ package com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.view
 
 import androidx.recyclerview.widget.RecyclerView
 import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.databinding.PhotoDateItemBinding
+import com.akhilasdeveloper.marsroverphotos.databinding.LayoutSavedItemBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
-class PhotoDateViewHolder(
-    private val binding: PhotoDateItemBinding,
+
+class PhotoSavedViewHolder(
+    private val binding: LayoutSavedItemBinding,
     private val interaction: RecyclerClickListener?,
     private val requestManager: RequestManager
 ) :
     RecyclerView.ViewHolder(binding.root) {
 
-    var positionSel = 0
-    var photo: MarsRoverPhotoTable? = null
-
     fun bindPhoto(photo: MarsRoverPhotoTable, position: Int) {
-        positionSel = position
-        this.photo = photo
         binding.apply {
             photo.let {
-                imageDescription.transitionName = it.photo_id.toString()
+                imageDescription.setImageResource(R.drawable.imageview_placeholder)
+
                 requestManager
                     .load(it.img_src)
                     .centerCrop()
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(imageDescription)
 
-
-                binding.count.text = root.context.getString(R.string.total_count_photos, it.total_count.toString())
-                binding.sol.text = it.sol.toString()
-                binding.date.text = it.earth_date.formatMillisToDisplayDate()
+                sol.text = it.sol.toString()
+                date.text = it.earth_date.formatMillisToDisplayDate()
             }
         }
-
         binding.root.setOnClickListener {
-            interaction?.onItemSelected(photo, absoluteAdapterPosition)
+            interaction?.onItemSelected(photo, position)
         }
-
-
         binding.root.setOnLongClickListener {
             interaction?.onItemLongClick(photo, absoluteAdapterPosition) ?: false
         }

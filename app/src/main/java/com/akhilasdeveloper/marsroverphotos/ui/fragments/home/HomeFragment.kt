@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.widget.SeekBar
@@ -28,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentHomeBinding
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
@@ -92,13 +94,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 override fun handleOnBackPressed() {
 
                     if (!homeViewModel.isSelectedListEmpty()) {
-                        uiCommunicationListener.showConsentSelectorDialog(getString(R.string.clear_selection),
-                            getString(
-                                R.string.clear_selection_consent
-                            ),
-                            onOkSelect = {
-                                homeViewModel.clearSelection()
-                            })
+                        homeViewModel.setViewStateClearSelectionConsent(true)
                     } else
                         if (isEnabled) {
                             isEnabled = false
@@ -233,7 +229,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     setDownload(homeViewModel.getSelectedList())
             })
 
-            viewStateGetData.observe(viewLifecycleOwner, { load->
+            viewStateGetData.observe(viewLifecycleOwner, { load ->
                 load?.contentIfNotHandled?.let {
                     getCurrentDate()?.let { currentDate ->
                         getRover()?.let { master ->
@@ -242,8 +238,69 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     }
                 }
             })
-
-
+            viewStateToastMessage.observe(viewLifecycleOwner, { message ->
+                message?.contentIfNotHandled?.let {
+                    requireContext().showShortToast(it.toSource())
+                }
+            })
+            viewStateClearSelectionConsent.observe(viewLifecycleOwner, { isSelected ->
+                if (isSelected) {
+                    uiCommunicationListener.showConsentSelectorDialog(getString(R.string.clear_selection),
+                        getString(
+                            R.string.clear_selection_consent
+                        ),
+                        onOkSelect = {
+                            homeViewModel.clearSelection()
+                        }, onDismiss = {
+                            setViewStateClearSelectionConsent(false)
+                        })
+                }
+            })
+            viewStateRemoveLikesConsent.observe(viewLifecycleOwner, { isSelected ->
+                if (isSelected){
+                    uiCommunicationListener.showConsentSelectorDialog(getString(R.string.remove_from_liked_photos),
+                        getString(
+                            R.string.selected_items_will_be_removed
+                        ),
+                        doNotShow = true,
+                        onOkSelect = {
+                            if (it) {
+                                lifecycleScope.launch {
+                                    utilities.setHideLikesConsent()
+                                }
+                            }
+                            updateLike()
+                        }, onCancelSelect = {
+                            if (it) {
+                                lifecycleScope.launch {
+                                    utilities.setHideLikesConsent()
+                                }
+                            }
+                        }, onDismiss = {
+                            setViewStateRemoveLikesConsent(false)
+                        })
+                }
+            })
+            viewStateStoragePermission.observe(viewLifecycleOwner, { isSelected ->
+                if (isSelected){
+                    uiCommunicationListener.showConsentSelectorDialog(
+                        title = requireContext().getString(R.string.permission),
+                        descriptionText = requireContext().getString(R.string.permission_consent),
+                        onOkSelect = {
+                            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        },
+                        onCancelSelect = {
+                            uiCommunicationListener.showSnackBarMessage(
+                                messageText = requireContext().getString(
+                                    R.string.permission_cancel
+                                ), buttonText = requireContext().getString(R.string.allow), onClick = {
+                                    updateOrRequestPermission()
+                                })
+                        }, onDismiss = {
+                            setViewStateStoragePermission(false)
+                        })
+                }
+            })
         }
     }
 
@@ -265,9 +322,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 it.peekContent?.let { photos ->
                     it.setAsHandled()
                     adapter?.submitData(viewLifecycleOwner.lifecycle, photos)
-                    if (!isHandled) {
-                        homeViewModel.getCurrentDate()?.let { currentDate ->
-                            onDateSelected(currentDate)
+                    if (!viewModel.isSavedView) {
+                        if (!isHandled) {
+                            homeViewModel.getCurrentDate()?.let { currentDate ->
+                                onDateSelected(currentDate)
+                            }
                         }
                     }
                 }
@@ -279,35 +338,43 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
     private fun init() {
         homeViewModel = ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         setWindowInsets()
-        adapter = MarsRoverPhotoAdapter(this, requestManager)
+        adapter = MarsRoverPhotoAdapter(this, requestManager, viewModel.isSavedView)
 
-        val layoutManager = GridLayoutManager(
-            requireContext(),
-            getGallerySpan(),
-            GridLayoutManager.VERTICAL,
-            false
-        )
-
-        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                adapter?.let { adapter ->
-                    return if (adapter.snapshot().size > position)
-                        if (adapter.snapshot()[position]?.is_placeholder != true)
-                            1
+        if (viewModel.isSavedView) {
+            val layoutManager = LinearLayoutManager(requireContext())
+            binding.photoRecycler.layoutManager = layoutManager
+            hideHomeContent()
+        } else {
+            val layoutManager = GridLayoutManager(
+                requireContext(),
+                getGallerySpan(),
+                GridLayoutManager.VERTICAL,
+                false
+            )
+            layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    adapter?.let { adapter ->
+                        return if (adapter.snapshot().size > position)
+                            if (adapter.snapshot()[position]?.is_placeholder != true)
+                                1
+                            else
+                                getGallerySpan()
                         else
                             getGallerySpan()
-                    else
-                        getGallerySpan()
-                } ?: return getGallerySpan()
+                    } ?: return getGallerySpan()
+                }
             }
+
+            binding.photoRecycler.layoutManager = layoutManager
+            hideSavedContent()
+            homeViewModel.setViewStateSetFastScrollerVisibility(false)
         }
 
         binding.apply {
             photoRecycler.setHasFixedSize(true)
-            photoRecycler.layoutManager = layoutManager
             photoRecycler.adapter = adapter
         }
-        homeViewModel.setViewStateSetFastScrollerVisibility(false)
+
         if (AD_ENABLED) {
             binding.adView.root.isVisible = true
             val adRequest: AdRequest = AdRequest.Builder().build()
@@ -325,7 +392,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     true
                 }
                 R.id.favorites -> {
-                    homeViewModel.setLike()
+                    if (viewModel.isSavedView)
+                        setSavedLike()
+                    else
+                        homeViewModel.setLike()
                     true
                 }
                 R.id.wallpaper -> {
@@ -350,7 +420,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     lifecycleScope.launch {
                         wallpaperManager.setBitmap(bitmap)
                         homeViewModel.clearSelection()
-                        requireContext().showShortToast(message = "Wallpaper set")
+                        requireContext().showShortToast(message = getString(R.string.wallpapet_set))
                     }
                 }
             }
@@ -361,6 +431,57 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 writePermissionGranted = it
                 homeViewModel.setViewStateSaveToDevice(true)
             }
+    }
+
+    private fun setSavedLike() {
+        lifecycleScope.launch {
+            if (utilities.isShowLikesConsent()) {
+                homeViewModel.setViewStateRemoveLikesConsent(true)
+            } else {
+                updateLike()
+            }
+        }
+    }
+
+    private fun updateLike() {
+        homeViewModel.updateLike()
+        val list: ArrayList<MarsRoverPhotoTable> = arrayListOf()
+        list.addAll(homeViewModel.getSelectedList())
+        homeViewModel.clearSelection()
+        uiCommunicationListener.showSnackBarMessage(
+            getString(R.string.items_removed_from_like),
+            getString(R.string.undo),
+            onClick = {
+                list.forEach { currentData ->
+                    currentData.let {
+                        homeViewModel.updateLikeDb(
+                            currentData = currentData
+                        )
+                    }
+                }
+                requireContext().showShortToast(getString(R.string.photos_added_back))
+            })
+    }
+
+    private fun hideSavedContent() {
+        val homeBottomToolbarSecondLayoutParams =
+            binding.homeBottomToolbarSecond.layoutParams as CoordinatorLayout.LayoutParams
+        homeBottomToolbarSecondLayoutParams.anchorId = R.id.bottom_appbar
+        homeBottomToolbarSecondLayoutParams.anchorGravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+        homeBottomToolbarSecondLayoutParams.gravity = Gravity.CENTER or Gravity.TOP
+        binding.homeBottomToolbarSecond.layoutParams = homeBottomToolbarSecondLayoutParams
+    }
+
+    private fun hideHomeContent() {
+        binding.apply {
+            bottomAppbar.root.isVisible = false
+            scrollDateDisplayText.isVisible = false
+            slideFrame.isVisible = false
+            val homeBottomToolbarSecondLayoutParams =
+                homeBottomToolbarSecond.layoutParams as CoordinatorLayout.LayoutParams
+            homeBottomToolbarSecondLayoutParams.gravity = Gravity.BOTTOM
+            homeBottomToolbarSecond.layoutParams = homeBottomToolbarSecondLayoutParams
+        }
     }
 
     private fun getGallerySpan(): Int =
@@ -386,18 +507,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             }
         }
 
-    /*private fun getGallerySpan(): Int =
-        when (screenSize) {
-            Configuration.SCREENLAYOUT_SIZE_LARGE -> GALLERY_SPAN_LARGE
-            Configuration.SCREENLAYOUT_SIZE_NORMAL -> GALLERY_SPAN_NORMAL
-            Configuration.SCREENLAYOUT_SIZE_XLARGE -> GALLERY_SPAN_X_LARGE
-            Configuration.SCREENLAYOUT_SIZE_SMALL -> GALLERY_SPAN_SMALL
-            else -> {
-                GALLERY_SPAN_NORMAL
-            }
-        }*/
-
-
     private fun updateOrRequestPermission() {
         val hasWritePermission = ContextCompat.checkSelfPermission(
             requireContext(),
@@ -408,20 +517,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         writePermissionGranted = hasWritePermission || minSdk29
 
         if (!writePermissionGranted) {
-            uiCommunicationListener.showConsentSelectorDialog(
-                title = requireContext().getString(R.string.permission),
-                descriptionText = requireContext().getString(R.string.permission_consent),
-                onOkSelect = {
-                    permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                },
-                onCancelSelect = {
-                    uiCommunicationListener.showSnackBarMessage(
-                        messageText = requireContext().getString(
-                            R.string.permission_cancel
-                        ), buttonText = requireContext().getString(R.string.allow), onClick = {
-                            updateOrRequestPermission()
-                        })
-                })
+            homeViewModel.setViewStateStoragePermission(true)
         } else {
             homeViewModel.setViewStateSaveToDevice(true)
         }
@@ -446,13 +542,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
                 withContext(Dispatchers.Main) {
                     uiCommunicationListener.showSnackBarMessage(
-                        "Image(s) Saved to Gallery",
+                        getString(R.string.images_saved_to_gallery),
                     )
                     uiCommunicationListener.hideDownloadProgressDialog()
                     homeViewModel.setViewStateSaveToDevice(false)
                 }
             }
-        }else{
+        } else {
             homeViewModel.setViewStateSaveToDevice(false)
         }
     }
@@ -461,7 +557,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         var uri: Uri? = null
         currentData.img_src.downloadImageAsBitmap(requireContext()) { image ->
             image?.let {
-                uri = savePhotoToExternalStorage(getDisplayName(currentData), it)
+                uri = savePhotoToExternalStorage(utilities.getDisplayName(currentData), it)
             }
         }
         return uri
@@ -539,7 +635,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
                     intent.type = "image/png"
                     intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, it)
-                    startActivity(Intent.createChooser(intent, "Share Via"))
+                    startActivity(Intent.createChooser(intent, getString(R.string.share_via)))
                 }
                 withContext(Dispatchers.Main) {
                     uiCommunicationListener.hideDownloadProgressDialog()
@@ -560,7 +656,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     downloadJob?.cancel()
                 }
             }
-            val displayName = getDisplayName(photo)
+            val displayName = utilities.getDisplayName(photo)
 
             if (utilities.isFileExistInCache(displayName)) {
                 utilities.toImageUriFromName(displayName)
@@ -575,8 +671,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         return list
     }
 
-    private fun getDisplayName(rover: MarsRoverPhotoTable) =
-        "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}$CACHE_IMAGE_EXTENSION"
 
     private fun clearSelectMenu() {
         if (binding.homeBottomToolbarSecond.menu.isNotEmpty()) {
@@ -618,14 +712,80 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setListeners() {
-        binding.bottomAppbar.dateButtonText.setOnClickListener {
-            binding.photoRecycler.stopScroll()
-            homeViewModel.setViewStateShowDatePicket(true)
+
+        if (!viewModel.isSavedView) {
+            binding.bottomAppbar.dateButtonText.setOnClickListener {
+                binding.photoRecycler.stopScroll()
+                homeViewModel.setViewStateShowDatePicket(true)
+            }
+
+            binding.bottomAppbar.solButtonText.setOnClickListener {
+                homeViewModel.setViewStateShowSolSelected(true)
+            }
+
+            binding.photoRecycler.observeFirstItemPosition(firstItemPosition = { position ->
+                adapter?.snapshot()?.let { items ->
+                    if (items.isNotEmpty() && items.size > position)
+                        items[position]?.let {
+                            homeViewModel.setViewStateCurrentDate(it.earth_date)
+                        }
+                }
+            })
+
+            binding.photoRecycler.fastScrollListener(fastScrolled = {
+                homeViewModel.setViewStateSetFastScrollerVisibility(true)
+                homeViewModel.setViewStateSetFastScrollerDateVisibility(false)
+            }, extraFastScrolled = {
+//            showFastScrollerDate()
+            })
+
+            binding.photoRecycler.isIdle {
+                if (it) {
+                    homeViewModel.setViewStateSetFastScrollerVisibility(false)
+                    homeViewModel.setViewStateSetFastScrollerDateVisibility(false)
+                }
+            }
+
+            binding.solSlider.setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    homeViewModel.setViewStateSetFastScrollerDateVisibility(true)
+                } else if (event.action == MotionEvent.ACTION_UP) {
+                    homeViewModel.setViewStateSetFastScrollerDateVisibility(false)
+                }
+                false
+            }
+
+            binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
+                    homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
+                        val date =
+                            ((progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis)
+                        homeViewModel.setViewStateScrollDateDisplayText(date.formatMillisToDisplayDate())
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
+                        val date =
+                            ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis).formatMillisToDate()
+                                .formatDateToMillis()
+                        onDateSelected(date!!, true)
+                    }
+                }
+
+
+            })
+
         }
 
-        binding.bottomAppbar.solButtonText.setOnClickListener {
-            homeViewModel.setViewStateShowSolSelected(true)
-        }
         adapter?.addLoadStateListener { loadStates ->
 
             homeViewModel.setViewStateSetTopProgress(loadStates.source.prepend is LoadState.Loading)
@@ -660,64 +820,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.emptyMessage.setOnClickListener {
             homeViewModel.getData()
         }
-
-        binding.photoRecycler.observeFirstItemPosition(firstItemPosition = { position ->
-            adapter?.snapshot()?.let { items ->
-                if (items.isNotEmpty() && items.size > position)
-                    items[position]?.let {
-                        homeViewModel.setViewStateCurrentDate(it.earth_date)
-                    }
-            }
-        })
-
-        binding.photoRecycler.fastScrollListener(fastScrolled = {
-            homeViewModel.setViewStateSetFastScrollerVisibility(true)
-            homeViewModel.setViewStateSetFastScrollerDateVisibility(false)
-        }, extraFastScrolled = {
-//            showFastScrollerDate()
-        })
-
-        binding.photoRecycler.isIdle {
-            if (it) {
-                homeViewModel.setViewStateSetFastScrollerVisibility(false)
-                homeViewModel.setViewStateSetFastScrollerDateVisibility(false)
-            }
-        }
-
-        binding.solSlider.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                homeViewModel.setViewStateSetFastScrollerDateVisibility(true)
-            } else if (event.action == MotionEvent.ACTION_UP) {
-                homeViewModel.setViewStateSetFastScrollerDateVisibility(false)
-            }
-            false
-        }
-
-        binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
-                    val date =
-                        ((progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis)
-                    homeViewModel.setViewStateScrollDateDisplayText(date.formatMillisToDisplayDate())
-                }
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
-                    val date =
-                        ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis).formatMillisToDate()
-                            .formatDateToMillis()
-                    onDateSelected(date!!, true)
-                }
-            }
-
-
-        })
-
 
         val params = binding.bottomAppbar.homeAppbar.layoutParams as CoordinatorLayout.LayoutParams
         params.behavior = object : HideListenableBottomAppBarBehavior() {

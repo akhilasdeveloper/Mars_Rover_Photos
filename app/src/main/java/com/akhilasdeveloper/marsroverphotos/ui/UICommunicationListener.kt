@@ -13,7 +13,6 @@ interface UICommunicationListener {
 
     fun showIndeterminateProgressDialog(isCancelable: Boolean = false, onCancelSelect: (() -> Unit)? = null)
     fun hideIndeterminateProgressDialog()
-    fun showShareSelectorDialog(onImageSelect: () -> Unit, onLinkSelect: () -> Unit)
     fun showMoreSelectorDialog(
         onImageSelect: () -> Unit,
         onLinkSelect: () -> Unit,
@@ -35,6 +34,7 @@ interface UICommunicationListener {
         doNotShow: Boolean = false,
         cancelText: String = "Cancel",
         onOkSelect: (doNotShow:Boolean) -> Unit,
-        onCancelSelect: ((doNotShow:Boolean) -> Unit)? = null
+        onCancelSelect: ((doNotShow:Boolean) -> Unit)? = null,
+        onDismiss: (() -> Unit)? = null
     )
 }

@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.akhilasdeveloper.marsroverphotos.ui.MainViewModel
 import com.akhilasdeveloper.marsroverphotos.ui.UICommunicationListener
+import com.akhilasdeveloper.marsroverphotos.utilities.getStringResource
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -30,4 +31,7 @@ abstract class BaseFragment(layout: Int): Fragment(layout) {
             Timber.e( "$context must implement UICommunicationListener" )
         }
     }
+
+    fun String.toSource() = resources.getStringResource(this)
+
 }

@@ -6,7 +6,6 @@ import androidx.paging.cachedIn
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
-import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -24,13 +23,8 @@ class MainViewModel
 
     private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>?> =
         MutableLiveData()
-    private val _dataStateLikedPhotos: MutableLiveData<PagingData<MarsRoverPhotoTable>> =
-        MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Event<Int>> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
-    private val _dataStateDate: MutableLiveData<Long> = MutableLiveData()
-    private val _dataStateLoading: MutableLiveData<Boolean> = MutableLiveData()
-    private val _dataStateIsLiked: MutableLiveData<Boolean> = MutableLiveData()
     private val _dataStateInfoDialogChange: MutableLiveData<Int> = MutableLiveData()
     private var _isSavedView: Boolean = false
 
@@ -39,20 +33,15 @@ class MainViewModel
     val isSavedView: Boolean
         get() = _isSavedView
 
-    val dataStateDate: LiveData<Long>
-        get() = _dataStateDate
 
     val dataStatePaging: LiveData<Event<PagingData<MarsRoverPhotoTable>?>?>
         get() = _dataStatePaging
 
-    val dataStateIsLiked: LiveData<Boolean>
-        get() = _dataStateIsLiked
-
-    val dataStateLoading: LiveData<Boolean>
-        get() = _dataStateLoading
-
     val dataStateRoverMaster: LiveData<Event<RoverMaster>>
         get() = _dataStateRoverMaster
+
+    val dataStateInfoDialogChange: LiveData<Int>
+        get() = _dataStateInfoDialogChange
 
     val positionState: LiveData<Event<Int>>
         get() = _dataStatePosition
@@ -69,16 +58,11 @@ class MainViewModel
     }
 
     fun setEmptyPhotos() {
-//        _dataStatePaging.value = Event(PagingData.empty())
         _dataStatePaging.value = null
     }
 
     fun setPosition(position: Int) {
         _dataStatePosition.value = Event(position)
-    }
-
-    fun setLoading(isLoading: Boolean) {
-        _dataStateLoading.value = isLoading
     }
 
     fun setIsSavedView(isSavedView: Boolean) {
@@ -93,60 +77,23 @@ class MainViewModel
         job?.cancel()
         job = viewModelScope.launch {
 
-            marsRoverPhotosRepository.getPhotos(rover = rover, date = date)
-                .cachedIn(viewModelScope)
-                .onEach { its ->
-                    _dataStatePaging.value = Event(its)
-                }
-                .launchIn(this)
-
-        }
-    }
-
-    fun cancelPendingOperation() {
-        job?.cancel()
-    }
-
-    fun getLikedPhotos(rover: RoverMaster) {
-        job?.cancel()
-        job = viewModelScope.launch {
-            marsRoverPhotosRepository.getLikedPhotos(rover = rover)
-                .cachedIn(viewModelScope)
-                .onEach { its ->
-//                    _dataStateLikedPhotos.value = its
-                    _dataStatePaging.value = Event(its)
-                }
-                .launchIn(this)
-        }
-    }
-
-    fun setDate(date: Long) {
-        _dataStateDate.value = date
-    }
-
-
-    fun isLiked(id: Long) {
-        viewModelScope.launch {
-            marsRoverPhotosRepository.isLiked(id).collect {
-                _dataStateIsLiked.value = it
+            if (isSavedView) {
+                marsRoverPhotosRepository.getLikedPhotos(rover = rover)
+                    .cachedIn(viewModelScope)
+                    .onEach { its ->
+                        _dataStatePaging.value = Event(its)
+                    }
+                    .launchIn(this)
+            } else {
+                marsRoverPhotosRepository.getPhotos(rover = rover, date = date)
+                    .cachedIn(viewModelScope)
+                    .onEach { its ->
+                        _dataStatePaging.value = Event(its)
+                    }
+                    .launchIn(this)
             }
-        }
-    }
 
-    fun updateLike(
-        marsRoverPhotoTable: MarsRoverPhotoTable
-    ) {
-        viewModelScope.launch {
-            marsRoverPhotosRepository.updateLike(marsRoverPhotoTable)
-            isLiked(marsRoverPhotoTable.photo_id)
-        }
-    }
 
-    fun addLike(
-        marsRoverPhotoTable: MarsRoverPhotoTable
-    ) {
-        viewModelScope.launch {
-            marsRoverPhotosRepository.addLike(marsRoverPhotoTable)
         }
     }
 

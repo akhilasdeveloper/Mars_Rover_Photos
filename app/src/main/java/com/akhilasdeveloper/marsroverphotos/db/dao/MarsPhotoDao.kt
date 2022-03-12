@@ -27,9 +27,6 @@ interface MarsPhotoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllMarsRoverPhotos(users: List<MarsRoverPhotoTable>)
 
-    @Query("SELECT count(*) FROM mars_rover_photo_table WHERE rover_name = :roverName AND earth_date = :date")
-    suspend fun dataCount(roverName: String, date: Long): Int
-
     @Query("SELECT * FROM mars_rover_photo_table WHERE photo_id IN (SELECT id FROM mars_rover_photo_liked_table WHERE rover_id = :roverID) ORDER BY earth_date DESC")
     fun getSavedPhotos(roverID: Int): PagingSource<Int, MarsRoverPhotoTable>
 

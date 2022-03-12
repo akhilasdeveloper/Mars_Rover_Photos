@@ -1,7 +1,6 @@
 package com.akhilasdeveloper.marsroverphotos.db.dao
 
 import androidx.room.*
-import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverManifestTable
 import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
 
 @Dao
@@ -26,13 +25,4 @@ interface MarsRoverDao {
     @Query("UPDATE mars_rover_source_table SET max_sol = :max_sol, max_date = :max_date WHERE roverName = :roverName")
     suspend fun updateMaxDate(max_date:String,max_sol:Long, roverName: String)
 
-    /**
-     * MarsRoverManifestDb
-     */
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMarsRoverManifestDb(marsRoverManifestTable: MarsRoverManifestTable)
-
-    @Query("SELECT * FROM mars_rover_manifest_table WHERE name = :roverName")
-    fun getMarsRoverManifest(roverName: String): MarsRoverManifestTable?
 }
