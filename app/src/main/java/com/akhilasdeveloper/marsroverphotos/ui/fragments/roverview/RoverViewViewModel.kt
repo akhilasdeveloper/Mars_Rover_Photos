@@ -96,7 +96,7 @@ class RoverViewViewModel
         }
     }
 
-    fun updateLike(
+    private fun updateLike(
         marsRoverPhotoTable: MarsRoverPhotoTable
     ) {
         viewModelScope.launch {

@@ -39,13 +39,6 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
-    /*compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }*/
 }
 
 dependencies {
@@ -111,24 +104,10 @@ dependencies {
 
     implementation "androidx.datastore:datastore-preferences:1.0.0"
 
-    implementation 'com.github.piasy:BigImageViewer:1.8.1'
-
-    // load with glide
-    implementation 'com.github.piasy:GlideImageLoader:1.8.1'
-
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
-
-    /*implementation 'com.github.piasy:BigImageViewer:1.8.1'
-    // load with glide
-    implementation 'com.github.piasy:GlideImageLoader:1.8.1'*/
 
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
 
-    implementation 'com.google.android.gms:play-services-ads:20.5.0'
-
     implementation 'com.github.CanHub:Android-Image-Cropper:4.0.0'
 
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
-
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }

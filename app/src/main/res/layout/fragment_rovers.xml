@@ -49,11 +49,4 @@
         app:cardBackgroundColor="@color/accent"
         app:cardCornerRadius="20dp" />
 
-    <include layout="@layout/ad_view"
-        android:id="@+id/ad_view"
-        android:visibility="gone"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

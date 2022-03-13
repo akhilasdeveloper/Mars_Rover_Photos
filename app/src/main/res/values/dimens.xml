@@ -9,7 +9,7 @@
     <dimen name="stroke_light">.5dp</dimen>
     <dimen name="stroke_medium">1dp</dimen>
     <dimen name="stroke_strong">2dp</dimen>
-    <dimen name="corner_radius">20dp</dimen>
+    <dimen name="corner_radius">10dp</dimen>
     <dimen name="elevation">10dp</dimen>
     <dimen name="icon_scale">18dp</dimen>
     <dimen name="global_window_padding">16dp</dimen>

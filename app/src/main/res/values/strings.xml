@@ -71,4 +71,12 @@
     <string name="images_saved_to_gallery">Image(s) Saved to Gallery</string>
     <string name="share_via">Share Via</string>
     <string name="adding_to_likes">Adding to Liked Photos</string>
+    <string name="not_selected">Not Selected</string>
+    <string name="selected">Selected (%1$s)</string>
+    <string name="progress">%1$s%%</string>
+    <string name="camera_name">%1$s (%2$s)</string>
+    <string name="view_image">View Image</string>
+    <string name="failed_to_save_image">Failed to Save Image</string>
+    <string name="liked_photos">%1$s (Liked Photos)</string>
+    <string name="about">About</string>
 </resources>

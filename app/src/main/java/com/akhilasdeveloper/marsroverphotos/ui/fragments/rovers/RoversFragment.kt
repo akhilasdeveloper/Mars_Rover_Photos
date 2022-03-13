@@ -10,25 +10,18 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.databinding.FragmentRoversBinding
-import com.akhilasdeveloper.marsroverphotos.ui.MainViewModel
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.BaseFragment
 import com.akhilasdeveloper.marsroverphotos.utilities.*
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ROVER_STATUS_COMPLETE
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.snack_bar_layout.*
-import timber.log.Timber
 import javax.inject.Inject
 
 @ExperimentalPagingApi
@@ -37,7 +30,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private var _binding: FragmentRoversBinding? = null
     private val binding get() = _binding!!
-
     @Inject
     lateinit var requestManager: RequestManager
     private var adapter: MarsRoverAdapter? = null
@@ -69,7 +61,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             viewStateErrorMessage.observe(viewLifecycleOwner, {
                 it.contentIfNotHandled?.let { message ->
                     uiCommunicationListener.showSnackBarMessage(
-                        messageText = message.toSource(),
+                        messageText = message,
                         buttonText = getString(R.string.trefresh)
                     ) {
                         refreshData()
@@ -78,7 +70,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             })
             viewStateMessage.observe(viewLifecycleOwner, {
                 it.contentIfNotHandled?.let { message ->
-                    uiCommunicationListener.showSnackBarMessage(message.toSource())
+                    uiCommunicationListener.showSnackBarMessage(message)
                 }
             })
             viewStateRoverMasterList.observe(viewLifecycleOwner, {
@@ -89,8 +81,8 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                     if (event == null)
                         hideEmptyMessage()
                     else
-                        event.contentIfNotHandled?.let { _ ->
-                            setEmptyMessage(getString(R.string.tap_to_refresh))
+                        event.contentIfNotHandled?.let { it ->
+                            setEmptyMessage(it)
                         }
                 }
 
@@ -115,15 +107,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
         setBottomSheet()
         setRecyclerView()
-        setAd()
-    }
-
-    private fun setAd() {
-        if (AD_ENABLED) {
-            binding.adView.root.isVisible = true
-            val adRequest: AdRequest = AdRequest.Builder().build()
-            binding.adView.adView.loadAd(adRequest)
-        }
     }
 
     private fun setListeners() {
@@ -133,45 +116,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         }
         binding.roverSwipeRefresh.setOnRefreshListener {
             refreshData()
-        }
-
-        binding.adView.adView.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                super.onAdLoaded()
-                showAd()
-                Timber.d("onAdLoaded")
-            }
-
-            override fun onAdClosed() {
-                super.onAdClosed()
-                Timber.d("onAdClosed")
-            }
-
-            override fun onAdFailedToLoad(p0: LoadAdError) {
-                super.onAdFailedToLoad(p0)
-                Timber.d("onAdFailedToLoad")
-            }
-
-            override fun onAdOpened() {
-                super.onAdOpened()
-                Timber.d("onAdOpened")
-            }
-
-            override fun onAdClicked() {
-                super.onAdClicked()
-                Timber.d("onAdClicked")
-            }
-
-            override fun onAdImpression() {
-                super.onAdImpression()
-                Timber.d("onAdImpression")
-            }
-        }
-        binding.adView.adView.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                super.onAdLoaded()
-                showAd()
-            }
         }
     }
 
@@ -242,22 +186,28 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     private fun navigateToPhotos(master: RoverMaster) {
-        viewModel.setPosition(0)
         viewModel.setIsSavedView(false)
+        navigateToPhotoGallery(master)
+    }
+
+    private fun navigateToPhotoGallery(master: RoverMaster){
+        viewModel.setPosition(0)
         viewModel.setRoverMaster(master)
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
     }
 
     private fun navigateToSavedPhotos(master: RoverMaster) {
-        viewModel.setPosition(0)
-        viewModel.setRoverMaster(master)
         viewModel.setIsSavedView(true)
-        findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
+        navigateToPhotoGallery(master)
     }
 
     override fun onReadMoreSelected(master: RoverMaster, position: Int) {
         roversViewModel.setViewStateSheetData(master)
         roversViewModel.setViewStateSheetState(BottomSheetBehavior.STATE_EXPANDED)
+    }
+
+    override fun onAboutSelected() {
+
     }
 
     private fun hideSheet() {
@@ -319,15 +269,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             return@setOnApplyWindowInsetsListener insets
         }
 
-        if (AD_ENABLED) {
-            ViewCompat.setOnApplyWindowInsetsListener(binding.adView.itemAdBanner) { _, insets ->
-                val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                val bottomMargin =
-                    requireActivity().resources.getDimension(R.dimen.global_window_padding)
-                binding.adView.itemAdBanner.updateMarginAndHeight(bottom = systemWindows.bottom + bottomMargin.toInt())
-                return@setOnApplyWindowInsetsListener insets
-            }
-        }
     }
 
     private fun setBackPressCallBack() {
@@ -347,15 +288,6 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         requireActivity().onBackPressedDispatcher.addCallback(this, callback)
     }
 
-    private fun showAd() {
-        binding.adView.itemAdBanner.apply {
-            if (AD_ENABLED) {
-                animate()
-                    .alpha(1.0f)
-                    .setListener(null).duration = 800L
-            }
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -19,16 +19,6 @@ internal fun HomeFragment.setWindowInsets() {
         return@setOnApplyWindowInsetsListener insets
     }
 
-    if (Constants.AD_ENABLED) {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.adView.itemAdBanner) { _, insets ->
-            val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val bottomMargin =
-                requireActivity().resources.getDimension(R.dimen.global_window_padding)
-            binding.adView.itemAdBanner.updateMarginAndHeight(bottom = systemWindows.bottom + bottomMargin.toInt())
-            return@setOnApplyWindowInsetsListener insets
-        }
-    }
-
     ViewCompat.setOnApplyWindowInsetsListener(binding.homeBottomToolbarSecond) { _, insets ->
         val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         binding.homeBottomToolbarSecond.updateMarginAndHeight(bottom = systemWindows.bottom)

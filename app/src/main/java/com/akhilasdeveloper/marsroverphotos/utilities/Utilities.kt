@@ -8,16 +8,21 @@ import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_FALSE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKE_SYNC
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_TRUE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -148,5 +153,52 @@ class Utilities @Inject constructor(
     }
 
     fun getDisplayName(rover: MarsRoverPhotoTable) = "${rover.rover_name}_${rover.camera_name}_${rover.earth_date.formatMillisToFileDate()}_${rover.photo_id}${Constants.CACHE_IMAGE_EXTENSION}"
+
+    fun getString(@StringRes id:Int) = context.getString(id)
+    fun getString(@StringRes id:Int, vararg formatArgs: Any?) = context.getString(id,formatArgs)
+
+    fun getDummyRoverMaster() = RoverMaster(
+        landing_date = "",
+        landing_date_in_millis = 0L,
+        launch_date = "",
+        launch_date_in_millis = 0L,
+        max_sol = 0,
+        max_date = "",
+        max_date_in_millis = 0L,
+        name = "",
+        status = "",
+        total_photos = 0,
+        description = "",
+        image = "",
+        id = -999
+    )
+
+    fun deleteCache() {
+        try {
+            val dir: File = context.cacheDir
+            CoroutineScope(Dispatchers.IO).launch {
+                deleteDir(dir)
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun deleteDir(dir: File?): Boolean {
+        return if (dir != null && dir.isDirectory) {
+            val children: Array<String> = dir.list()
+            for (i in children.indices) {
+                val success = deleteDir(File(dir, children[i]))
+                if (!success) {
+                    return false
+                }
+            }
+            dir.delete()
+        } else if (dir != null && dir.isFile) {
+            dir.delete()
+        } else {
+            false
+        }
+    }
 
 }

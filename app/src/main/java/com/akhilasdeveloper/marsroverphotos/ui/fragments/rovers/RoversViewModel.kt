@@ -4,10 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ABOUT_VIEW_ID
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -18,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RoversViewModel
 @Inject constructor(
-    private val marsRoverPhotosRepository: MarsRoverPhotosRepository
+    private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
+    private val utilities: Utilities
 ) : ViewModel() {
 
     private var job: Job? = null
@@ -98,10 +102,12 @@ class RoversViewModel
                 marsRoverSrcResponse.let { response ->
                     response.data?.let {roverMasterList->
                         if (roverMasterList.isEmpty())
-                            setViewStateSetEmptyMessage("")
+                            setViewStateSetEmptyMessage(utilities.getString(R.string.tap_to_refresh))
                         else {
                             setViewStateSetEmptyMessage(null)
-                            setViewStateRoverMasterList(roverMasterList)
+                            val list = roverMasterList.toMutableList()
+                            list.add(utilities.getDummyRoverMaster().copy(id = ABOUT_VIEW_ID))
+                            setViewStateRoverMasterList(list)
                         }
                     }
 
@@ -113,7 +119,7 @@ class RoversViewModel
 
                     response.error?.let {
                         setViewStateErrorMessage(it)
-                        setViewStateSetEmptyMessage("")
+                        setViewStateSetEmptyMessage(utilities.getString(R.string.tap_to_refresh))
                     }
                 }
             }

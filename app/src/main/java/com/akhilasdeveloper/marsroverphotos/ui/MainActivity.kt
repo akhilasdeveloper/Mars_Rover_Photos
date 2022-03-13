@@ -14,7 +14,6 @@ import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
 import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
 import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
-import com.google.android.gms.ads.MobileAds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,8 +44,6 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        MobileAds.initialize(this)
 
         sdkAndUp(Build.VERSION_CODES.R, onSdkAndAbove = {
             window.setDecorFitsSystemWindows(false)
@@ -275,7 +272,7 @@ class MainActivity : BaseActivity() {
                     shareAdapter?.submitList(it)
                 }
                 shareAdapter?.notifyItemRemoved(position)
-                dialogView.selectCount.text = "Selected (${data?.size})"
+                dialogView.selectCount.text = getString(R.string.selected,data?.size.toString() )
                 if (data?.isEmpty() == true)
                     bottomSheetDialog.dismiss()
             }
@@ -301,7 +298,7 @@ class MainActivity : BaseActivity() {
                 bottomSheetDialog.cancel()
             }
 
-            selectCount.text = "Selected (${data?.size})"
+            selectCount.text = getString(R.string.selected,data?.size.toString())
         }
         data?.let {
             shareAdapter.submitList(it)
@@ -316,8 +313,7 @@ class MainActivity : BaseActivity() {
     override fun setInfoDetails(marsRoverPhotoTable: MarsRoverPhotoTable) {
         binding.layoutInfoBottomSheet.apply {
             imageId.text = marsRoverPhotoTable.photo_id.toString()
-            cameraName.text =
-                "${marsRoverPhotoTable.camera_full_name} (${marsRoverPhotoTable.camera_name})"
+            cameraName.text = getString(R.string.camera_name,marsRoverPhotoTable.camera_full_name,marsRoverPhotoTable.camera_name )
             roverName.text = marsRoverPhotoTable.rover_name
             date.text = marsRoverPhotoTable.earth_date.formatMillisToDisplayDate()
             sol.text = marsRoverPhotoTable.sol.toString()
@@ -364,11 +360,11 @@ class MainActivity : BaseActivity() {
     }
 
     override fun showConsentSelectorDialog(
-        title: String,
+        title: String?,
         descriptionText: String,
-        oKText: String,
+        oKText: String?,
         doNotShow: Boolean,
-        cancelText: String,
+        cancelText: String?,
         onOkSelect: (doNotShow: Boolean) -> Unit,
         onCancelSelect: ((doNotShow: Boolean) -> Unit)?,
         onDismiss: (() -> Unit)?
@@ -382,10 +378,10 @@ class MainActivity : BaseActivity() {
 
         dialogView.apply {
 
-            this.title.text = title
-            this.cancel.text = cancelText
+            this.title.text = title?:getString(R.string.info)
+            this.cancel.text = cancelText?:getString(R.string.cancel)
             this.description.text = descriptionText
-            this.ok.text = oKText
+            this.ok.text = oKText?:getString(R.string.ok)
 
             this.doNotShow.isVisible = doNotShow
 
@@ -416,7 +412,7 @@ class MainActivity : BaseActivity() {
             }
         }
         dialogView?.progress?.progress = progress
-        dialogView?.progressCount?.text = "$progress%"
+        dialogView?.progressCount?.text = getString(R.string.progress, progress.toString())
     }
 
     override fun hideDownloadProgressDialog() {
@@ -428,8 +424,6 @@ class MainActivity : BaseActivity() {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         else {
             super.onBackPressed()
-/*            showConsentSelectorDialog(getString(R.string.quit),getString(R.string.exit_consent), onOkSelect = {
-            })*/
         }
     }
 

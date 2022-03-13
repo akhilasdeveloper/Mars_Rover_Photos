@@ -5,21 +5,25 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ItemSnapshotList
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ADDING_LIKES
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel
 @Inject constructor(
-    private val marsRoverPhotosRepository: MarsRoverPhotosRepository
+    private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
+    private val utilities: Utilities
 ) : ViewModel() {
 
     private var _dataStateSelectedList: List<MarsRoverPhotoTable> = listOf()
@@ -179,11 +183,13 @@ class HomeViewModel
     private fun setViewStateSetSelectMenuVisibility(isVisible: Boolean) {
         _viewStateSetSelectMenuVisibility.value = isVisible
         setViewStatePinToolBar(isVisible)
-        if (!isVisible) {
-            setViewStateSelectedTitle("Not Selected")
+        setViewStateSelectedTitle("")
+/*        if (!isVisible) {
+            setViewStateSelectedTitle(utilities.getString(R.string.not_selected))
         } else {
-            setViewStateSelectedTitle("Selected (${getSelectedList().size})")
-        }
+            val size = getSelectedList().toList().size + 1
+            setViewStateSelectedTitle(utilities.getString(R.string.selected, (size - 1).toString()))
+        }*/
     }
 
     fun setViewStateNavigateToDate(navigate: Boolean) {
@@ -212,7 +218,7 @@ class HomeViewModel
         _viewStateCurrentDate = currentDate
         _viewStateRoverMaster?.let { roverMaster ->
             currentDate?.let {
-                val count = (currentDate - roverMaster.landing_date_in_millis) / MILLIS_IN_A_DAY
+                val count = ((currentDate - roverMaster.landing_date_in_millis) / MILLIS_IN_A_SOL) + 1
                 setViewStateSolSlider(count.toInt())
                 setViewStateDateButtonText(currentDate.formatMillisToDate())
                 setViewStateSolButtonText(count.toString())
@@ -264,7 +270,7 @@ class HomeViewModel
             getSelectedList().forEach { currentData ->
                 marsRoverPhotosRepository.addLike(currentData)
             }
-            setViewStateToastMessage(Event(ADDING_LIKES))
+            setViewStateToastMessage(Event(utilities.getString(R.string.adding_to_likes)))
             clearSelection()
         }
     }

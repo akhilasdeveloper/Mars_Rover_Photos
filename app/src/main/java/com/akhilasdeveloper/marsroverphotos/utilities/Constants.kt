@@ -27,7 +27,7 @@ object Constants {
     const val DISPLAY_DATE_FORMAT = "dd MMMM yyyy"
     const val FILE_DATE_FORMAT = "yyyy_MM_dd"
     const val NETWORK_TIME_OUT = (60 * 60 * 1000).toLong()
-    const val AD_ENABLED = false
+    const val ABOUT_VIEW_ID = -11
     const val CACHE_IMAGE_EXTENSION = ".png"
     const val DATASTORE_LIKES_SYNC = "DATASTORE_LIKES_SYNC"
     const val DATASTORE_LIKE_SYNC = "DATASTORE_LIKE_SYNC"
@@ -36,8 +36,4 @@ object Constants {
     const val ROVER_STATUS_ACTIVE = "active"
     const val ROVER_STATUS_COMPLETE = "complete"
 
-    const val ERROR_NO_INTERNET = "No Internet! Offline mode"
-    const val ERROR_NETWORK_TIMEOUT = "Network timeout"
-    const val SYNCING_DATABASE = "Syncing Database"
-    const val ADDING_LIKES = "Adding to Liked Photos"
 }

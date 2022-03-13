@@ -3,7 +3,7 @@ package com.akhilasdeveloper.marsroverphotos.repositories
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NO_INTERNET
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.api.MarsRoverPhotosService
 import com.akhilasdeveloper.marsroverphotos.api.Photo
 import com.akhilasdeveloper.marsroverphotos.data.RoverData
@@ -18,15 +18,12 @@ import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
 import com.akhilasdeveloper.marsroverphotos.paging.MarsPagingSource
 import com.akhilasdeveloper.marsroverphotos.repositories.responses.MarsRoverSrcResponse
 import com.akhilasdeveloper.marsroverphotos.utilities.*
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NETWORK_TIMEOUT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.NETWORK_TIME_OUT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ROVER_STATUS_ACTIVE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SYNCING_DATABASE
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import timber.log.Timber
 import java.lang.Exception
 import javax.inject.Inject
 
@@ -156,7 +153,7 @@ class MarsRoverPhotosRepository @Inject constructor(
                 if (insertedDate == null) true else (System.currentTimeMillis() - insertedDate) > Constants.MILLIS_IN_A_DAY
 
             if ((isExpired || isRefresh) && !isEmpty)
-                emit(MarsRoverSrcResponse(message = SYNCING_DATABASE))
+                emit(MarsRoverSrcResponse(message = utilities.getString(R.string.syncing_database)))
 
             if (isExpired || isRefresh || isEmpty) {
                 if (utilities.isConnectedToTheInternet()) {
@@ -165,16 +162,16 @@ class MarsRoverPhotosRepository @Inject constructor(
                         try {
                             refreshRoverSrcDb()
                         } catch (exception: Exception) {
-                            emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                            emit(MarsRoverSrcResponse(error = utilities.getString(R.string.error_network_timeout)))
                             return@withTimeoutOrNull
                         }
                     }
                     if (networkJob == null) {
-                        emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                        emit(MarsRoverSrcResponse(error = utilities.getString(R.string.error_network_timeout)))
                         return@flow
                     }
                 } else {
-                    emit(MarsRoverSrcResponse(error = ERROR_NO_INTERNET))
+                    emit(MarsRoverSrcResponse(error = utilities.getString(R.string.error_no_internet)))
                     return@flow
                 }
 
@@ -199,12 +196,12 @@ class MarsRoverPhotosRepository @Inject constructor(
                     try {
                         emit(MarsRoverSrcResponse(data = dataSrc))
                     } catch (exception: Exception) {
-                        emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                        emit(MarsRoverSrcResponse(error = utilities.getString(R.string.error_network_timeout)))
                         return@withTimeoutOrNull
                     }
                 }
                 if (networkJob == null) {
-                    emit(MarsRoverSrcResponse(error = ERROR_NETWORK_TIMEOUT))
+                    emit(MarsRoverSrcResponse(error = utilities.getString(R.string.error_network_timeout)))
                 }
             }
 

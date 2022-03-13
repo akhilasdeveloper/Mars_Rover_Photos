@@ -187,7 +187,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                     val intent = Intent(Intent.ACTION_SEND)
                     intent.putExtra(Intent.EXTRA_STREAM, uriFile)
                     intent.type = "image/png"
-                    startActivity(Intent.createChooser(intent, "Share Via"))
+                    startActivity(Intent.createChooser(intent, getString(R.string.share_via)))
                 }
             }
         }
@@ -200,8 +200,8 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                     savePhotoToExternalStorage(getDisplayName(), it).let { uri ->
                         if (uri != null) {
                             uiCommunicationListener.showSnackBarMessage(
-                                "Image Saved to Gallery",
-                                "View Image"
+                                getString(R.string.images_saved_to_gallery),
+                                getString(R.string.view_image)
                             ) {
                                 val intent = Intent()
                                 intent.action = Intent.ACTION_VIEW
@@ -212,7 +212,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                                 startActivity(intent)
                             }
                         } else {
-                            uiCommunicationListener.showSnackBarMessage("Failed to Save Image")
+                            uiCommunicationListener.showSnackBarMessage(getString(R.string.failed_to_save_image))
                         }
                     }
                 }
@@ -266,13 +266,13 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
         val pos = roverViewViewModel.getCurrentData?.copy()
         roverViewViewModel.updateCurrentLike()
         uiCommunicationListener.showSnackBarMessage(
-            "Item removed from Liked Photos",
-            "Undo",
+            getString(R.string.items_removed_from_like),
+            getString(R.string.undo),
             onClick = {
                 pos?.let {
                     undoClickPositionData = pos
                     roverViewViewModel.updateCurrentLike()
-                    requireContext().showShortToast("Photo added back")
+                    requireContext().showShortToast(getString(R.string.photos_added_back))
                 }
             })
     }
@@ -284,9 +284,14 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun subscribeObservers() {
+        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, {
+            if (viewModel.dataStatePaging.value==null){
+                viewModel.getDataCurrent()
+                viewModel.setPosition(0)
+            }
+        })
         viewModel.dataStatePaging.observe(viewLifecycleOwner, {
             it?.let {
-                Timber.d("dataStatePaging : $it")
                 it.peekContent?.let { photos ->
                     adapter?.submitData(viewLifecycleOwner.lifecycle, photos)
                     setCurrentData()
@@ -378,6 +383,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
     }
 
     private fun init() {
+
         roverViewViewModel = ViewModelProvider(requireActivity())[RoverViewViewModel::class.java]
         var isSet = true
         adapter = MarsRoverPagerAdapter(this, requestManager)
@@ -405,7 +411,7 @@ class RoverViewFragment : BaseFragment(R.layout.fragment_roverview), PagerClickL
                         WallpaperManager.getInstance(requireActivity().applicationContext)
                     lifecycleScope.launch {
                         wallpaperManager.setBitmap(bitmap)
-                        requireContext().showShortToast(message = "Wallpaper set")
+                        requireContext().showShortToast(message = getString(R.string.wallpapet_set))
                     }
                 }
             }

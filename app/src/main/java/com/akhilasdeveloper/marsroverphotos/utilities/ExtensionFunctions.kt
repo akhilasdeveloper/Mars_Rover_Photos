@@ -17,14 +17,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.akhilasdeveloper.marsroverphotos.R
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ADDING_LIKES
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATE_FORMAT
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DISPLAY_DATE_FORMAT
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NETWORK_TIMEOUT
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.ERROR_NO_INTERNET
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.FILE_DATE_FORMAT
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SYNCING_DATABASE
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.target.CustomTarget
@@ -214,10 +209,3 @@ val Fragment.screenSize: Int get() = this.resources.configuration.screenLayout a
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-fun Resources.getStringResource(string: String) = when (string) {
-    ERROR_NO_INTERNET -> this.getString(R.string.error_no_internet)
-    ERROR_NETWORK_TIMEOUT -> this.getString(R.string.error_network_timeout)
-    SYNCING_DATABASE -> this.getString(R.string.syncing_database)
-    ADDING_LIKES -> this.getString(R.string.adding_to_likes)
-    else -> ""
-}

@@ -12,6 +12,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,6 +51,9 @@ class MainViewModel
         savedStateHandle.get<String>("roverMaster")?.let {
             getRoverSrcDbByName(it)
         }
+        savedStateHandle.get<Boolean>("isSavedView")?.let {
+            setIsSavedView(it)
+        }
     }
 
     fun setRoverMaster(roverMaster: RoverMaster) {
@@ -67,6 +71,7 @@ class MainViewModel
 
     fun setIsSavedView(isSavedView: Boolean) {
         _isSavedView = isSavedView
+        savedStateHandle.set("isSavedView", isSavedView)
     }
 
     fun setInfoDialog(state: Int) {
@@ -92,8 +97,13 @@ class MainViewModel
                     }
                     .launchIn(this)
             }
+        }
+    }
 
-
+    fun getDataCurrent() {
+        getRover()?.peekContent?.let { master ->
+            getData(master, master.max_date_in_millis)
+            Timber.d("getDataCurrent $master")
         }
     }
 
@@ -104,5 +114,7 @@ class MainViewModel
             }
         }
     }
+
+    private fun getRover() = _dataStateRoverMaster.value
 
 }

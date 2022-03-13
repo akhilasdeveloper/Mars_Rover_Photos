@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.Animation
 import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -26,6 +27,7 @@ import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
@@ -38,8 +40,6 @@ import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.MarsR
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.RecyclerClickListener
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.home.recyclerview.SelectionChecker
 import com.akhilasdeveloper.marsroverphotos.utilities.*
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.AD_ENABLED
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.CACHE_IMAGE_EXTENSION
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_LARGE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_NORMAL
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LANDSCAPE_SMALL
@@ -48,17 +48,17 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LAR
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_NORMAL
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_SMALL
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_X_LARGE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_DAY
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import com.bumptech.glide.RequestManager
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageView
 import com.canhub.cropper.options
-import com.google.android.gms.ads.AdRequest
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
+import java.lang.Exception
 import javax.inject.Inject
 
 
@@ -67,7 +67,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private var _binding: FragmentHomeBinding? = null
     internal val binding get() = _binding!!
-
     @Inject
     lateinit var requestManager: RequestManager
     lateinit var homeViewModel: HomeViewModel
@@ -121,11 +120,16 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 binding.homeBottomToolbarSecond.isVisible = it
             })
             viewStateTitle.observe(viewLifecycleOwner, {
-                binding.topAppbar.homeToolbarTop.title = it
-                binding.topAppbar.homeCollapsingToolbarTop.title = it
+                (if (viewModel.isSavedView) getString(
+                    R.string.liked_photos,
+                    it
+                ) else it).let { title ->
+                    binding.topAppbar.homeToolbarTop.title = title
+                    binding.topAppbar.homeCollapsingToolbarTop.title = title
+                }
             })
             viewStateSelectedTitle.observe(viewLifecycleOwner, {
-                binding.homeBottomToolbarSecond.title = it
+                binding.homeBottomToolbarSecond.title = getString(R.string.selected, getSelectedList().size.toString())
             })
             viewStateSolButtonText.observe(viewLifecycleOwner, { solButtonText ->
                 binding.bottomAppbar.solButtonText.text = getString(
@@ -240,7 +244,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             })
             viewStateToastMessage.observe(viewLifecycleOwner, { message ->
                 message?.contentIfNotHandled?.let {
-                    requireContext().showShortToast(it.toSource())
+                    requireContext().showShortToast(it)
                 }
             })
             viewStateClearSelectionConsent.observe(viewLifecycleOwner, { isSelected ->
@@ -257,7 +261,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
             })
             viewStateRemoveLikesConsent.observe(viewLifecycleOwner, { isSelected ->
-                if (isSelected){
+                if (isSelected) {
                     uiCommunicationListener.showConsentSelectorDialog(getString(R.string.remove_from_liked_photos),
                         getString(
                             R.string.selected_items_will_be_removed
@@ -282,7 +286,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
             })
             viewStateStoragePermission.observe(viewLifecycleOwner, { isSelected ->
-                if (isSelected){
+                if (isSelected) {
                     uiCommunicationListener.showConsentSelectorDialog(
                         title = requireContext().getString(R.string.permission),
                         descriptionText = requireContext().getString(R.string.permission_consent),
@@ -293,7 +297,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                             uiCommunicationListener.showSnackBarMessage(
                                 messageText = requireContext().getString(
                                     R.string.permission_cancel
-                                ), buttonText = requireContext().getString(R.string.allow), onClick = {
+                                ),
+                                buttonText = requireContext().getString(R.string.allow),
+                                onClick = {
                                     updateOrRequestPermission()
                                 })
                         }, onDismiss = {
@@ -373,12 +379,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.apply {
             photoRecycler.setHasFixedSize(true)
             photoRecycler.adapter = adapter
-        }
-
-        if (AD_ENABLED) {
-            binding.adView.root.isVisible = true
-            val adRequest: AdRequest = AdRequest.Builder().build()
-            binding.adView.adView.loadAd(adRequest)
         }
 
         binding.homeBottomToolbarSecond.setNavigationOnClickListener {
@@ -763,7 +763,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 ) {
                     homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
                         val date =
-                            ((progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis)
+                            (((progress.toLong()) * MILLIS_IN_A_SOL) + landing_date_in_millis)
                         homeViewModel.setViewStateScrollDateDisplayText(date.formatMillisToDisplayDate())
                     }
                 }
@@ -775,12 +775,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
                         val date =
-                            ((binding.solSlider.progress.toLong() * MILLIS_IN_A_DAY) + landing_date_in_millis).formatMillisToDate()
+                            ((binding.solSlider.progress.toLong() * MILLIS_IN_A_SOL) + landing_date_in_millis).formatMillisToDate()
                                 .formatDateToMillis()
                         onDateSelected(date!!, true)
                     }
                 }
-
 
             })
 
@@ -820,39 +819,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.emptyMessage.setOnClickListener {
             homeViewModel.getData()
         }
-
-        val params = binding.bottomAppbar.homeAppbar.layoutParams as CoordinatorLayout.LayoutParams
-        params.behavior = object : HideListenableBottomAppBarBehavior() {
-            override fun onSlideDown() {
-                showAd()
-            }
-
-            override fun onSlideUp() {
-                hideAd()
-            }
-        }
     }
-
-    private fun showAd() {
-        binding.adView.itemAdBanner.apply {
-            if (AD_ENABLED) {
-                animate()
-                    .alpha(1.0f)
-                    .setListener(null).duration = 800L
-            }
-        }
-    }
-
-    private fun hideAd() {
-        binding.adView.itemAdBanner.apply {
-            if (AD_ENABLED) {
-                animate()
-                    .alpha(0.0f)
-                    .setListener(null).duration = 800L
-            }
-        }
-    }
-
 
     private fun hideFastScrollerDate() {
         binding.scrollDateDisplayText.apply {
