@@ -12,6 +12,7 @@ import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKES_SYNC
@@ -23,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -177,7 +179,10 @@ class Utilities @Inject constructor(
         try {
             val dir: File = context.cacheDir
             CoroutineScope(Dispatchers.IO).launch {
-                deleteDir(dir)
+                if (deleteDir(dir))
+                    withContext(Dispatchers.Main){
+                        context.showShortToast(context.getString(R.string.cache_cleared))
+                    }
             }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()

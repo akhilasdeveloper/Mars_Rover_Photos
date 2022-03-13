@@ -36,6 +36,14 @@ class RoversViewModel
     private val _viewStateSheetData: MutableLiveData<RoverMaster> = MutableLiveData()
     private val _viewStateSheetState: MutableLiveData<Int> = MutableLiveData()
     private val _viewStateTopBarVisibility: MutableLiveData<Boolean> = MutableLiveData()
+    private val _viewStateShowAboutDialog: MutableLiveData<Boolean> = MutableLiveData()
+
+    val viewStateShowAboutDialog: LiveData<Boolean>
+        get() = _viewStateShowAboutDialog
+
+    fun setViewStateShowAboutDialog(isSelected: Boolean) {
+        _viewStateShowAboutDialog.value = isSelected
+    }
 
     //DataState
     private val _dataStateRover: MutableLiveData<Event<MarsRoverSrcResponse>> = MutableLiveData()

@@ -37,4 +37,7 @@ interface UICommunicationListener {
         onCancelSelect: ((doNotShow:Boolean) -> Unit)? = null,
         onDismiss: (() -> Unit)? = null
     )
+    fun showAboutDialog(
+        onDismiss: (() -> Unit)? = null
+    )
 }

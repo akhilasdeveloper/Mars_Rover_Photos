@@ -30,6 +30,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private var _binding: FragmentRoversBinding? = null
     private val binding get() = _binding!!
+
     @Inject
     lateinit var requestManager: RequestManager
     private var adapter: MarsRoverAdapter? = null
@@ -96,6 +97,14 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             viewStateTopBarVisibility.observe(viewLifecycleOwner, {
                 binding.topAppbar.homeAppbarTop.isVisible = it
             })
+
+            viewStateShowAboutDialog.observe(viewLifecycleOwner, { isSelected ->
+                if (isSelected) {
+                    uiCommunicationListener.showAboutDialog {
+                        roversViewModel.setViewStateShowAboutDialog(false)
+                    }
+                }
+            })
         }
     }
 
@@ -133,7 +142,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         adapter = MarsRoverAdapter(this, requestManager)
         binding.apply {
             recycler.setHasFixedSize(true)
-            recycler.layoutManager = GridLayoutManager(requireContext(),getGallerySpan())
+            recycler.layoutManager = GridLayoutManager(requireContext(), getGallerySpan())
             recycler.adapter = adapter
         }
     }
@@ -190,7 +199,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
         navigateToPhotoGallery(master)
     }
 
-    private fun navigateToPhotoGallery(master: RoverMaster){
+    private fun navigateToPhotoGallery(master: RoverMaster) {
         viewModel.setPosition(0)
         viewModel.setRoverMaster(master)
         findNavController().navigate(R.id.action_roversFragment_to_homeFragment)
@@ -207,7 +216,7 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
     }
 
     override fun onAboutSelected() {
-
+        roversViewModel.setViewStateShowAboutDialog(true)
     }
 
     private fun hideSheet() {
@@ -225,7 +234,10 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             roverDescription.text = master.description
             roverLandingDate.text = master.landing_date_in_millis.formatMillisToDisplayDate()
             roverLaunchDate.text = master.launch_date_in_millis.formatMillisToDisplayDate()
-            roverMaxDate.text = getString(R.string.last_photo_updated, master.max_date_in_millis.formatMillisToDisplayDate())
+            roverMaxDate.text = getString(
+                R.string.last_photo_updated,
+                master.max_date_in_millis.formatMillisToDisplayDate()
+            )
             roverStatus.text = getString(R.string.rover_status, master.status)
             roverPhotosCount.text = getString(
                 R.string.view_photos,
@@ -247,7 +259,11 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
             val bottomAd = toDpi(60)
             val bottomMargin =
                 requireActivity().resources.getDimension(R.dimen.global_window_padding)
-            binding.recycler.updatePadding(bottom = systemWindows.bottom + bottomAd + bottomMargin.toInt(), left = systemWindows.left, right = systemWindows.right)
+            binding.recycler.updatePadding(
+                bottom = systemWindows.bottom + bottomAd + bottomMargin.toInt(),
+                left = systemWindows.left,
+                right = systemWindows.right
+            )
 
             return@setOnApplyWindowInsetsListener insets
         }
@@ -261,7 +277,10 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.bottomSheetView.sheetFrame) { _, insets ->
             val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.bottomSheetView.sheetFrame.updatePadding(left = systemWindows.left, right = systemWindows.right)
+            binding.bottomSheetView.sheetFrame.updatePadding(
+                left = systemWindows.left,
+                right = systemWindows.right
+            )
             binding.bottomSheetView.sheetFrame.updateMarginAndHeight(
                 top = systemWindows.top,
                 bottom = systemWindows.bottom + toDpi(60)

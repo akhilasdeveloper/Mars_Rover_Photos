@@ -1,8 +1,10 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
+import android.Manifest
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.text.Html
 import android.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.*
@@ -11,9 +13,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.akhilasdeveloper.marsroverphotos.databinding.*
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
-import com.akhilasdeveloper.marsroverphotos.utilities.formatMillisToDisplayDate
-import com.akhilasdeveloper.marsroverphotos.utilities.isDarkThemeOn
-import com.akhilasdeveloper.marsroverphotos.utilities.sdkAndUp
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerShareClickListener
-import com.akhilasdeveloper.marsroverphotos.utilities.updateMarginAndHeight
+import com.akhilasdeveloper.marsroverphotos.utilities.*
 import com.bumptech.glide.RequestManager
 
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -39,6 +38,8 @@ class MainActivity : BaseActivity() {
     private var dialogView: LayoutProgressBinding? = null
     @Inject
     lateinit var requestManager: RequestManager
+    @Inject
+    lateinit var utilities: Utilities
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -393,6 +394,40 @@ class MainActivity : BaseActivity() {
             cancel.setOnClickListener {
                 onCancelSelect?.invoke(this.doNotShow.isChecked)
                 alertDialog.cancel()
+            }
+        }
+
+        alertDialog.setOnDismissListener {
+            onDismiss?.invoke()
+        }
+
+        alertDialog.show()
+
+    }
+
+    override fun showAboutDialog(
+        onDismiss: (() -> Unit)?
+    ) {
+        val dialogView: LayoutAboutBinding =
+            LayoutAboutBinding.inflate(LayoutInflater.from(this))
+        val builder: AlertDialog.Builder =
+            AlertDialog.Builder(this, R.style.dialog_background)
+                .setView(dialogView.root)
+        val alertDialog: AlertDialog = builder.create()
+
+        val apiDescription = "<a href='https://api.nasa.gov/' > api.nasa.gov </a>"
+        val contactDescription = "<a href='mailto:akhilasdeveloper@gmail.com' > akhilasdeveloper@gmail.com </a>"
+
+        dialogView.apply {
+            sdkAndUp(Build.VERSION_CODES.N, onSdkAndAbove = {
+                apiProvider.text = Html.fromHtml(apiDescription,Html.FROM_HTML_MODE_COMPACT)
+                contact.text = Html.fromHtml(contactDescription,Html.FROM_HTML_MODE_COMPACT)
+            }, belowSdk = {
+                apiProvider.text = Html.fromHtml(apiDescription)
+            })
+
+            clearCache.setOnClickListener {
+                utilities.deleteCache()
             }
         }
 

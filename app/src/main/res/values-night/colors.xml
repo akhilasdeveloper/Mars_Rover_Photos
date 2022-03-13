@@ -20,6 +20,7 @@
     <color name="system_border">#E4222222</color>
     <color name="system_border_inv">#C9D8D8D8</color>
     <color name="system_for">#D1D1D1</color>
+    <color name="system_for_low">#B8B8B8</color>
     <color name="system_for_light">#616161</color>
     <color name="accent">#A3805A</color>
     <color name="rippleColor">#ABA3805A</color>

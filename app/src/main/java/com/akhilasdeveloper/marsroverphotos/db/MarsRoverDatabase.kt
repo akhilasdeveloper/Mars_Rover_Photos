@@ -15,7 +15,7 @@ import com.akhilasdeveloper.marsroverphotos.db.table.rover.MarsRoverSrcTable
         MarsRoverSrcTable::class,
         MarsRoverPhotoLikedTable::class,
         RemoteKeysTable::class],
-    version = 3
+    version = 1
 )
 abstract class MarsRoverDatabase : RoomDatabase() {
     abstract fun getMarsPhotoDao(): MarsPhotoDao
