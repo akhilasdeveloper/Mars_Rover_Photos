@@ -36,7 +36,7 @@
             android:orientation="vertical"
             android:layout_weight="1"
             android:layout_marginStart="@dimen/global_window_padding"
-            android:layout_marginEnd="0dp"
+            android:layout_marginEnd="@dimen/global_window_padding"
             android:layout_marginBottom="@dimen/global_window_padding"
             android:layout_marginTop="@dimen/global_window_padding"
             >
