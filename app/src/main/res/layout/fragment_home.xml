@@ -43,28 +43,6 @@
         android:background="@color/system_border"
         android:alpha="0"/>
 
-    <LinearLayout
-        android:layout_width="48dp"
-        android:layout_height="600dp"
-        android:layout_gravity="bottom|end"
-        android:id="@+id/slideFrame"
-        android:gravity="center">
-        <SeekBar
-            android:id="@+id/sol_slider"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:rotation="270"
-            android:stepSize="1"
-            android:value="50"
-            android:valueFrom="0"
-            android:valueTo="100"
-            android:thumb="@drawable/fast_scroller"
-            android:thumbOffset="16dp"
-            android:progressBackgroundTint="@android:color/transparent"
-            android:progressTint="@android:color/transparent"/>
-    </LinearLayout>
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/empty_message"
         android:layout_width="wrap_content"

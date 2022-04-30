@@ -53,22 +53,6 @@ internal fun HomeFragment.setWindowInsets() {
         return@setOnApplyWindowInsetsListener insets
     }
 
-    ViewCompat.setOnApplyWindowInsetsListener(binding.slideFrame) { _, insets ->
-        val systemWindows = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-        val bottomAppBarHeight = toDpi(76)
-        val topAppBarHeight = toDpi(200)
-
-        binding.solSlider.updateLayoutParams {
-            width = displayHeightPx - (bottomAppBarHeight + topAppBarHeight)
-        }
-        binding.slideFrame.updateLayoutParams {
-            height = displayHeightPx - (bottomAppBarHeight + topAppBarHeight)
-        }
-        binding.slideFrame.updateMarginAndHeight(bottom = bottomAppBarHeight + systemWindows.bottom, end = systemWindows.right)
-
-        return@setOnApplyWindowInsetsListener insets
-    }
 }
 
 internal fun HomeFragment.showSolSelectorDialog() {
