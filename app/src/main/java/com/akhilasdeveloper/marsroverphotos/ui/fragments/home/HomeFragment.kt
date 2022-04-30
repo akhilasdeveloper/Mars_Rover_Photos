@@ -13,10 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
-import android.view.animation.Animation
-import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,7 +24,6 @@ import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
@@ -48,7 +44,6 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_LAR
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_NORMAL
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_SMALL
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.GALLERY_SPAN_X_LARGE
-import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
 import com.bumptech.glide.RequestManager
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
@@ -58,7 +53,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
-import java.lang.Exception
 import javax.inject.Inject
 
 
@@ -116,10 +110,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
 
     private fun uiObservers() {
         homeViewModel.apply {
-            viewStatePinToolBar.observe(viewLifecycleOwner, {
+            viewStatePinToolBar.observe(viewLifecycleOwner) {
                 binding.homeBottomToolbarSecond.isVisible = it
-            })
-            viewStateTitle.observe(viewLifecycleOwner, {
+            }
+            viewStateTitle.observe(viewLifecycleOwner) {
                 (if (viewModel.isSavedView) getString(
                     R.string.liked_photos,
                     it
@@ -127,80 +121,68 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     binding.topAppbar.homeToolbarTop.title = title
                     binding.topAppbar.homeCollapsingToolbarTop.title = title
                 }
-            })
-            viewStateSelectedTitle.observe(viewLifecycleOwner, {
-                binding.homeBottomToolbarSecond.title = getString(R.string.selected, getSelectedList().size.toString())
-            })
-            viewStateSolButtonText.observe(viewLifecycleOwner, { solButtonText ->
+            }
+            viewStateSelectedTitle.observe(viewLifecycleOwner) {
+                binding.homeBottomToolbarSecond.title =
+                    getString(R.string.selected, getSelectedList().size.toString())
+            }
+            viewStateSolButtonText.observe(viewLifecycleOwner) { solButtonText ->
                 binding.bottomAppbar.solButtonText.text = getString(
                     R.string.sol, solButtonText
                 )
-            })
-            viewStateScrollDateDisplayText.observe(viewLifecycleOwner, { scrollDateDisplayText ->
+            }
+            viewStateScrollDateDisplayText.observe(viewLifecycleOwner) { scrollDateDisplayText ->
                 binding.scrollDateDisplayText.text = scrollDateDisplayText
-            })
-            viewStateSolSlider.observe(viewLifecycleOwner, { solSlider ->
-                binding.solSlider.progress = solSlider
-            })
-            viewStateSolSliderMax.observe(viewLifecycleOwner, { maxVal ->
-                binding.solSlider.max = maxVal
-            })
-            viewStateDateButtonText.observe(viewLifecycleOwner, { date ->
+            }
+            viewStateDateButtonText.observe(viewLifecycleOwner) { date ->
                 binding.bottomAppbar.dateButtonText.text = date
-            })
-            viewStateSetMainProgress.observe(viewLifecycleOwner, { isLoading ->
+            }
+            viewStateSetMainProgress.observe(viewLifecycleOwner) { isLoading ->
                 if (isLoading) uiCommunicationListener.showIndeterminateProgressDialog()
                 else
                     uiCommunicationListener.hideIndeterminateProgressDialog()
 
-            })
-            viewStateSetBottomProgress.observe(viewLifecycleOwner, { isLoading ->
+            }
+            viewStateSetBottomProgress.observe(viewLifecycleOwner) { isLoading ->
                 binding.progress.isVisible = isLoading
-            })
+            }
 
-            viewStateSetTopProgress.observe(viewLifecycleOwner, { isLoading ->
+            viewStateSetTopProgress.observe(viewLifecycleOwner) { isLoading ->
                 binding.progressTop.isVisible = isLoading
-            })
-            viewStateSetFastScrollerDateVisibility.observe(viewLifecycleOwner, { isVisible ->
+            }
+            viewStateSetFastScrollerDateVisibility.observe(viewLifecycleOwner) { isVisible ->
                 if (isVisible)
                     showFastScrollerDate()
                 else
                     hideFastScrollerDate()
-            })
+            }
 
-            viewStateSetFastScrollerVisibility.observe(viewLifecycleOwner, { isVisible ->
-                if (isVisible)
-                    showFastScroller()
-                else
-                    hideFastScroller()
-
-            })
-            viewStateNotifyItemChanged.observe(viewLifecycleOwner, { position ->
+            viewStateNotifyItemChanged.observe(viewLifecycleOwner) { position ->
                 adapter?.notifyItemChanged(position)
-            })
-            viewStateSetSelectMenuVisibility.observe(viewLifecycleOwner, { isVisible ->
+            }
+            viewStateSetSelectMenuVisibility.observe(viewLifecycleOwner) { isVisible ->
                 if (isVisible)
                     populateSelectMenu()
                 else
                     clearSelectMenu()
-            })
+            }
 
-            viewStateScrollToPosition.observe(viewLifecycleOwner, { position ->
+            viewStateScrollToPosition.observe(viewLifecycleOwner) { position ->
                 position.contentIfNotHandled?.let { it ->
                     scrollToPosition(it)
                 }
-            })
-            viewStateShowDatePicket.observe(viewLifecycleOwner, { isShowing ->
+            }
+            viewStateShowDatePicket.observe(viewLifecycleOwner) { isShowing ->
                 if (isShowing)
                     showDatePicker()
-            })
+            }
 
-            viewStateShowSolSelected.observe(viewLifecycleOwner, { isShowing ->
+            viewStateShowSolSelected.observe(viewLifecycleOwner) { isShowing ->
                 if (isShowing)
                     showSolSelectorDialog()
-            })
+            }
 
-            viewStateShowShareSelected.observe(viewLifecycleOwner, { isShowing ->
+            viewStateShowShareSelected.observe(viewLifecycleOwner) { isShowing ->
                 if (isShowing)
                     uiCommunicationListener.showMoreSelectorDialog(
                         onImageSelect = {
@@ -221,19 +203,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         }, onDismiss = {
                             homeViewModel.setViewStateShowShareSelected(false)
                         })
-            })
+            }
 
-            viewStateShareAsImage.observe(viewLifecycleOwner, { isSelected ->
+            viewStateShareAsImage.observe(viewLifecycleOwner) { isSelected ->
                 if (isSelected)
                     shareAllAsImage()
-            })
+            }
 
-            viewStateSaveToDevice.observe(viewLifecycleOwner, { isSelected ->
+            viewStateSaveToDevice.observe(viewLifecycleOwner) { isSelected ->
                 if (isSelected)
                     setDownload(homeViewModel.getSelectedList())
-            })
+            }
 
-            viewStateGetData.observe(viewLifecycleOwner, { load ->
+            viewStateGetData.observe(viewLifecycleOwner) { load ->
                 load?.contentIfNotHandled?.let {
                     getCurrentDate()?.let { currentDate ->
                         getRover()?.let { master ->
@@ -241,13 +223,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                         }
                     }
                 }
-            })
-            viewStateToastMessage.observe(viewLifecycleOwner, { message ->
+            }
+            viewStateToastMessage.observe(viewLifecycleOwner) { message ->
                 message?.contentIfNotHandled?.let {
                     requireContext().showShortToast(it)
                 }
-            })
-            viewStateClearSelectionConsent.observe(viewLifecycleOwner, { isSelected ->
+            }
+            viewStateClearSelectionConsent.observe(viewLifecycleOwner) { isSelected ->
                 if (isSelected) {
                     uiCommunicationListener.showConsentSelectorDialog(getString(R.string.clear_selection),
                         getString(
@@ -259,8 +241,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                             setViewStateClearSelectionConsent(false)
                         })
                 }
-            })
-            viewStateRemoveLikesConsent.observe(viewLifecycleOwner, { isSelected ->
+            }
+            viewStateRemoveLikesConsent.observe(viewLifecycleOwner) { isSelected ->
                 if (isSelected) {
                     uiCommunicationListener.showConsentSelectorDialog(getString(R.string.remove_from_liked_photos),
                         getString(
@@ -284,8 +266,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                             setViewStateRemoveLikesConsent(false)
                         })
                 }
-            })
-            viewStateStoragePermission.observe(viewLifecycleOwner, { isSelected ->
+            }
+            viewStateStoragePermission.observe(viewLifecycleOwner) { isSelected ->
                 if (isSelected) {
                     uiCommunicationListener.showConsentSelectorDialog(
                         title = requireContext().getString(R.string.permission),
@@ -306,23 +288,23 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                             setViewStateStoragePermission(false)
                         })
                 }
-            })
+            }
         }
     }
 
     private fun subscribeObservers() {
 
-        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner, {
+        viewModel.dataStateRoverMaster.observe(viewLifecycleOwner) {
             homeViewModel.setViewStateRoverMaster(it)
-        })
+        }
 
-        viewModel.positionState.observe(viewLifecycleOwner, {
+        viewModel.positionState.observe(viewLifecycleOwner) {
             it.contentIfNotHandled?.let { position ->
                 homeViewModel.setViewStateScrollToPosition(position)
             }
-        })
+        }
 
-        viewModel.dataStatePaging.observe(viewLifecycleOwner, {
+        viewModel.dataStatePaging.observe(viewLifecycleOwner) {
             it?.let {
                 val isHandled = it.hasBeenHandled()
                 it.peekContent?.let { photos ->
@@ -337,7 +319,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                     }
                 }
             }
-        })
+        }
 
     }
 
@@ -476,7 +458,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
         binding.apply {
             bottomAppbar.root.isVisible = false
             scrollDateDisplayText.isVisible = false
-            slideFrame.isVisible = false
             val homeBottomToolbarSecondLayoutParams =
                 homeBottomToolbarSecond.layoutParams as CoordinatorLayout.LayoutParams
             homeBottomToolbarSecondLayoutParams.gravity = Gravity.BOTTOM
@@ -746,43 +727,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
                 }
             }
 
-            binding.solSlider.setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    homeViewModel.setViewStateSetFastScrollerDateVisibility(true)
-                } else if (event.action == MotionEvent.ACTION_UP) {
-                    homeViewModel.setViewStateSetFastScrollerDateVisibility(false)
-                }
-                false
-            }
-
-            binding.solSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(
-                    seekBar: SeekBar?,
-                    progress: Int,
-                    fromUser: Boolean
-                ) {
-                    homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
-                        val date =
-                            (((progress.toLong()) * MILLIS_IN_A_SOL) + landing_date_in_millis)
-                        homeViewModel.setViewStateScrollDateDisplayText(date.formatMillisToDisplayDate())
-                    }
-                }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
-                }
-
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    homeViewModel.getLandingDateInMillis()?.let { landing_date_in_millis ->
-                        val date =
-                            ((binding.solSlider.progress.toLong() * MILLIS_IN_A_SOL) + landing_date_in_millis).formatMillisToDate()
-                                .formatDateToMillis()
-                        onDateSelected(date!!, true)
-                    }
-                }
-
-            })
-
         }
 
         adapter?.addLoadStateListener { loadStates ->
@@ -836,31 +780,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), RecyclerClickListener
             animate()
                 .alpha(1.0f).duration = 200L
 
-        }
-    }
-
-    private fun hideFastScroller() {
-        binding.slideFrame.apply {
-            if (alpha == 1f) {
-                hideFastScrollerJob?.cancel()
-                hideFastScrollerJob = lifecycleScope.launch {
-                    delay(2000L)
-                    animate()
-                        .translationX(toDpi(48).toFloat())
-                        .alpha(0.0f).duration = 400L
-                }
-            }
-        }
-    }
-
-    private fun showFastScroller() {
-        binding.slideFrame.apply {
-            if (alpha == 0f) {
-                animate()
-                    .alpha(1.0f)
-                    .translationX(0f)
-                    .setListener(null).duration = 400L
-            }
         }
     }
 
