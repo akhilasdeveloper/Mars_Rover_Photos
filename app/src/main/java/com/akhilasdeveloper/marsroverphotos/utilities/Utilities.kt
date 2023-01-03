@@ -20,9 +20,13 @@ import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_FALSE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_LIKE_SYNC
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DATASTORE_TRUE
 import com.akhilasdeveloper.marsroverphotos.utilities.Constants.MILLIS_IN_A_SOL
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SYSTEM
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.THEME
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -145,6 +149,18 @@ class Utilities @Inject constructor(
         val dataStoreKey = stringPreferencesKey(DATASTORE_LIKES_SYNC)
         context.dataStore.edit { settings ->
             settings[dataStoreKey] = DATASTORE_FALSE
+        }
+    }
+
+    fun getTheme(): Flow<String?> =
+        context.dataStore.data.map { preference ->
+            preference[stringPreferencesKey(THEME)]
+        }
+
+    suspend fun setTheme(theme: String) {
+        val dataStoreKey = stringPreferencesKey(THEME)
+        context.dataStore.edit { settings ->
+            settings[dataStoreKey] = theme
         }
     }
 

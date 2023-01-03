@@ -7,6 +7,7 @@ import com.akhilasdeveloper.marsroverphotos.data.RoverMaster
 import com.akhilasdeveloper.marsroverphotos.db.table.photo.MarsRoverPhotoTable
 import com.akhilasdeveloper.marsroverphotos.repositories.MarsRoverPhotosRepository
 import com.akhilasdeveloper.marsroverphotos.utilities.Event
+import com.akhilasdeveloper.marsroverphotos.utilities.Utilities
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -19,14 +20,22 @@ import javax.inject.Inject
 class MainViewModel
 @Inject constructor(
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    utilities: Utilities
 ) : ViewModel() {
+
+    init {
+        utilities.getTheme().onEach {user->
+            _dataStateThemeChange.value = user
+        }.launchIn(viewModelScope)
+    }
 
     private val _dataStatePaging: MutableLiveData<Event<PagingData<MarsRoverPhotoTable>?>?> =
         MutableLiveData()
     private val _dataStatePosition: MutableLiveData<Event<Int>> = MutableLiveData()
     private val _dataStateRoverMaster: MutableLiveData<Event<RoverMaster>> = MutableLiveData()
     private val _dataStateInfoDialogChange: MutableLiveData<Int> = MutableLiveData()
+    private val _dataStateThemeChange: MutableLiveData<String> = MutableLiveData()
     private var _isSavedView: Boolean = false
 
     private var job: Job? = null
@@ -46,6 +55,9 @@ class MainViewModel
 
     val positionState: LiveData<Event<Int>>
         get() = _dataStatePosition
+
+    val themeState: LiveData<String>
+        get() = _dataStateThemeChange
 
     init {
         savedStateHandle.get<String>("roverMaster")?.let {

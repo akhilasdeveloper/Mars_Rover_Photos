@@ -20,6 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.akhilasdeveloper.marsroverphotos.R
 import com.akhilasdeveloper.marsroverphotos.ui.fragments.RecyclerShareClickListener
 import com.akhilasdeveloper.marsroverphotos.utilities.*
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.DARK
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.LIGHT
+import com.akhilasdeveloper.marsroverphotos.utilities.Constants.SYSTEM
 import com.bumptech.glide.RequestManager
 
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -40,10 +43,27 @@ class MainActivity : BaseActivity() {
     @Inject
     lateinit var utilities: Utilities
 
+    val viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        viewModel.themeState.observe(this) {
+            when (it) {
+                SYSTEM -> {
+
+                }
+                DARK -> {
+
+                }
+                LIGHT -> {
+
+                }
+                else -> {}
+            }
+        }
 
         sdkAndUp(Build.VERSION_CODES.R, onSdkAndAbove = {
             window.setDecorFitsSystemWindows(false)
@@ -121,11 +141,9 @@ class MainActivity : BaseActivity() {
         binding.layoutInfoBottomSheet.close.setOnClickListener {
             closeInfoDialog()
         }
-
     }
 
     private fun setBottomSheet() {
-        val viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.isGestureInsetBottomIgnored = true
         bottomSheetBehavior.addBottomSheetCallback(object :
