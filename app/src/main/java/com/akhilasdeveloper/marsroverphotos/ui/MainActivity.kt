@@ -1,6 +1,5 @@
 package com.akhilasdeveloper.marsroverphotos.ui
 
-import android.Manifest
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
