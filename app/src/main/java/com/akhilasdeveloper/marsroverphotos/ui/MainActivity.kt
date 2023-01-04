@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.text.Html
 import android.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.core.widget.NestedScrollView
 import androidx.navigation.NavController
@@ -38,28 +40,37 @@ class MainActivity : BaseActivity() {
     private var alertDialog: AlertDialog? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
     private var dialogView: LayoutProgressBinding? = null
+
     @Inject
     lateinit var requestManager: RequestManager
+
     @Inject
     lateinit var utilities: Utilities
 
-    val viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
+    private var viewModel: MainViewModel? = null
+    private var dialogViewAbout: LayoutAboutBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel.themeState.observe(this) {
+        viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
+        dialogViewAbout = LayoutAboutBinding.inflate(LayoutInflater.from(this))
+
+        viewModel?.themeState?.observe(this) {
             when (it) {
                 SYSTEM -> {
-
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                    dialogViewAbout?.themeSystem?.background = ContextCompat.getDrawable(this, R.drawable.button_background_accent)
                 }
                 DARK -> {
-
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    dialogViewAbout?.themeDark?.background = ContextCompat.getDrawable(this, R.drawable.button_background_accent)
                 }
                 LIGHT -> {
-
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    dialogViewAbout?.themeLight?.background = ContextCompat.getDrawable(this, R.drawable.button_background_accent)
                 }
                 else -> {}
             }
@@ -86,7 +97,7 @@ class MainActivity : BaseActivity() {
         }, belowSdk = {
             WindowCompat.setDecorFitsSystemWindows(window, false)
             ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarBg) { view, insets ->
-                if (view.height==0) {
+                if (view.height == 0) {
                     val systemWindows =
                         insets.getInsets(WindowInsetsCompat.Type.systemBars())
                     view.updateLayoutParams { height = systemWindows.top }
@@ -95,7 +106,7 @@ class MainActivity : BaseActivity() {
             }
 
             ViewCompat.setOnApplyWindowInsetsListener(binding.navigationBarBg) { view, insets ->
-                if (view.height==0) {
+                if (view.height == 0) {
                     val systemWindows =
                         insets.getInsets(WindowInsetsCompat.Type.systemBars())
                     view.updateLayoutParams { height = systemWindows.bottom }
@@ -149,7 +160,7 @@ class MainActivity : BaseActivity() {
         bottomSheetBehavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                viewModel.setInfoDialog(newState)
+                viewModel?.setInfoDialog(newState)
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -274,12 +285,13 @@ class MainActivity : BaseActivity() {
         onDismiss: (() -> Unit)?,
         items: List<MarsRoverPhotoTable>?
     ) {
-        val bottomSheetDialog = BottomSheetDialog(this,R.style.ShareBottomSheetTheme)
-        val dialogView: LayoutShareBottomSheetBinding = LayoutShareBottomSheetBinding.inflate(LayoutInflater.from(this))
+        val bottomSheetDialog = BottomSheetDialog(this, R.style.ShareBottomSheetTheme)
+        val dialogView: LayoutShareBottomSheetBinding =
+            LayoutShareBottomSheetBinding.inflate(LayoutInflater.from(this))
         bottomSheetDialog.setContentView(dialogView.root)
         val data = items?.toMutableList()
-        var shareAdapter:ShareRecyclerAdapter? = null
-        val listener = object :RecyclerShareClickListener{
+        var shareAdapter: ShareRecyclerAdapter? = null
+        val listener = object : RecyclerShareClickListener {
             override fun onItemDeleteClicked(
                 marsRoverPhotoTable: MarsRoverPhotoTable,
                 position: Int
@@ -290,7 +302,7 @@ class MainActivity : BaseActivity() {
                     shareAdapter?.submitList(it)
                 }
                 shareAdapter?.notifyItemRemoved(position)
-                dialogView.selectCount.text = getString(R.string.selected,data?.size.toString() )
+                dialogView.selectCount.text = getString(R.string.selected, data?.size.toString())
                 if (data?.isEmpty() == true)
                     bottomSheetDialog.dismiss()
             }
@@ -298,7 +310,8 @@ class MainActivity : BaseActivity() {
         shareAdapter = ShareRecyclerAdapter(requestManager = requestManager, interaction = listener)
         dialogView.apply {
 
-            shareItems.layoutManager = LinearLayoutManager(this@MainActivity,LinearLayoutManager.HORIZONTAL,false)
+            shareItems.layoutManager =
+                LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
             shareItems.adapter = shareAdapter
 
             link.setOnClickListener {
@@ -316,7 +329,7 @@ class MainActivity : BaseActivity() {
                 bottomSheetDialog.cancel()
             }
 
-            selectCount.text = getString(R.string.selected,data?.size.toString())
+            selectCount.text = getString(R.string.selected, data?.size.toString())
         }
         data?.let {
             shareAdapter.submitList(it)
@@ -331,7 +344,11 @@ class MainActivity : BaseActivity() {
     override fun setInfoDetails(marsRoverPhotoTable: MarsRoverPhotoTable) {
         binding.layoutInfoBottomSheet.apply {
             imageId.text = marsRoverPhotoTable.photo_id.toString()
-            cameraName.text = getString(R.string.camera_name,marsRoverPhotoTable.camera_full_name,marsRoverPhotoTable.camera_name )
+            cameraName.text = getString(
+                R.string.camera_name,
+                marsRoverPhotoTable.camera_full_name,
+                marsRoverPhotoTable.camera_name
+            )
             roverName.text = marsRoverPhotoTable.rover_name
             date.text = marsRoverPhotoTable.earth_date.formatMillisToDisplayDate()
             sol.text = marsRoverPhotoTable.sol.toString()
@@ -396,10 +413,10 @@ class MainActivity : BaseActivity() {
 
         dialogView.apply {
 
-            this.title.text = title?:getString(R.string.info)
-            this.cancel.text = cancelText?:getString(R.string.cancel)
+            this.title.text = title ?: getString(R.string.info)
+            this.cancel.text = cancelText ?: getString(R.string.cancel)
             this.description.text = descriptionText
-            this.ok.text = oKText?:getString(R.string.ok)
+            this.ok.text = oKText ?: getString(R.string.ok)
 
             this.doNotShow.isVisible = doNotShow
 
@@ -425,26 +442,42 @@ class MainActivity : BaseActivity() {
     override fun showAboutDialog(
         onDismiss: (() -> Unit)?
     ) {
-        val dialogView: LayoutAboutBinding =
-            LayoutAboutBinding.inflate(LayoutInflater.from(this))
+
         val builder: AlertDialog.Builder =
             AlertDialog.Builder(this, R.style.dialog_background)
-                .setView(dialogView.root)
+                .setView(dialogViewAbout?.root)
         val alertDialog: AlertDialog = builder.create()
 
         val apiDescription = "<a href='https://api.nasa.gov/' > api.nasa.gov </a>"
-        val contactDescription = "<a href='mailto:akhilasdeveloper@gmail.com' > akhilasdeveloper@gmail.com </a>"
+        val contactDescription =
+            "<a href='mailto:akhilasdeveloper@gmail.com' > akhilasdeveloper@gmail.com </a>"
 
-        dialogView.apply {
+        dialogViewAbout?.apply {
             sdkAndUp(Build.VERSION_CODES.N, onSdkAndAbove = {
-                apiProvider.text = Html.fromHtml(apiDescription,Html.FROM_HTML_MODE_COMPACT)
-                contact.text = Html.fromHtml(contactDescription,Html.FROM_HTML_MODE_COMPACT)
+                apiProvider.text = Html.fromHtml(apiDescription, Html.FROM_HTML_MODE_COMPACT)
+                contact.text = Html.fromHtml(contactDescription, Html.FROM_HTML_MODE_COMPACT)
             }, belowSdk = {
                 apiProvider.text = Html.fromHtml(apiDescription)
             })
 
             clearCache.setOnClickListener {
                 utilities.deleteCache()
+            }
+
+            themeSystem.setOnClickListener {
+                viewModel?.setTheme(SYSTEM)
+                dialogViewAbout?.themeLight?.background = ContextCompat.getDrawable(this@MainActivity, R.drawable.button_background_second)
+                dialogViewAbout?.themeDark?.background = ContextCompat.getDrawable(this@MainActivity, R.drawable.button_background_second)
+            }
+            themeDark.setOnClickListener {
+                viewModel?.setTheme(DARK)
+                dialogViewAbout?.themeSystem?.background = ContextCompat.getDrawable(this@MainActivity, R.drawable.button_background_second)
+                dialogViewAbout?.themeLight?.background = ContextCompat.getDrawable(this@MainActivity, R.drawable.button_background_second)
+            }
+            themeLight.setOnClickListener {
+                viewModel?.setTheme(LIGHT)
+                dialogViewAbout?.themeDark?.background = ContextCompat.getDrawable(this@MainActivity, R.drawable.button_background_second)
+                dialogViewAbout?.themeSystem?.background = ContextCompat.getDrawable(this@MainActivity, R.drawable.button_background_second)
             }
         }
 

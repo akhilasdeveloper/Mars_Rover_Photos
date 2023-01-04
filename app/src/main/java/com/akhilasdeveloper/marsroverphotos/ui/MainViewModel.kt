@@ -21,7 +21,7 @@ class MainViewModel
 @Inject constructor(
     private val marsRoverPhotosRepository: MarsRoverPhotosRepository,
     private val savedStateHandle: SavedStateHandle,
-    utilities: Utilities
+    private val utilities: Utilities
 ) : ViewModel() {
 
     init {
@@ -71,6 +71,12 @@ class MainViewModel
     fun setRoverMaster(roverMaster: RoverMaster) {
         _dataStateRoverMaster.value = Event(roverMaster)
         savedStateHandle.set("roverMaster", roverMaster.name)
+    }
+
+    fun setTheme(theme: String){
+        viewModelScope.launch {
+            utilities.setTheme(theme)
+        }
     }
 
     fun setEmptyPhotos() {

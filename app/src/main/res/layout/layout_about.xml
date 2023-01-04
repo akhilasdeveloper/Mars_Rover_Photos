@@ -124,7 +124,7 @@
                     android:layout_weight="1"
                     android:textColor="@color/system_for_low"
                     android:textSize="@dimen/small_text_size"
-                    android:text="@string/_1_0"/>
+                    android:text="@string/_1_3"/>
             </LinearLayout>
 
         </LinearLayout>
