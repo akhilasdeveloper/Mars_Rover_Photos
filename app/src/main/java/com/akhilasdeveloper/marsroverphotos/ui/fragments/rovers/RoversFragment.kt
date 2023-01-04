@@ -56,10 +56,10 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     private fun uiObservers() {
         roversViewModel.apply {
-            viewStateRoverSwipeRefresh.observe(viewLifecycleOwner, {
+            viewStateRoverSwipeRefresh.observe(viewLifecycleOwner) {
                 binding.roverSwipeRefresh.isRefreshing = it
-            })
-            viewStateErrorMessage.observe(viewLifecycleOwner, {
+            }
+            viewStateErrorMessage.observe(viewLifecycleOwner) {
                 it.contentIfNotHandled?.let { message ->
                     uiCommunicationListener.showSnackBarMessage(
                         messageText = message,
@@ -68,16 +68,16 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                         refreshData()
                     }
                 }
-            })
-            viewStateMessage.observe(viewLifecycleOwner, {
+            }
+            viewStateMessage.observe(viewLifecycleOwner) {
                 it.contentIfNotHandled?.let { message ->
                     uiCommunicationListener.showSnackBarMessage(message)
                 }
-            })
-            viewStateRoverMasterList.observe(viewLifecycleOwner, {
+            }
+            viewStateRoverMasterList.observe(viewLifecycleOwner) {
                 adapter?.submitList(it)
-            })
-            viewStateSetEmptyMessage.observe(viewLifecycleOwner, {
+            }
+            viewStateSetEmptyMessage.observe(viewLifecycleOwner) {
                 it.let { event ->
                     if (event == null)
                         hideEmptyMessage()
@@ -87,24 +87,24 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
                         }
                 }
 
-            })
-            viewStateSheetData.observe(viewLifecycleOwner, {
+            }
+            viewStateSheetData.observe(viewLifecycleOwner) {
                 setSheetData(it)
-            })
-            viewStateSheetState.observe(viewLifecycleOwner, {
+            }
+            viewStateSheetState.observe(viewLifecycleOwner) {
                 bottomSheetBehavior.state = it
-            })
-            viewStateTopBarVisibility.observe(viewLifecycleOwner, {
+            }
+            viewStateTopBarVisibility.observe(viewLifecycleOwner) {
                 binding.topAppbar.homeAppbarTop.isVisible = it
-            })
+            }
 
-            viewStateShowAboutDialog.observe(viewLifecycleOwner, { isSelected ->
+            viewStateShowAboutDialog.observe(viewLifecycleOwner) { isSelected ->
                 if (isSelected) {
                     uiCommunicationListener.showAboutDialog {
                         roversViewModel.setViewStateShowAboutDialog(false)
                     }
                 }
-            })
+            }
         }
     }
 
@@ -217,6 +217,10 @@ class RoversFragment : BaseFragment(R.layout.fragment_rovers), RecyclerRoverClic
 
     override fun onAboutSelected() {
         roversViewModel.setViewStateShowAboutDialog(true)
+    }
+
+    override fun onFetchLatestSelected() {
+        roversViewModel.getRoverData(isRefresh = true)
     }
 
     private fun hideSheet() {

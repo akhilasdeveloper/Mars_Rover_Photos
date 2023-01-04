@@ -108,9 +108,13 @@ class MarsRoverAdapter(
             binding.apply {
                 root.animation = AnimationUtils.loadAnimation(binding.root.context, R.anim.scale_in)
             }
-            binding.root.setOnClickListener {
+            binding.about.setOnClickListener {
                 interaction?.onAboutSelected()
             }
+            binding.fetchLatest.setOnClickListener {
+                interaction?.onFetchLatestSelected()
+            }
+
         }
 
     }

@@ -49,6 +49,7 @@ class MainActivity : BaseActivity() {
 
     private var viewModel: MainViewModel? = null
     private var dialogViewAbout: LayoutAboutBinding? = null
+    private var alertDialogAbout: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +58,7 @@ class MainActivity : BaseActivity() {
 
         viewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
         dialogViewAbout = LayoutAboutBinding.inflate(LayoutInflater.from(this))
+        initAboutDialog()
 
         viewModel?.themeState?.observe(this) {
             when (it) {
@@ -439,14 +441,11 @@ class MainActivity : BaseActivity() {
 
     }
 
-    override fun showAboutDialog(
-        onDismiss: (() -> Unit)?
-    ) {
-
+    private fun initAboutDialog(){
         val builder: AlertDialog.Builder =
             AlertDialog.Builder(this, R.style.dialog_background)
                 .setView(dialogViewAbout?.root)
-        val alertDialog: AlertDialog = builder.create()
+        alertDialogAbout = builder.create()
 
         val apiDescription = "<a href='https://api.nasa.gov/' > api.nasa.gov </a>"
         val contactDescription =
@@ -480,12 +479,17 @@ class MainActivity : BaseActivity() {
                 dialogViewAbout?.themeSystem?.background = ContextCompat.getDrawable(this@MainActivity, R.drawable.button_background_second)
             }
         }
+    }
 
-        alertDialog.setOnDismissListener {
+    override fun showAboutDialog(
+        onDismiss: (() -> Unit)?
+    ) {
+
+        alertDialogAbout?.setOnDismissListener {
             onDismiss?.invoke()
         }
 
-        alertDialog.show()
+        alertDialogAbout?.show()
 
     }
 

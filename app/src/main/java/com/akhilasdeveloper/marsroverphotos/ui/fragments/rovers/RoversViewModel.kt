@@ -116,6 +116,7 @@ class RoversViewModel
                             val list = roverMasterList.toMutableList()
                             list.add(utilities.getDummyRoverMaster().copy(id = ABOUT_VIEW_ID))
                             setViewStateRoverMasterList(list)
+                            setViewStateMessage(utilities.getString(R.string.Sync_Completed))
                         }
                     }
 

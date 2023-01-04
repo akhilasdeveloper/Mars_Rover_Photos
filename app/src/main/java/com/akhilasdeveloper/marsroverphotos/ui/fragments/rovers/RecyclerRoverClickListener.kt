@@ -7,4 +7,5 @@ interface RecyclerRoverClickListener {
     fun onItemSaveSelected(master: RoverMaster, position: Int)
     fun onReadMoreSelected(master: RoverMaster, position: Int)
     fun onAboutSelected()
+    fun onFetchLatestSelected()
 }

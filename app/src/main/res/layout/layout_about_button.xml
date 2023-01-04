@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
+
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="@string/about"
-    android:textColor="@color/system_for"
-    style="@style/bottom_appbar_button_ring"
     android:layout_margin="@dimen/global_window_padding"
-    android:background="@color/appbar"
-    android:padding="@dimen/global_window_padding_half"
-    android:textSize="@dimen/medium_text_size"/>
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/fetchLatest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/fetch_latest_photos"
+        android:textColor="@color/system_for"
+        style="@style/bottom_appbar_button_ring"
+        android:background="@drawable/button_background_second"
+        android:padding="@dimen/global_window_padding_half"
+        android:textSize="@dimen/medium_text_size"/>
+    <TextView
+        android:id="@+id/about"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/about"
+        android:textColor="@color/system_for"
+        style="@style/bottom_appbar_button_ring"
+        android:layout_marginTop="@dimen/global_window_padding"
+        android:background="@drawable/button_background_second"
+        android:padding="@dimen/global_window_padding_half"
+        android:textSize="@dimen/medium_text_size"/>
+</LinearLayout>
